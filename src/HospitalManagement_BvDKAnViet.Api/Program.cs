@@ -1,8 +1,25 @@
+using HospitalManagement_BvDKAnViet.Data.Context;
+using HospitalManagement_BvDKAnViet.Core.IServies;
+using HospitalManagement_BvDKAnViet.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
+var connectionString = configuration.GetConnectionString("DefaultConnection");
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+
+// Register AutoMapper (scans assembly for Profile classes)
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// Register EF Core DbContext (SQL Server)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// Register repositories / services
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

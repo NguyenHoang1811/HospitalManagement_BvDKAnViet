@@ -6,4 +6,21 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.25" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.25" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.25">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HospitalManagement_BvDKAnViet.Api\HospitalManagement_BvDKAnViet.Api.csproj" />
+    <ProjectReference Include="..\HospitalManagement_BvDKAnViet.Core\HospitalManagement_BvDKAnViet.Core.csproj" />
+    <ProjectReference Include="..\HospitalManagement_BvDKAnViet.Data\HospitalManagement_BvDKAnViet.Data.csproj" />
+  </ItemGroup>
+
 </Project>
