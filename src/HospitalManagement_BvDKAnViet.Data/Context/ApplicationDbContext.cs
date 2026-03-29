@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+ï»¿using Microsoft.EntityFrameworkCore;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 
 namespace HospitalManagement_BvDKAnViet.Data.Context
@@ -26,7 +26,7 @@ namespace HospitalManagement_BvDKAnViet.Data.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            // ===== MAP TABLE (do DB dùng tên s? ít) =====
+            // ===== MAP TABLE =====
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Role>().ToTable("Role");
             modelBuilder.Entity<Patient>().ToTable("Patient");
@@ -39,13 +39,26 @@ namespace HospitalManagement_BvDKAnViet.Data.Context
             modelBuilder.Entity<Prescription>().ToTable("Prescription");
             modelBuilder.Entity<Invoice>().ToTable("Invoice");
 
-            
-
             // ===== RELATIONSHIP =====
+
             modelBuilder.Entity<KidneyPrediction>()
                 .HasOne(k => k.Patient)
                 .WithMany()
                 .HasForeignKey(k => k.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            
+            modelBuilder.Entity<Prescription>()
+                .HasOne(p => p.MedicalRecord)
+                .WithMany(m => m.Prescriptions)
+                .HasForeignKey(p => p.RecordId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            
+            modelBuilder.Entity<Prescription>()
+                .HasOne(p => p.Medicine)
+                .WithMany(m => m.Prescriptions)
+                .HasForeignKey(p => p.MedicineId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // ===== DATE/TIME CONFIG =====
