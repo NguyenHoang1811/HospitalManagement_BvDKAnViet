@@ -9,7 +9,8 @@ namespace HospitalManagement_BvDKAnViet.Core.Entities
         public int DoctorId { get; set; }
         public DateOnly AppointmentDate { get; set; }
         public TimeOnly AppointmentTime { get; set; }
-        public string? Status { get; set; }
+        public int? Status { get; set; }
+        public string? StatusName { get; set; }
 
         // Navigation
         public Patient? Patient { get; set; }

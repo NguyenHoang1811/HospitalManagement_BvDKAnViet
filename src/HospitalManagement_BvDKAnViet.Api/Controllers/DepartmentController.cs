@@ -12,6 +12,13 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
     {
         private readonly IDepartmentRepository _departmentRepository;
         private readonly IMapper _mapper;
+        public DepartmentController(
+           IDepartmentRepository departmentRepository,
+           IMapper mapper)
+        {
+            _departmentRepository = departmentRepository;
+            _mapper = mapper;
+        }
 
         // GET: api/Department
         [HttpGet]
@@ -52,11 +59,12 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // Ensure id matches dto
-            if (id != dto.DepartmentId) return BadRequest("Id mismatch");
+            var existing = await _departmentRepository.GetByIdAsync(id);
+            if (existing is null) return NotFound();
 
-            var department = _mapper.Map<Department>(dto);
-            var updated = await _departmentRepository.UpdateAsync(department);
+            _mapper.Map(dto, existing);
+
+            var updated = await _departmentRepository.UpdateAsync(existing);
             if (!updated) return NotFound();
 
             return NoContent();

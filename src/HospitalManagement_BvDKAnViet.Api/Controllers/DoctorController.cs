@@ -57,10 +57,13 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] UpdateDoctorDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            if (id != dto.DoctorId) return BadRequest("Id mismatch");
 
-            var doctor = _mapper.Map<Doctor>(dto);
-            var updated = await _doctorRepository.UpdateAsync(doctor);
+            var existing = await _doctorRepository.GetByIdAsync(id);
+            if (existing is null) return NotFound();
+
+            _mapper.Map(dto, existing);
+
+            var updated = await _doctorRepository.UpdateAsync(existing);
             if (!updated) return NotFound();
 
             return NoContent();

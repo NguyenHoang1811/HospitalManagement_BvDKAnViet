@@ -9,5 +9,10 @@ namespace HospitalManagement_BvDKAnViet.Core.IServies
         Task<Appointment> AddAsync(Appointment appointment);
         Task<bool> UpdateAsync(Appointment appointment);
         Task<bool> DeleteAsync(int id);
+
+        //checked bac si va benh nhan co trung lich khong
+        Task<bool> IsDoctorAvailableAsync(int doctorId, DateOnly date, TimeOnly time, int? excludeAppointmentId = null);
+
+        Task<bool> IsPatientAvailableAsync(int patientId, DateOnly date, TimeOnly time, int? excludeAppointmentId = null);
     }
 }

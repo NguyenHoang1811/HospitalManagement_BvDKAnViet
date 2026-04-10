@@ -2,6 +2,7 @@ using AutoMapper;
 using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.IServies;
+using HospitalManagement_BvDKAnViet.Data.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagement_BvDKAnViet.Api.Controllers
@@ -71,17 +72,19 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] UpdateMedicalRecordDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            if (id != dto.RecordId) return BadRequest("Id mismatch");
+
+            var existing = await _medicalRecordRepository.GetByIdAsync(id);
+            if (existing is null) return NotFound();
 
             var patientExists = await _patientRepository.GetByIdAsync(dto.PatientId) != null;
-            var doctorExists = await _doctorRepository.GetByIdAsync(dto.DoctorId) != null; // will fix below
+            var doctorExists = await _doctorRepository.GetByIdAsync(dto.DoctorId) != null;
 
-            // fix: use correct field name
             if (!patientExists || !doctorExists)
                 return BadRequest("Patient or Doctor not found");
 
-            var record = _mapper.Map<MedicalRecord>(dto);
-            var updated = await _medicalRecordRepository.UpdateAsync(record);
+            _mapper.Map(dto, existing);
+
+            var updated = await _medicalRecordRepository.UpdateAsync(existing);
             if (!updated) return NotFound();
 
             return NoContent();

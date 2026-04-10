@@ -4,19 +4,16 @@ namespace HospitalManagement_BvDKAnViet.Core.DTOs.DoctorDTO
 {
     public class UpdateDoctorDto
     {
-        [Required]
-        public int DoctorId { get; set; }
-
         [Required, StringLength(200)]
         public string Name { get; set; } = null!;
 
         [StringLength(200)]
         public string? Specialty { get; set; }
 
-        [Phone]
+        [StringLength(20)]
         public string? Phone { get; set; }
 
-        [EmailAddress]
+        [EmailAddress, StringLength(200)]
         public string? Email { get; set; }
 
         public int? DepartmentId { get; set; }

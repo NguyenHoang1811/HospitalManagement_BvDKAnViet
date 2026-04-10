@@ -63,5 +63,37 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
             await _db.SaveChangesAsync();
             return true;
         }
+
+        // Tra ve true neu bac si khong co lich hen trung voi lich moi, false neu co trung
+        public async Task<bool> IsDoctorAvailableAsync(int doctorId, DateOnly date, TimeOnly time, int? excludeAppointmentId = null)
+        {
+            var query = _db.Appointments
+                           .AsNoTracking()
+                           .Where(a => a.DoctorId == doctorId
+                                    && a.AppointmentDate == date
+                                    && a.AppointmentTime == time);
+
+            if (excludeAppointmentId.HasValue)
+                query = query.Where(a => a.AppointmentId != excludeAppointmentId.Value);
+
+            var conflictExists = await query.AnyAsync();
+            return !conflictExists;
+        }
+
+        //Tra ve true neu khong co cuoc hen trung lich cho benh nhan tai ngay/thoigian do
+        public async Task<bool> IsPatientAvailableAsync(int patientId, DateOnly date, TimeOnly time, int? excludeAppointmentId = null)
+        {
+            var query = _db.Appointments
+                           .AsNoTracking()
+                           .Where(a => a.PatientId == patientId
+                                    && a.AppointmentDate == date
+                                    && a.AppointmentTime == time);
+
+            if (excludeAppointmentId.HasValue)
+                query = query.Where(a => a.AppointmentId != excludeAppointmentId.Value);
+
+            var conflictExists = await query.AnyAsync();
+            return !conflictExists;
+        }
     }
 }

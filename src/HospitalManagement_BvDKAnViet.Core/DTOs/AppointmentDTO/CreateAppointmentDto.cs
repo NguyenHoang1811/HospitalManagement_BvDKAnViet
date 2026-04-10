@@ -15,8 +15,5 @@ namespace HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO
 
         [Required]
         public string AppointmentTime { get; set; }
-
-        [StringLength(100)]
-        public string? Status { get; set; }
     }
 }

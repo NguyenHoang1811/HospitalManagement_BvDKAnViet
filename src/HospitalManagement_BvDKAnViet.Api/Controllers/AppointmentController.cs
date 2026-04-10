@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
+using HospitalManagement_BvDKAnViet.Core.Enums;
 using HospitalManagement_BvDKAnViet.Core.IServies;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,14 +54,31 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // validate related entities exist
+            // kiem tra xem benh nhan va bac si co ton tai khong
             var patientExists = await _patientRepository.GetByIdAsync(dto.PatientId) != null;
             var doctorExists = await _doctorRepository.GetByIdAsync(dto.DoctorId) != null;
 
             if (!patientExists || !doctorExists)
                 return BadRequest("Patient or Doctor not found");
 
+            if (!TimeOnly.TryParse(dto.AppointmentTime, out var time))
+                return BadRequest("Invalid AppointmentTime format. Expected e.g. '14:30'.");
+
+            // kiem tra xem bac si va benh nhan co trung lich khong
+            var doctorAvailable = await _appointmentRepository.IsDoctorAvailableAsync(dto.DoctorId, dto.AppointmentDate, time);
+            if (!doctorAvailable)
+                return BadRequest("Doctor is not available at the selected date/time.");
+
+            var patientAvailable = await _appointmentRepository.IsPatientAvailableAsync(dto.PatientId, dto.AppointmentDate, time);
+            if (!patientAvailable)
+                return BadRequest("Patient already has an appointment at the selected date/time.");
+
             var appointment = _mapper.Map<Appointment>(dto);
+
+            // mac dinh moi tao se co trang thai Pending
+            appointment.Status = (int)AppointmentStatus.PENDING;
+            appointment.StatusName = AppointmentStatus.PENDING.ToString();
+
             var created = await _appointmentRepository.AddAsync(appointment);
             var result = _mapper.Map<AppointmentDto>(created);
 
@@ -71,25 +89,34 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateAppointmentDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (id != dto.AppointmentId)
-                return BadRequest("Id mismatch");
-
-            // check tồn tại
             var existing = await _appointmentRepository.GetByIdAsync(id);
-            if (existing == null)
-                return NotFound();
+            if (existing == null) return NotFound();
 
-            // check FK
             var patientExists = await _patientRepository.GetByIdAsync(dto.PatientId) != null;
             var doctorExists = await _doctorRepository.GetByIdAsync(dto.DoctorId) != null;
 
             if (!patientExists || !doctorExists)
                 return BadRequest("Patient or Doctor not found");
 
+            if (!TimeOnly.TryParse(dto.AppointmentTime, out var time))
+                return BadRequest("Invalid AppointmentTime format. Expected e.g. '14:30'.");
+
+            // kiem tra xem bac si va benh nhan co trung lich khong, excludeAppointmentId de cho phep update ma khong bi loi trung lich voi chinh no
+            var doctorAvailable = await _appointmentRepository.IsDoctorAvailableAsync(dto.DoctorId, dto.AppointmentDate, time, excludeAppointmentId: id);
+            if (!doctorAvailable)
+                return BadRequest("Doctor is not available at the selected date/time.");
+
+            var patientAvailable = await _appointmentRepository.IsPatientAvailableAsync(dto.PatientId, dto.AppointmentDate, time, excludeAppointmentId: id);
+            if (!patientAvailable)
+                return BadRequest("Patient already has an appointment at the selected date/time.");
+
+            // map incoming changes into existing entity (id from route is kept)
             _mapper.Map(dto, existing);
+
+            // If caller didn't set status, keep existing; otherwise mapping may overwrite.
+            // Ensure StatusName consistency if Status is numeric; keep as-is here.
 
             var updated = await _appointmentRepository.UpdateAsync(existing);
             if (!updated) return NotFound();

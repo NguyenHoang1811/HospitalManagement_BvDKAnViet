@@ -5,9 +5,6 @@ namespace HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO
     public class UpdateAppointmentDto
     {
         [Required]
-        public int AppointmentId { get; set; }
-
-        [Required]
         public int PatientId { get; set; }
 
         [Required]
@@ -19,7 +16,7 @@ namespace HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO
         [Required]
         public string AppointmentTime { get; set; }
 
-        [StringLength(100)]
         public string? Status { get; set; }
+        
     }
 }

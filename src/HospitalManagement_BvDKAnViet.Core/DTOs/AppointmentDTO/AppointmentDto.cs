@@ -8,5 +8,6 @@
         public DateOnly AppointmentDate { get; set; }
         public string AppointmentTime { get; set; }
         public string? Status { get; set; }
+        public string? StatusName { get; set; }
     }
 }
