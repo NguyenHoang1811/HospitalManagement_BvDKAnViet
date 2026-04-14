@@ -112,7 +112,6 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (!patientAvailable)
                 return BadRequest("Patient already has an appointment at the selected date/time.");
 
-            // map incoming changes into existing entity (id from route is kept)
             _mapper.Map(dto, existing);
 
             // If caller didn't set status, keep existing; otherwise mapping may overwrite.
