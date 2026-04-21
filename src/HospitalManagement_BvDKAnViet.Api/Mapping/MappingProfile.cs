@@ -6,6 +6,7 @@ using HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO;
 using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.DTOs.PrescriptionDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.MedicineDTO;
 
 public class MappingProfile : Profile
 {
@@ -53,5 +54,10 @@ public class MappingProfile : Profile
 
         CreateMap<CreatePrescriptionDto, Prescription>();
         CreateMap<UpdatePrescriptionDto, Prescription>();
+
+        // Medicine mappings
+        CreateMap<Medicine, MedicineDto>();
+        CreateMap<CreateMedicineDto, Medicine>();
+        CreateMap<UpdateMedicineDto, Medicine>();
     }
 }

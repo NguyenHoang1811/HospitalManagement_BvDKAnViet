@@ -11,11 +11,13 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly IDoctorRepository _doctorRepository;
+        private readonly IDepartmentRepository _departmentRepository;
         private readonly IMapper _mapper;
 
-        public DoctorController(IDoctorRepository doctorRepository, IMapper mapper)
+        public DoctorController(IDoctorRepository doctorRepository, IDepartmentRepository departmentRepository, IMapper mapper)
         {
             _doctorRepository = doctorRepository;
+            _departmentRepository = departmentRepository;
             _mapper = mapper;
         }
 
@@ -45,6 +47,13 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            // If client supplied DepartmentId, validate it exists
+            if (dto.DepartmentId is not null)
+            {
+                var deptExists = await _departmentRepository.GetByIdAsync(dto.DepartmentId.Value) != null;
+                if (!deptExists) return BadRequest("Department not found");
+            }
+
             var doctor = _mapper.Map<Doctor>(dto);
             var created = await _doctorRepository.AddAsync(doctor);
             var result = _mapper.Map<DoctorDto>(created);
@@ -60,6 +69,13 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
 
             var existing = await _doctorRepository.GetByIdAsync(id);
             if (existing is null) return NotFound();
+
+            // If client supplied DepartmentId, validate it exists
+            if (dto.DepartmentId is not null)
+            {
+                var deptExists = await _departmentRepository.GetByIdAsync(dto.DepartmentId.Value) != null;
+                if (!deptExists) return BadRequest("Department not found");
+            }
 
             _mapper.Map(dto, existing);
 

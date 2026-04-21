@@ -6,6 +6,8 @@ namespace HospitalManagement_BvDKAnViet.Core.Entities
         public string Username { get; set; } = null!;
         public string Password { get; set; } = null!; // store hashed password
         public int RoleId { get; set; }
+        public string? RefreshToken { get; set; } = string.Empty;
+        public DateTime? ExpriredTime { get; set; }
 
         // Navigation
         public Role? Role { get; set; }
