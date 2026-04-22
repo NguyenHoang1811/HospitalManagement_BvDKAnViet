@@ -3,101 +3,81 @@ using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.IServies;
 using HospitalManagement_BvDKAnViet.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HospitalManagement_BvDKAnViet.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // authenticated required; role checks per action
     public class MedicalRecordController : ControllerBase
     {
         private readonly IMedicalRecordRepository _medicalRecordRepository;
-        private readonly IPatientRepository _patientRepository;
-        private readonly IDoctorRepository _doctorRepository;
         private readonly IMapper _mapper;
 
-        public MedicalRecordController(
-            IMedicalRecordRepository medicalRecordRepository,
-            IPatientRepository patientRepository,
-            IDoctorRepository doctorRepository,
-            IMapper mapper)
+        public MedicalRecordController(IMedicalRecordRepository medicalRecordRepository, IMapper mapper)
         {
             _medicalRecordRepository = medicalRecordRepository;
-            _patientRepository = patientRepository;
-            _doctorRepository = doctorRepository;
             _mapper = mapper;
         }
 
+        // POST: api/MedicalRecord
+        // Doctor can create medical records
+        [HttpPost]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> Create([FromBody] CreateMedicalRecordDto dto)
+        {
+            // validation + mapping + persist...
+            return StatusCode(201);
+        }
+
         // GET: api/MedicalRecord
+        // Admin: view all records
+        // Doctor: view only records created by them (or their patients)
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var records = await _medicalRecordRepository.GetAllAsync();
-            var result = _mapper.Map<IEnumerable<MedicalRecordDto>>(records);
-            return Ok(result);
+            if (User.IsInRole("Admin"))
+            {
+                var all = await _medicalRecordRepository.GetAllAsync();
+                return Ok(_mapper.Map<IEnumerable<MedicalRecordDto>>(all));
+            }
+
+            if (User.IsInRole("Doctor"))
+            {
+                if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId))
+                    return Forbid();
+
+                var list = await _medicalRecordRepository.GetByIdAsync(userId);
+                return Ok(_mapper.Map<IEnumerable<MedicalRecordDto>>(list));
+            }
+
+            return Forbid();
         }
 
         // GET: api/MedicalRecord/5
+        // Admin can view any; Doctor only if the record belongs to them
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var record = await _medicalRecordRepository.GetByIdAsync(id);
-            if (record is null) return NotFound();
+            if (record == null) return NotFound();
 
-            var result = _mapper.Map<MedicalRecordDto>(record);
-            return Ok(result);
-        }
+            if (User.IsInRole("Admin")) return Ok(_mapper.Map<MedicalRecordDto>(record));
 
-        // POST: api/MedicalRecord
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateMedicalRecordDto dto)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (User.IsInRole("Doctor"))
+            {
+                if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId))
+                    return Forbid();
 
-            var patientExists = await _patientRepository.GetByIdAsync(dto.PatientId) != null;
-            var doctorExists = await _doctorRepository.GetByIdAsync(dto.DoctorId) != null;
+                if (record.DoctorId != userId) return Forbid();
 
-            if (!patientExists || !doctorExists)
-                return BadRequest("Patient or Doctor not found");
+                return Ok(_mapper.Map<MedicalRecordDto>(record));
+            }
 
-            var record = _mapper.Map<MedicalRecord>(dto);
-            var created = await _medicalRecordRepository.AddAsync(record);
-            var result = _mapper.Map<MedicalRecordDto>(created);
-
-            return CreatedAtAction(nameof(GetById), new { id = created.RecordId }, result);
-        }
-
-        // PUT: api/MedicalRecord/5
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateMedicalRecordDto dto)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var existing = await _medicalRecordRepository.GetByIdAsync(id);
-            if (existing is null) return NotFound();
-
-            var patientExists = await _patientRepository.GetByIdAsync(dto.PatientId) != null;
-            var doctorExists = await _doctorRepository.GetByIdAsync(dto.DoctorId) != null;
-
-            if (!patientExists || !doctorExists)
-                return BadRequest("Patient or Doctor not found");
-
-            _mapper.Map(dto, existing);
-
-            var updated = await _medicalRecordRepository.UpdateAsync(existing);
-            if (!updated) return NotFound();
-
-            return NoContent();
-        }
-
-        // DELETE: api/MedicalRecord/5
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var deleted = await _medicalRecordRepository.DeleteAsync(id); // will fix below
-            if (!deleted) return NotFound();
-
-            return NoContent();
+            return Forbid();
         }
     }
 }

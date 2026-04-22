@@ -5,6 +5,9 @@ namespace HospitalManagement_BvDKAnViet.Core.IServies
 {
     public interface IAccountRepository
     {
-        Task<User> Account_Login(LoginRequestDto request);
+        /// <summary>
+        /// Authenticate account by username/password. Returns User with Role on success, null on failure.
+        /// </summary>
+        Task<User?> Account_Login(LoginRequestDto request);
     }
 }
