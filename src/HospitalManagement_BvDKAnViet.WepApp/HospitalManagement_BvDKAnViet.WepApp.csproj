@@ -23,4 +23,10 @@
     <ProjectReference Include="..\HospitalManagement_BvDKAnViet.Data\HospitalManagement_BvDKAnViet.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\img\background\" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://www.schemastore.org/artifacthub-repo.json" /></VisualStudio></ProjectExtensions>
+
 </Project>
