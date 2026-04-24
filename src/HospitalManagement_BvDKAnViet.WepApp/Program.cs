@@ -31,15 +31,12 @@ builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 builder.Services.AddTransient<AuthTokenHandler>();
 
 // HttpClient-based API service
-//builder.Services.AddHttpClient<IApiService, ApiService>(client =>
-//{
-//    client.BaseAddress = new Uri(configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7143/");
-//})
-//.AddHttpMessageHandler<AuthTokenHandler>();
 builder.Services.AddHttpClient<IApiService, ApiService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7143/");
-});
+    client.BaseAddress = new Uri(configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7143/");
+})
+.AddHttpMessageHandler<AuthTokenHandler>();
+
 
 // Cookie authentication for the frontend (redirects unauthenticated to /Auth/Login)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
