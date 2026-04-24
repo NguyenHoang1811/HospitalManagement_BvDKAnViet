@@ -3,98 +3,97 @@
     ViewData["Title"] = "Chi Tiết Bệnh Nhân";
 }
 
-<div class="details-container">
-    <!-- Header -->
-    <div class="details-header">
-        <div class="details-title">
-            <i class="fas fa-user-circle"></i>
-            <h1>@ViewData["Title"]</h1>
+<div class="page-wrapper">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+
+            <!-- AVATAR -->
+            <div class="avatar-lg">
+                @Model.Name.Substring(0, 1)
+            </div>
+
+            <div>
+                <h2 class="fw-bold mb-1">@Model.Name</h2>
+                <div class="text-muted small">
+                    Mã BN: #@Model.PatientId
+                </div>
+            </div>
         </div>
-        <div class="btn-group">
-            <a asp-action="Edit" asp-route-id="@Model.PatientId" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Chỉnh Sửa
+
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.PatientId" class="btn btn-accent">
+                <i class="fas fa-edit"></i> Chỉnh sửa
             </a>
-            <a asp-action="Index" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Quay Lại
+            <a asp-action="Index" class="btn btn-light">
+                <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
     </div>
 
-    <!-- Personal Information Card -->
-    <div class="card">
-        <div class="card-header">
-            <i class="fas fa-id-card"></i>
-            <h2>Thông Tin Cá Nhân</h2>
-        </div>
-        <div class="card-body">
-            <div class="detail-row">
-                <div class="detail-field">
-                    <span class="detail-label">Mã Bệnh Nhân</span>
-                    <span class="detail-value">@Model.PatientId</span>
-                </div>
-                <div class="detail-field">
-                    <span class="detail-label">Họ Tên</span>
-                    <span class="detail-value">@Model.Name</span>
-                </div>
-            </div>
+    <!-- GRID -->
+    <div class="row g-4">
 
-            <div class="detail-row">
-                <div class="detail-field">
-                    <span class="detail-label">Ngày Sinh</span>
-                    <span class="detail-value">
+        <!-- LEFT -->
+        <div class="col-md-6">
+
+            <!-- PERSONAL -->
+            <div class="card-custom">
+                <div class="card-title">
+                    <i class="fas fa-id-card"></i> Thông tin cá nhân
+                </div>
+
+                <div class="info-item">
+                    <label>Ngày sinh</label>
+                    <div>
                         @if (Model.DateOfBirth != default(DateOnly))
                         {
-                            <span>@Model.DateOfBirth.ToString("dd/MM/yyyy")</span>
-                            <small style="opacity: 0.6; display: block; margin-top: 4px;">
-                                (Tuổi: @((DateTime.Today.Year - Model.DateOfBirth.Year) - 
-                                (DateTime.Today.DayOfYear < Model.DateOfBirth.DayOfYear ? 1 : 0)))
-                            </small>
-                        }
+                            <div>@Model.DateOfBirth.ToString("dd/MM/yyyy")</div>
+                            <small class="text-muted">
+                                Tuổi:
+                                @((DateTime.Today.Year - Model.DateOfBirth.Year) -
+                                                            (DateTime.Today.DayOfYear < Model.DateOfBirth.DayOfYear ? 1 : 0))
+                        </small>
+                                                }
                         else
                         {
                             <span class="empty">Chưa cập nhật</span>
                         }
-                    </span>
+                    </div>
                 </div>
 
-                <div class="detail-field">
-                    <span class="detail-label">Giới Tính</span>
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="info-item">
+                    <label>Giới tính</label>
+                    <div>
                         @{
-                            var genderDisplay = Model.Gender?.ToUpper() ?? "UNKNOWN";
-                            var badgeClass = genderDisplay == "M" ? "badge-male" :
-                                             (genderDisplay == "F" ? "badge-female" : "badge-other");
-                            var genderText = genderDisplay == "M" ? "Nam" :
-                                             (genderDisplay == "F" ? "Nữ" : "Khác");
+                            var gender = Model.Gender?.ToUpper();
                         }
-                        <span class="badge @badgeClass">
-                            @if (genderDisplay == "M")
-                            {
-                                <i class="fas fa-mars"></i>
-                            }
-                            else if (genderDisplay == "F")
-                            {
-                                <i class="fas fa-venus"></i>
-                            }
-                            @genderText
-                        </span>
+                        @if (gender == "M")
+                        {
+                            <span class="badge-soft blue"><i class="fas fa-mars"></i> Nam</span>
+                        }
+                        else if (gender == "F")
+                        {
+                            <span class="badge-soft pink"><i class="fas fa-venus"></i> Nữ</span>
+                        }
+                        else
+                        {
+                            <span class="badge-soft gray">Khác</span>
+                        }
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Contact -->
-    <div class="card">
-        <div class="card-header">
-            <i class="fas fa-address-book"></i>
-            <h2>Thông Tin Liên Hệ</h2>
-        </div>
-        <div class="card-body">
-            <div class="detail-row">
-                <div class="detail-field">
-                    <span class="detail-label">Số Điện Thoại</span>
-                    <span class="detail-value">
+            <!-- CONTACT -->
+            <div class="card-custom mt-4">
+                <div class="card-title">
+                    <i class="fas fa-address-book"></i> Liên hệ
+                </div>
+
+                <div class="info-item">
+                    <label>Số điện thoại</label>
+                    <div>
                         @if (!string.IsNullOrEmpty(Model.Phone))
                         {
                             <a href="tel:@Model.Phone">@Model.Phone</a>
@@ -103,12 +102,12 @@
                         {
                             <span class="empty">Chưa cập nhật</span>
                         }
-                    </span>
+                    </div>
                 </div>
 
-                <div class="detail-field">
-                    <span class="detail-label">Địa Chỉ</span>
-                    <span class="detail-value">
+                <div class="info-item">
+                    <label>Địa chỉ</label>
+                    <div>
                         @if (!string.IsNullOrEmpty(Model.Address))
                         {
                             @Model.Address
@@ -117,43 +116,142 @@
                         {
                             <span class="empty">Chưa cập nhật</span>
                         }
-                    </span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Medical -->
-    @if (!string.IsNullOrEmpty(Model.MedicalHistory))
-    {
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-file-medical"></i>
-                <h2>Lịch Sử Y Tế</h2>
-            </div>
-            <div class="card-body">
-                <span class="detail-label">Ghi Chú Y Tế</span>
-                <div class="detail-value" style="white-space: pre-wrap;">
-                    @Model.MedicalHistory
+        <!-- RIGHT -->
+        <div class="col-md-6">
+
+            <!-- MEDICAL -->
+            <div class="card-custom">
+                <div class="card-title">
+                    <i class="fas fa-file-medical"></i> Lịch sử y tế
                 </div>
+
+                @if (!string.IsNullOrEmpty(Model.MedicalHistory))
+                {
+                    <div class="medical-box">
+                        @Model.MedicalHistory
+                    </div>
+                }
+                else
+                {
+                    <span class="empty">Chưa có dữ liệu</span>
+                }
             </div>
+
+            <!-- ACTION -->
+            <div class="card-custom mt-4 text-center">
+                <div class="text-muted mb-3">
+                    Bạn có thể chỉnh sửa hoặc xóa bệnh nhân
+                </div>
+
+                <a asp-action="Delete"
+                   asp-route-id="@Model.PatientId"
+                   class="btn btn-danger"
+                   onclick="return confirm('Bạn có chắc muốn xóa bệnh nhân này?');">
+                    <i class="fas fa-trash"></i> Xóa bệnh nhân
+                </a>
+            </div>
+
         </div>
-    }
 
-    <!-- Note -->
-    <div class="info-section">
-        <p>
-            <strong>Gợi ý:</strong> Bạn có thể chỉnh sửa thông tin bệnh nhân bằng cách nhấp vào nút 
-            "Chỉnh Sửa" ở phía trên hoặc xóa bệnh nhân khỏi hệ thống.
-        </p>
-    </div>
-
-    <!-- Delete -->
-    <div style="text-align:center; margin-top:20px;">
-        <a asp-action="Delete" asp-route-id="@Model.PatientId"
-           class="btn btn-danger"
-           onclick="return confirm('Bạn có chắc muốn xóa bệnh nhân này?');">
-            <i class="fas fa-trash"></i> Xóa Bệnh Nhân
-        </a>
     </div>
 </div>
+
+<style>
+    .page-wrapper {
+        padding: 10px;
+    }
+
+    /* CARD */
+    .card-custom {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    /* TITLE */
+    .card-title {
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #1e293b;
+    }
+
+    /* INFO */
+    .info-item {
+        margin-bottom: 15px;
+    }
+
+        .info-item label {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .info-item div {
+            font-weight: 500;
+        }
+
+    /* AVATAR */
+    .avatar-lg {
+        width: 50px;
+        height: 50px;
+        background: #60a5fa;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    /* BADGE */
+    .badge-soft {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+        .badge-soft.blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .badge-soft.pink {
+            background: #fce7f3;
+            color: #db2777;
+        }
+
+        .badge-soft.gray {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+    /* EMPTY */
+    .empty {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* MEDICAL */
+    .medical-box {
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 10px;
+        white-space: pre-wrap;
+    }
+
+    /* BUTTON */
+    .btn-accent {
+        background: #2dd4bf;
+        color: white;
+        border-radius: 8px;
+    }
+
+        .btn-accent:hover {
+            background: #26c6a8;
+        }
+</style>

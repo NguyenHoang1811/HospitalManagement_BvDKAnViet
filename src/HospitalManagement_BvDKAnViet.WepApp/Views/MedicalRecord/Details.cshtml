@@ -1,0 +1,34 @@
+@model HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.MedicalRecordDto
+@{
+    ViewData["Title"] = "Chi ti?t H? s? Y t?";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-file-medical-alt"></i> @ViewData["Title"]</h2>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.RecordId" class="btn btn-primary">S?a</a>
+            <a asp-action="Index" class="btn btn-secondary">Quay l?i</a>
+        </div>
+    </div>
+
+    <div class="card p-4">
+        <h5>Thông tin c? b?n</h5>
+        <div class="row">
+            <div class="col-md-4"><strong>Mã:</strong> @Model.RecordId</div>
+            <div class="col-md-4"><strong>B?nh nhân:</strong> @(Model.PatientName ?? Model.PatientId.ToString())</div>
+            <div class="col-md-4"><strong>Bác s?:</strong> @(Model.DoctorName ?? Model.DoctorId.ToString())</div>
+        </div>
+        <hr />
+        <h5>Chi ti?t</h5>
+        <div class="mb-3"><strong>Tri?u ch?ng:</strong><div class="p-2 bg-light rounded">@((string.IsNullOrEmpty(Model.Symptoms) ? "-" : Model.Symptoms))</div></div>
+        <div class="mb-3"><strong>Ch?n ?oán:</strong><div class="p-2 bg-light rounded">@((string.IsNullOrEmpty(Model.Diagnosis) ? "-" : Model.Diagnosis))</div></div>
+        <div class="mb-3"><strong>?i?u tr?:</strong><div class="p-2 bg-light rounded">@((string.IsNullOrEmpty(Model.Treatment) ? "-" : Model.Treatment))</div></div>
+        <div class="text-muted">Ngày t?o: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+    </div>
+</div>
+
+<style>
+    .card { background: #FAFAF8; border-radius:12px; box-shadow: 0 8px 16px rgba(0,0,0,0.06), 0 -8px 16px rgba(255,255,255,0.8); }
+    .btn-primary { background: linear-gradient(135deg,#006666,#004d4d); border: none; }
+</style>

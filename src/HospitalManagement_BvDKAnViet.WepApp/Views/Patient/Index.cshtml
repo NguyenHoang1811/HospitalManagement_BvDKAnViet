@@ -1,114 +1,305 @@
 ﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.PatientDto>
 @{
-    ViewData["Title"] = "Danh Sách Bệnh Nhân";
+	ViewData["Title"] = "Danh Sách Bệnh Nhân";
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="mb-0">
-                <i class="fas fa-users"></i> @ViewData["Title"]
-            </h1>
-        </div>
-        <div class="col-md-4 text-end">
-            <a asp-controller="Patient" asp-action="Create" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Thêm Bệnh Nhân
-            </a>
-        </div>
-    </div>
+<div class="page-wrapper">
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+	<!-- HEADER -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div>
+			<h2 class="fw-bold text-dark mb-1">@ViewData["Title"]</h2>
+			<div class="text-muted small">Quản lý thông tin bệnh nhân trong hệ thống</div>
+		</div>
 
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+		<a asp-controller="Patient" asp-action="Create" class="btn btn-accent">
+			<i class="fas fa-plus"></i> Thêm bệnh nhân
+		</a>
+	</div>
 
-    @if (Model.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-hover table-striped">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên Bệnh Nhân</th>
-                        <th>Ngày Sinh</th>
-                        <th>Giới Tính</th>
-                        <th>Số Điện Thoại</th>
-                        <th>Địa Chỉ</th>
-                        <th>Thao Tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var patient in Model)
-                    {
-                        <tr>
-                            <td><strong>@patient.PatientId</strong></td>
-                            <td>@patient.Name</td>
-                            <td>@patient.DateOfBirth.ToString("dd/MM/yyyy")</td>
-                            <td>
-                                @if (patient.Gender == "M")
-                                {
-                                    <span class="badge bg-info">Nam</span>
-                                }
-                                else if (patient.Gender == "F")
-                                {
-                                    <span class="badge bg-warning">Nữ</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Khác</span>
-                                }
-                            </td>
-                            <td>@patient.Phone</td>
-                            <td>@patient.Address</td>
-                            <td>
-                                <a asp-action="Details" asp-route-id="@patient.PatientId" class="btn btn-sm btn-info" title="Xem Chi Tiết">
-                                    <i class="fas fa-eye"></i> Xem
-                                </a>
-                                <a asp-action="Edit" asp-route-id="@patient.PatientId" class="btn btn-sm btn-warning" title="Chỉnh Sửa">
-                                    <i class="fas fa-edit"></i> Sửa
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@patient.PatientId" class="btn btn-sm btn-danger" title="Xóa">
-                                    <i class="fas fa-trash"></i> Xóa
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info text-center" role="alert">
-            <i class="fas fa-info-circle"></i> Không có bệnh nhân nào. 
-            <a asp-action="Create" class="alert-link">Thêm bệnh nhân mới</a>
-        </div>
-    }
+	<!-- ALERT -->
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<div class="alert alert-success shadow-sm">
+			<i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+		</div>
+	}
+
+	@if (TempData["ErrorMessage"] != null)
+	{
+		<div class="alert alert-danger shadow-sm">
+			<i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+		</div>
+	}
+
+	<!-- TABLE CARD -->
+	<div class="card-custom">
+
+		@if (Model.Any())
+		{
+			<div class="table-responsive">
+				<table class="table table-modern align-middle">
+
+					<thead>
+						<tr>
+							<th>STT</th>
+							<th>Mã BN</th>
+							<th>Bệnh nhân</th>
+							<th>Ngày sinh</th>
+							<th>Giới tính</th>
+							<th>Liên hệ</th>
+							<th>Địa chỉ</th>
+							<th class="text-end">Thao tác</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						@{
+							int stt = 1;
+						}
+						@foreach (var patient in Model)
+						{
+							<tr>
+								<!-- STT -->
+								<td>
+									<span class="stt">@stt</span>
+								</td>
+								
+								<!-- MÃ BN -->
+								<td>
+									<span class="patient-code">
+										BN-@patient.PatientId
+									</span>
+								</td>
+			
+								<!-- NAME + AVATAR -->
+								<td>
+									<div class="d-flex align-items-center gap-2">
+										<div class="avatar">
+											@patient.Name.Substring(0, 1)
+										</div>
+										<div>
+											<div class="fw-semibold">@patient.Name</div>
+											<div class="text-muted small">Patient</div>
+										</div>
+									</div>
+								</td>
+
+								<td>@patient.DateOfBirth.ToString("dd/MM/yyyy")</td>
+
+								<!-- GENDER -->
+								<td>
+									@if (patient.Gender == "M")
+									{
+										<span class="badge-soft blue">Nam</span>
+									}
+									else if (patient.Gender == "F")
+									{
+										<span class="badge-soft pink">Nữ</span>
+									}
+									else
+									{
+										<span class="badge-soft gray">Khác</span>
+									}
+								</td>
+
+								<td>
+									<div class="text-dark">@patient.Phone</div>
+								</td>
+
+								<td class="text-muted">@patient.Address</td>
+
+								<!-- ACTION -->
+								<td class="text-end">
+									<a asp-action="Details" asp-route-id="@patient.PatientId"
+									   class="btn-action text-info" title="Xem">
+										<i class="fas fa-eye"></i>
+									</a>
+
+									<a asp-action="Edit" asp-route-id="@patient.PatientId"
+									   class="btn-action text-warning" title="Sửa">
+										<i class="fas fa-edit"></i>
+									</a>
+
+									<button type="button"
+											class="btn-action text-danger"
+											data-bs-toggle="modal"
+											data-bs-target="#deleteModal"
+											data-id="@patient.PatientId">
+										<i class="fas fa-trash"></i>
+									</button>
+								</td>
+							</tr>
+							stt++;
+						}
+					</tbody>
+
+				</table>
+			</div>
+		}
+		else
+		{
+			<div class="text-center p-5 text-muted">
+				<i class="fas fa-user-slash fa-2x mb-3"></i>
+				<div>Không có bệnh nhân nào</div>
+				<a asp-action="Create" class="btn btn-accent mt-3">Thêm bệnh nhân</a>
+			</div>
+		}
+	</div>
 </div>
 
+<!-- DELETE MODAL (GIỮ NGUYÊN LOGIC) -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content modern-modal">
+
+			<div class="modal-body text-center p-4">
+				<div class="mb-3 text-danger fs-2">
+					<i class="fas fa-trash"></i>
+				</div>
+				<h5 class="fw-semibold">Xác nhận xóa</h5>
+				<p class="text-muted">Bạn có chắc chắn muốn xóa bệnh nhân này?</p>
+
+				<form id="deleteForm" method="post">
+					@Html.AntiForgeryToken()
+
+					<button type="submit" class="btn btn-danger px-4">
+						Xóa
+					</button>
+
+					<button type="button" class="btn btn-light px-4 ms-2" data-bs-dismiss="modal">
+						Hủy
+					</button>
+				</form>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<script>
+	var deleteModal = document.getElementById('deleteModal');
+
+	deleteModal.addEventListener('show.bs.modal', function (event) {
+		var button = event.relatedTarget;
+		var patientId = button.getAttribute('data-id');
+
+		var form = document.getElementById('deleteForm');
+		form.action = '/Patient/Delete/' + patientId;
+	});
+</script>
+
 <style>
-    .table-hover tbody tr:hover {
-        background-color: #f5f5f5;
-    }
+	/* LAYOUT */
+	.page-wrapper {
+		padding: 10px;
+	}
 
-    .btn-sm {
-        padding: 0.35rem 0.6rem;
-        font-size: 0.85rem;
-    }
+	/* CARD */
+	.card-custom {
+		background: #fff;
+		border-radius: 14px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+		padding: 10px 0;
+	}
 
-    h1 {
-        color: #333;
-        font-weight: 700;
-    }
+	/* TABLE */
+	.table-modern {
+		margin: 0;
+	}
+
+		.table-modern thead th {
+			font-size: 12px;
+			color: #64748b;
+			text-transform: uppercase;
+			border-bottom: 1px solid #e2e8f0;
+		}
+
+		.table-modern tbody tr {
+			transition: 0.2s;
+		}
+
+			.table-modern tbody tr:hover {
+				background: #f8fafc;
+			}
+
+	/* AVATAR */
+	.avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: #60a5fa;
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+	}
+
+	/* BADGE */
+	.badge-soft {
+		padding: 5px 10px;
+		border-radius: 20px;
+		font-size: 12px;
+	}
+
+		.badge-soft.blue {
+			background: #dbeafe;
+			color: #2563eb;
+		}
+
+		.badge-soft.pink {
+			background: #fce7f3;
+			color: #db2777;
+		}
+
+		.badge-soft.gray {
+			background: #e5e7eb;
+			color: #374151;
+		}
+
+	/* ID */
+	.id-badge {
+		background: #f1f5f9;
+		padding: 4px 8px;
+		border-radius: 6px;
+		font-size: 12px;
+	}
+
+	/* ACTION */
+	.btn-action {
+		margin-left: 6px;
+		font-size: 14px;
+	}
+
+	/* BUTTON */
+	.btn-accent {
+		background: #2dd4bf;
+		color: white;
+		border-radius: 8px;
+	}
+
+		.btn-accent:hover {
+			background: #26c6a8;
+		}
+
+	/* MODAL */
+	.modern-modal {
+		border-radius: 14px;
+		border: none;
+	}
+
+	.stt {
+		font-weight: 600;
+		color: #64748b;
+	}
+
+	.patient-code {
+		background: #e0f2fe;
+		color: #0369a1;
+		padding: 4px 10px;
+		border-radius: 8px;
+		font-size: 12px;
+		font-weight: 600;
+	}
 </style>

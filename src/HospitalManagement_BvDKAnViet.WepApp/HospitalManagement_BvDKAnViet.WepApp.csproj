@@ -16,13 +16,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\HospitalManagement_BvDKAnViet.Api\HospitalManagement_BvDKAnViet.Api.csproj" />
-    <ProjectReference Include="..\HospitalManagement_BvDKAnViet.Core\HospitalManagement_BvDKAnViet.Core.csproj" />
-    <ProjectReference Include="..\HospitalManagement_BvDKAnViet.Data\HospitalManagement_BvDKAnViet.Data.csproj" />
-  </ItemGroup>
-
   <ItemGroup>
     <Folder Include="wwwroot\img\background\" />
   </ItemGroup>
