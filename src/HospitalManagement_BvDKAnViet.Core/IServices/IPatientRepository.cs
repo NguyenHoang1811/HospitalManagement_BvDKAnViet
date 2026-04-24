@@ -1,6 +1,6 @@
 ﻿using HospitalManagement_BvDKAnViet.Core.Entities;
 
-namespace HospitalManagement_BvDKAnViet.Core.IServies
+namespace HospitalManagement_BvDKAnViet.Core.IServices
 {
     public interface IPatientRepository
     {

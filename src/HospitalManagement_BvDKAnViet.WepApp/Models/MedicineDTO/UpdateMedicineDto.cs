@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HospitalManagement_BvDKAnViet.Core.DTOs.MedicineDTO
+namespace HospitalManagement_BvDKAnViet.WepApp.Models.MedicineDTO
 {
     public class UpdateMedicineDto
     {

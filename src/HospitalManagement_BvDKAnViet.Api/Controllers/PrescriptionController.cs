@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using HospitalManagement_BvDKAnViet.Core.DTOs.PrescriptionDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
-using HospitalManagement_BvDKAnViet.Core.IServies;
+using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

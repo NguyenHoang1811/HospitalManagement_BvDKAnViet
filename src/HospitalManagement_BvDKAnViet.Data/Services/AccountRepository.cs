@@ -1,13 +1,11 @@
-using System;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
+﻿using System.Security.Cryptography;
 using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
-using HospitalManagement_BvDKAnViet.Core.IServies;
+using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace HospitalManagement_BvDKAnViet.Data.Sevices
+namespace HospitalManagement_BvDKAnViet.Data.Services
 {
     public class AccountRepository : IAccountRepository
     {

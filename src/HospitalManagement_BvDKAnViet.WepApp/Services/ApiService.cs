@@ -29,6 +29,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Services
         /// </summary>
         public async Task<TResponse?> PostAsync<TRequest, TResponse>(string url, TRequest data)
         {
+            Console.WriteLine("BASE URL: " + _http.BaseAddress);
             using var response = await _http.PostAsJsonAsync(url, data);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<TResponse>();

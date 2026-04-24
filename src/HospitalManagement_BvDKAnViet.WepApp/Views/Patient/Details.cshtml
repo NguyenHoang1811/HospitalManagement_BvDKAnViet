@@ -1,0 +1,159 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.PatientDto
+@{
+    ViewData["Title"] = "Chi Tiết Bệnh Nhân";
+}
+
+<div class="details-container">
+    <!-- Header -->
+    <div class="details-header">
+        <div class="details-title">
+            <i class="fas fa-user-circle"></i>
+            <h1>@ViewData["Title"]</h1>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Edit" asp-route-id="@Model.PatientId" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Chỉnh Sửa
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+    </div>
+
+    <!-- Personal Information Card -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-id-card"></i>
+            <h2>Thông Tin Cá Nhân</h2>
+        </div>
+        <div class="card-body">
+            <div class="detail-row">
+                <div class="detail-field">
+                    <span class="detail-label">Mã Bệnh Nhân</span>
+                    <span class="detail-value">@Model.PatientId</span>
+                </div>
+                <div class="detail-field">
+                    <span class="detail-label">Họ Tên</span>
+                    <span class="detail-value">@Model.Name</span>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-field">
+                    <span class="detail-label">Ngày Sinh</span>
+                    <span class="detail-value">
+                        @if (Model.DateOfBirth != default(DateOnly))
+                        {
+                            <span>@Model.DateOfBirth.ToString("dd/MM/yyyy")</span>
+                            <small style="opacity: 0.6; display: block; margin-top: 4px;">
+                                (Tuổi: @((DateTime.Today.Year - Model.DateOfBirth.Year) - 
+                                (DateTime.Today.DayOfYear < Model.DateOfBirth.DayOfYear ? 1 : 0)))
+                            </small>
+                        }
+                        else
+                        {
+                            <span class="empty">Chưa cập nhật</span>
+                        }
+                    </span>
+                </div>
+
+                <div class="detail-field">
+                    <span class="detail-label">Giới Tính</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        @{
+                            var genderDisplay = Model.Gender?.ToUpper() ?? "UNKNOWN";
+                            var badgeClass = genderDisplay == "M" ? "badge-male" :
+                                             (genderDisplay == "F" ? "badge-female" : "badge-other");
+                            var genderText = genderDisplay == "M" ? "Nam" :
+                                             (genderDisplay == "F" ? "Nữ" : "Khác");
+                        }
+                        <span class="badge @badgeClass">
+                            @if (genderDisplay == "M")
+                            {
+                                <i class="fas fa-mars"></i>
+                            }
+                            else if (genderDisplay == "F")
+                            {
+                                <i class="fas fa-venus"></i>
+                            }
+                            @genderText
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-address-book"></i>
+            <h2>Thông Tin Liên Hệ</h2>
+        </div>
+        <div class="card-body">
+            <div class="detail-row">
+                <div class="detail-field">
+                    <span class="detail-label">Số Điện Thoại</span>
+                    <span class="detail-value">
+                        @if (!string.IsNullOrEmpty(Model.Phone))
+                        {
+                            <a href="tel:@Model.Phone">@Model.Phone</a>
+                        }
+                        else
+                        {
+                            <span class="empty">Chưa cập nhật</span>
+                        }
+                    </span>
+                </div>
+
+                <div class="detail-field">
+                    <span class="detail-label">Địa Chỉ</span>
+                    <span class="detail-value">
+                        @if (!string.IsNullOrEmpty(Model.Address))
+                        {
+                            @Model.Address
+                        }
+                        else
+                        {
+                            <span class="empty">Chưa cập nhật</span>
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical -->
+    @if (!string.IsNullOrEmpty(Model.MedicalHistory))
+    {
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-medical"></i>
+                <h2>Lịch Sử Y Tế</h2>
+            </div>
+            <div class="card-body">
+                <span class="detail-label">Ghi Chú Y Tế</span>
+                <div class="detail-value" style="white-space: pre-wrap;">
+                    @Model.MedicalHistory
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Note -->
+    <div class="info-section">
+        <p>
+            <strong>Gợi ý:</strong> Bạn có thể chỉnh sửa thông tin bệnh nhân bằng cách nhấp vào nút 
+            "Chỉnh Sửa" ở phía trên hoặc xóa bệnh nhân khỏi hệ thống.
+        </p>
+    </div>
+
+    <!-- Delete -->
+    <div style="text-align:center; margin-top:20px;">
+        <a asp-action="Delete" asp-route-id="@Model.PatientId"
+           class="btn btn-danger"
+           onclick="return confirm('Bạn có chắc muốn xóa bệnh nhân này?');">
+            <i class="fas fa-trash"></i> Xóa Bệnh Nhân
+        </a>
+    </div>
+</div>

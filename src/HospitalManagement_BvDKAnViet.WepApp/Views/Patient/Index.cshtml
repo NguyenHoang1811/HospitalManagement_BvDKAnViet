@@ -1,0 +1,114 @@
+﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.PatientDto>
+@{
+    ViewData["Title"] = "Danh Sách Bệnh Nhân";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <i class="fas fa-users"></i> @ViewData["Title"]
+            </h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-controller="Patient" asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Thêm Bệnh Nhân
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên Bệnh Nhân</th>
+                        <th>Ngày Sinh</th>
+                        <th>Giới Tính</th>
+                        <th>Số Điện Thoại</th>
+                        <th>Địa Chỉ</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var patient in Model)
+                    {
+                        <tr>
+                            <td><strong>@patient.PatientId</strong></td>
+                            <td>@patient.Name</td>
+                            <td>@patient.DateOfBirth.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (patient.Gender == "M")
+                                {
+                                    <span class="badge bg-info">Nam</span>
+                                }
+                                else if (patient.Gender == "F")
+                                {
+                                    <span class="badge bg-warning">Nữ</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Khác</span>
+                                }
+                            </td>
+                            <td>@patient.Phone</td>
+                            <td>@patient.Address</td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@patient.PatientId" class="btn btn-sm btn-info" title="Xem Chi Tiết">
+                                    <i class="fas fa-eye"></i> Xem
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@patient.PatientId" class="btn btn-sm btn-warning" title="Chỉnh Sửa">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@patient.PatientId" class="btn btn-sm btn-danger" title="Xóa">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-info-circle"></i> Không có bệnh nhân nào. 
+            <a asp-action="Create" class="alert-link">Thêm bệnh nhân mới</a>
+        </div>
+    }
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .btn-sm {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    h1 {
+        color: #333;
+        font-weight: 700;
+    }
+</style>

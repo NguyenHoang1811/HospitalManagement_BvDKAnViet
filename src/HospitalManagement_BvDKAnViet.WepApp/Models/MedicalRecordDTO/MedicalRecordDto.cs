@@ -1,4 +1,4 @@
-﻿namespace HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO
+﻿namespace HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO
 {
     public class MedicalRecordDto
     {

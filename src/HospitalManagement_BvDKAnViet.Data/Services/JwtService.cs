@@ -4,9 +4,9 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using HospitalManagement_BvDKAnViet.Core.Entities;
-using HospitalManagement_BvDKAnViet.Core.IServies;
+using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Context;
-namespace HospitalManagement_BvDKAnViet.Data.Sevices
+namespace HospitalManagement_BvDKAnViet.Data.Services
 {
     public class JwtService : IJwtService
     {

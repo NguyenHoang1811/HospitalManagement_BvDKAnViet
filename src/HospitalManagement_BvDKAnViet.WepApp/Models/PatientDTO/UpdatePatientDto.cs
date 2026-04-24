@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace HospitalManagement_BvDKAnViet.Core.DTOs.PatientDTO
+namespace HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO
 {
     public class UpdatePatientDto
     {

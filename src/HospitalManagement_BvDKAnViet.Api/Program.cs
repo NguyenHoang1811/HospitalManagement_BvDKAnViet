@@ -1,7 +1,7 @@
-﻿using HospitalManagement_BvDKAnViet.Core.IServies;
+﻿using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Context;
 using HospitalManagement_BvDKAnViet.Data.Repositories;
-using HospitalManagement_BvDKAnViet.Data.Sevices;
+using HospitalManagement_BvDKAnViet.Data.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

@@ -1,4 +1,4 @@
-﻿namespace HospitalManagement_BvDKAnViet.Core.DTOs.PatientDTO
+﻿namespace HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO
 {
     public class PatientDto
     {

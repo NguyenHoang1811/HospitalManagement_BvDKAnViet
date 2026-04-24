@@ -1,45 +1,60 @@
-using System.Net.Http.Headers;
-using HospitalManagement_BvDKAnViet.Data.Context;
 using HospitalManagement_BvDKAnViet.WepApp.Services;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Handlers;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// MVC
+builder.Services.AddControllersWithViews(options =>
+{
+    // Require authenticated user globally
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter(policy));
+});
 
-// Add distributed cache required by session
+// Session + HttpContextAccessor (required by TokenProvider)
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
-
-// Add session and HttpContext accessor
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromHours(1);
 });
-builder.Services.AddHttpContextAccessor();
 
-// Register DI
+// TokenProvider and Auth handler (ensure these classes exist in project)
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 builder.Services.AddTransient<AuthTokenHandler>();
+
+// HttpClient-based API service
+//builder.Services.AddHttpClient<IApiService, ApiService>(client =>
+//{
+//    client.BaseAddress = new Uri(configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7143/");
+//})
+//.AddHttpMessageHandler<AuthTokenHandler>();
 builder.Services.AddHttpClient<IApiService, ApiService>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7143");
-    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-})
-.AddHttpMessageHandler<AuthTokenHandler>();
+    client.BaseAddress = new Uri("https://localhost:7143/");
+});
 
-// Register EF Core DbContext (SQL Server using connection string in appsettings.json)
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Cookie authentication for the frontend (redirects unauthenticated to /Auth/Login)
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.Cookie.Name = "HMAV.Auth";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
 
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -51,9 +66,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Enable session middleware (must be between UseRouting and endpoint middleware)
 app.UseSession();
 
+// Authentication + Authorization middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

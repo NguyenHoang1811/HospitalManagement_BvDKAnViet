@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO
+namespace HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO
 {
     public class CreateAppointmentDto
     {

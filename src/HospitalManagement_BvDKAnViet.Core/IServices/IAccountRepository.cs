@@ -1,7 +1,7 @@
 ﻿using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 
-namespace HospitalManagement_BvDKAnViet.Core.IServies
+namespace HospitalManagement_BvDKAnViet.Core.IServices
 {
     public interface IAccountRepository
     {

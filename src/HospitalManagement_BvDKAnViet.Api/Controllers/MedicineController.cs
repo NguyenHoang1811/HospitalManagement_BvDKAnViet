@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using HospitalManagement_BvDKAnViet.Core.DTOs.MedicineDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
-using HospitalManagement_BvDKAnViet.Core.IServies;
+using HospitalManagement_BvDKAnViet.Core.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagement_BvDKAnViet.Api.Controllers

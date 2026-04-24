@@ -1,4 +1,4 @@
-﻿namespace HospitalManagement_BvDKAnViet.Core.DTOs.PrescriptionDTO
+﻿namespace HospitalManagement_BvDKAnViet.WepApp.Models.PrescriptionDTO
 {
     public class PrescriptionDto
     {

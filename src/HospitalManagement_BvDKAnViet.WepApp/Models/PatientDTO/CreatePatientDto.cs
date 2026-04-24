@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HospitalManagement_BvDKAnViet.Core.DTOs.PatientDTO
+﻿namespace HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO
 {
     public class CreatePatientDto
     {

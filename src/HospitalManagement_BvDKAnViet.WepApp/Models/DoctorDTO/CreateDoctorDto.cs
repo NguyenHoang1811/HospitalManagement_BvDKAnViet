@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HospitalManagement_BvDKAnViet.Core.DTOs.DoctorDTO
+namespace HospitalManagement_BvDKAnViet.WepApp.Models.DoctorDTO
 {
     public class CreateDoctorDto
     {

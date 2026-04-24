@@ -1,0 +1,480 @@
+@model HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.UpdatePatientDto
+@{
+    ViewData["Title"] = "Ch?nh S?a Thông Tin B?nh Nhân";
+}
+
+<style>
+    /* Design Tokens */
+    :root {
+        --color-primary: #006666;
+        --color-secondary: #F1F2F5;
+        --color-success: #00A63D;
+        --color-warning: #FE9900;
+        --color-danger: #FF2157;
+        --color-surface: #E7E5E4;
+        --color-text: #1E2938;
+        --color-bg: #F5F5F5;
+        --color-light: #FAFAF8;
+        
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        
+        --shadow-neumorphism: 
+            0 8px 16px rgba(0, 0, 0, 0.1),
+            0 -8px 16px rgba(255, 255, 255, 0.8),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        
+        --font-family-primary: 'Space Mono', monospace;
+        --transition-base: all 0.2s ease-out;
+    }
+
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: var(--spacing-lg);
+    }
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .form-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--color-text);
+        margin: 0;
+        letter-spacing: 0.5px;
+    }
+
+    .form-header i {
+        font-size: 28px;
+        color: var(--color-primary);
+    }
+
+    .card {
+        background: var(--color-light);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-neumorphism);
+        overflow: hidden;
+        padding: var(--spacing-xl);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--color-text);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group label i {
+        color: var(--color-primary);
+        opacity: 0.7;
+    }
+
+    .form-group label .required {
+        color: var(--color-danger);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        font-family: var(--font-family-primary);
+        font-size: 14px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        background: var(--color-light);
+        color: var(--color-text);
+        box-shadow: 
+            0 4px 8px rgba(0, 0, 0, 0.05),
+            inset 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: var(--transition-base);
+    }
+
+    .form-control::placeholder {
+        color: var(--color-text);
+        opacity: 0.4;
+    }
+
+    .form-control:focus {
+        outline: none;
+        box-shadow: 
+            0 4px 12px rgba(0, 102, 102, 0.15),
+            inset 0 1px 2px rgba(0, 102, 102, 0.1),
+            inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+        border-color: var(--color-primary);
+    }
+
+    .form-control:hover:not(:focus) {
+        box-shadow: 
+            0 6px 12px rgba(0, 0, 0, 0.08),
+            inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control.is-invalid {
+        border-color: var(--color-danger);
+        box-shadow: 
+            0 4px 8px rgba(255, 33, 87, 0.1),
+            inset 0 1px 2px rgba(255, 33, 87, 0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .field-validation-error {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        margin-top: var(--spacing-sm);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-danger);
+        letter-spacing: 0.2px;
+    }
+
+    .field-validation-error i {
+        font-size: 11px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-xl);
+        padding-top: var(--spacing-xl);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .btn {
+        flex: 1;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        border: none;
+        font-family: var(--font-family-primary);
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: var(--transition-base);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        text-decoration: none;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--color-primary) 0%, #004D4D 100%);
+        color: white;
+        box-shadow: 
+            0 8px 16px rgba(0, 102, 102, 0.2),
+            0 -4px 8px rgba(255, 255, 255, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 
+            0 12px 24px rgba(0, 102, 102, 0.25),
+            0 -6px 12px rgba(255, 255, 255, 0.7),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-secondary {
+        background: var(--color-light);
+        color: var(--color-primary);
+        box-shadow: var(--shadow-neumorphism);
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 
+            0 12px 24px rgba(0, 0, 0, 0.1),
+            0 -8px 16px rgba(255, 255, 255, 0.8),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .alert {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-lg);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .alert-danger {
+        background: rgba(255, 33, 87, 0.08);
+        color: var(--color-danger);
+        box-shadow: 
+            0 4px 8px rgba(255, 33, 87, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        border-left: 3px solid var(--color-danger);
+    }
+
+    .alert i {
+        font-size: 14px;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .alert strong {
+        font-weight: 700;
+        display: block;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .alert ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .alert li {
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .form-hint {
+        font-size: 12px;
+        color: var(--color-text);
+        opacity: 0.6;
+        margin-top: var(--spacing-xs);
+    }
+
+    .gender-options {
+        display: flex;
+        gap: var(--spacing-lg);
+        margin-top: var(--spacing-md);
+    }
+
+    .gender-radio {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        cursor: pointer;
+    }
+
+    .gender-radio input[type="radio"] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--color-primary);
+    }
+
+    .gender-radio label {
+        margin: 0;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: normal;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    @@media (max-width: 768px) {
+        .form-container {
+            padding: var(--spacing-md);
+        }
+
+        .form-header h1 {
+            font-size: 22px;
+        }
+
+        .card {
+            padding: var(--spacing-lg);
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <!-- Header -->
+    <div class="form-header">
+        <i class="fas fa-user-edit"></i>
+        <h1>@ViewData["Title"]</h1>
+    </div>
+
+    <!-- Error Alert -->
+    @if (ViewData.ModelState.ErrorCount > 0)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <strong>L?i Xác Th?c</strong>
+                @if (ViewData.ModelState.Values.Any(v => v.Errors.Any()))
+                {
+                    <ul>
+                        @foreach (var value in ViewData.ModelState.Values)
+                        {
+                            @foreach (var error in value.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Form Card -->
+    <div class="card">
+        <form method="post" novalidate>
+            <!-- Name -->
+            <div class="form-group">
+                <label asp-for="Name">
+                    <i class="fas fa-user"></i>
+                    <span>H? Tên</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="text" 
+                       class="form-control @(ViewData.ModelState["Name"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                       asp-for="Name" 
+                       placeholder="Nh?p h? và tên ??y ??"
+                       required>
+                <span asp-validation-for="Name" class="field-validation-error">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                <div class="form-hint">Vui lòng nh?p tên ??y ?? c?a b?nh nhân</div>
+            </div>
+
+            <!-- Date of Birth & Gender -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="DateOfBirth">
+                        <i class="fas fa-birthday-cake"></i>
+                        <span>Ngày Sinh</span>
+                    </label>
+                    <input type="date" 
+                           class="form-control @(ViewData.ModelState["DateOfBirth"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                           asp-for="DateOfBirth">
+                    <span asp-validation-for="DateOfBirth" class="field-validation-error">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-venus-mars"></i>
+                        <span>Gi?i Tính</span>
+                    </label>
+                    <div class="gender-options">
+                        <div class="gender-radio">
+                            <input type="radio" id="genderM" name="Gender" value="M" @(Model?.Gender == "M" ? "checked" : "")>
+                            <label for="genderM">
+                                <i class="fas fa-mars"></i> Nam
+                            </label>
+                        </div>
+                        <div class="gender-radio">
+                            <input type="radio" id="genderF" name="Gender" value="F" @(Model?.Gender == "F" ? "checked" : "")>
+                            <label for="genderF">
+                                <i class="fas fa-venus"></i> N?
+                            </label>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Gender" class="field-validation-error">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Phone & Address -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="Phone">
+                        <i class="fas fa-phone"></i>
+                        <span>S? ?i?n Tho?i</span>
+                    </label>
+                    <input type="tel" 
+                           class="form-control @(ViewData.ModelState["Phone"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                           asp-for="Phone" 
+                           placeholder="Ví d?: 0123456789">
+                    <span asp-validation-for="Phone" class="field-validation-error">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                    <div class="form-hint">S? ?i?n tho?i liên h? c?a b?nh nhân</div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Address">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>??a Ch?</span>
+                    </label>
+                    <input type="text" 
+                           class="form-control @(ViewData.ModelState["Address"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                           asp-for="Address" 
+                           placeholder="Ví d?: S? nhà, ???ng, huy?n, t?nh">
+                    <span asp-validation-for="Address" class="field-validation-error">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Medical History -->
+            <div class="form-group">
+                <label asp-for="MedicalHistory">
+                    <i class="fas fa-file-medical"></i>
+                    <span>L?ch S? Y T?</span>
+                </label>
+                <textarea class="form-control @(ViewData.ModelState["MedicalHistory"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                          asp-for="MedicalHistory" 
+                          placeholder="Nh?p b?t k? thông tin y t? liên quan..."></textarea>
+                <span asp-validation-for="MedicalHistory" class="field-validation-error">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                <div class="form-hint">Ghi chú v? b?nh s?, d? ?ng, ho?c các v?n ?? s?c kh?e khác</div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> L?u Thay ??i
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-times-circle"></i> H?y
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

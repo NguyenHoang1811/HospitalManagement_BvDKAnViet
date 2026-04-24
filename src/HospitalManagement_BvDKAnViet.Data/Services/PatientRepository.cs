@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Data.Context;
-using HospitalManagement_BvDKAnViet.Core.IServies;  
+using HospitalManagement_BvDKAnViet.Core.IServices;  
 
 
 namespace HospitalManagement_BvDKAnViet.Data.Repositories

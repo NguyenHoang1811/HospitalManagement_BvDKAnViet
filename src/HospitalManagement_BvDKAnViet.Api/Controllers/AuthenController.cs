@@ -1,7 +1,7 @@
 ﻿using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
 using HospitalManagement_BvDKAnViet.Core.Enums;
-using HospitalManagement_BvDKAnViet.Core.IServies;
-using HospitalManagement_BvDKAnViet.Data.Sevices;
+using HospitalManagement_BvDKAnViet.Core.IServices;
+using HospitalManagement_BvDKAnViet.Data.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;

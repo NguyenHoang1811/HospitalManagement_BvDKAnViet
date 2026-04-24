@@ -2,7 +2,7 @@
 using HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.Enums;
-using HospitalManagement_BvDKAnViet.Core.IServies;
+using HospitalManagement_BvDKAnViet.Core.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

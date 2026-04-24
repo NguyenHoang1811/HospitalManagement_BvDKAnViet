@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO
+namespace HospitalManagement_BvDKAnViet.WepApp.Models.AccountDTO
 
 {
     public class LoginRequestDto

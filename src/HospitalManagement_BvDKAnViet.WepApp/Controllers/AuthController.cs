@@ -1,7 +1,10 @@
-﻿using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
-using HospitalManagement_BvDKAnViet.WepApp.Services;
+﻿using HospitalManagement_BvDKAnViet.WepApp.Models.AccountDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 
 namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 {
@@ -16,11 +19,11 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             _tokenProvider = tokenProvider;
         }
 
-        // GET: /Auth/Login
+        // Allow anonymous so users can reach the login page
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login()
         {
-            // Redirect to home if already logged in
             var token = _tokenProvider.GetToken();
             if (!string.IsNullOrWhiteSpace(token))
             {
@@ -30,8 +33,9 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             return View();
         }
 
-        // POST: /Auth/Login
+        // Allow anonymous POST
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginRequestDto model)
         {
@@ -42,7 +46,6 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
             try
             {
-                // Call API login endpoint
                 var response = await _apiService.PostAsync<LoginRequestDto, LoginApiResponse>(
                     "api/Authen/Login",
                     model
@@ -50,17 +53,28 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
                 if (response?.ResponseCode == 1 && !string.IsNullOrWhiteSpace(response.token))
                 {
-                    // Store token in session via ITokenProvider
+                    // Persist token via token provider (used by ApiService's AuthTokenHandler)
                     _tokenProvider.SetToken(response.token);
 
                     // Store additional user info in session
                     HttpContext.Session.SetString("Username", response.UserName ?? string.Empty);
                     HttpContext.Session.SetInt32("AccountID", response.AccountID);
 
+                    // Create authentication cookie so ASP.NET Core considers the user authenticated
+                    var claims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.Name, response.UserName ?? string.Empty),
+                            new Claim("AccessToken", response.token)
+                        };
+
+                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var principal = new ClaimsPrincipal(identity);
+
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Login failed
                 ModelState.AddModelError(string.Empty, response?.ResponseMessage ?? "Đăng nhập thất bại");
                 return View(model);
             }
@@ -76,20 +90,19 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             }
         }
 
-        // GET: /Auth/Logout
         [HttpGet]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            // Clear all session data
+            // Clear all session data and token provider
             HttpContext.Session.Clear();
-
-            // Remove token from session
             _tokenProvider.RemoveToken();
+
+            // Sign out cookie authentication
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return RedirectToAction("Login");
         }
 
-        // GET: /Auth/AccessDenied
         [HttpGet]
         public IActionResult AccessDenied()
         {
