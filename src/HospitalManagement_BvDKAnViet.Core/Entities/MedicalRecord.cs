@@ -13,6 +13,10 @@ namespace HospitalManagement_BvDKAnViet.Core.Entities
         public string? Diagnosis { get; set; }
         public string? Treatment { get; set; }
         public DateTime CreatedDate { get; set; }
+        public string? MedicalRecordStatus { get; set; }
+        public string? Attachment { get; set; }
+        public string? Result { get; set; }
+        public string? Note { get; set; }
 
         // Navigation
         public Patient? Patient { get; set; }

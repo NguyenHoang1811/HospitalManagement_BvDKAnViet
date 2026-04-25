@@ -1,6 +1,12 @@
 ﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.PatientDto
 @{
-    ViewData["Title"] = "Chi Tiết Bệnh Nhân";
+    ViewData["Title"] = "Chi tiết bệnh nhân";
+
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Bệnh nhân", "/Patient"),
+        ("Chi tiết", null)
+    };
 }
 
 <div class="page-wrapper">

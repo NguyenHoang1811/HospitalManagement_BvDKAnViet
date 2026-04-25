@@ -18,6 +18,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\img\background\" />
+    <Folder Include="wwwroot\img\doctor\" />
+    <Folder Include="wwwroot\img\attachment\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://www.schemastore.org/artifacthub-repo.json" /></VisualStudio></ProjectExtensions>

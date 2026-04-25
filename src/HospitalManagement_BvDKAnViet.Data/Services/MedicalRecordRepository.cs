@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Context;
@@ -52,7 +52,11 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
             existing.Symptoms = record.Symptoms;
             existing.Diagnosis = record.Diagnosis;
             existing.Treatment = record.Treatment;
-            // preserve CreatedDate
+            existing.MedicalRecordStatus = record.MedicalRecordStatus; // ✅
+            existing.Attachment = record.Attachment;          
+            existing.Result = record.Result;              
+            existing.Note = record.Note;
+            
 
             _db.MedicalRecords.Update(existing);
             await _db.SaveChangesAsync();

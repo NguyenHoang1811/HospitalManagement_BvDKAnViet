@@ -1,59 +1,125 @@
-@model HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.CreateMedicalRecordDto
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.CreateMedicalRecordDto
+
 @{
-    ViewData["Title"] = "T?o H? s? Y t?";
+    ViewData["Title"] = "Tạo hồ sơ y tế";
+    ViewData["Breadcrumb"] = new List<(string Text, string Url)>
+    {
+        ("Bệnh án", "/MedicalRecord"),
+        ("Tạo hồ sơ", null!)  
+    };
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2><i class="fas fa-plus-circle"></i> @ViewData["Title"]</h2>
-        <a asp-action="Index" class="btn btn-secondary">Quay l?i</a>
+<div class="hms-card">
+
+    <!-- HEADER -->
+    <div class="hms-card-header">
+        <div>
+            <div class="panel-title">Tạo hồ sơ y tế</div>
+            <div class="panel-sub">Nhập thông tin bệnh án mới</div>
+        </div>
+
+        <a asp-action="Index" class="btn-view-all">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
     </div>
 
-    <div class="card p-4">
-        <form method="post">
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label asp-for="PatientId">M� b?nh nh�n</label>
-                    <input asp-for="PatientId" class="form-control" />
-                    <span asp-validation-for="PatientId" class="text-danger"></span>
-                </div>
-                <div class="form-group col-md-6">
-                    <label asp-for="DoctorId">M� b�c s?</label>
-                    <input asp-for="DoctorId" class="form-control" />
-                    <span asp-validation-for="DoctorId" class="text-danger"></span>
-                </div>
+    <!-- FORM -->
+    <form method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+
+            <!-- Patient -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="PatientId" class="form-label">Bệnh nhân</label>
+                <select asp-for="PatientId" class="form-select"
+                        asp-items="@(ViewBag.Patients as SelectList ?? new SelectList(Enumerable.Empty<object>()))">
+                    <option value="">-- Chọn bệnh nhân --</option>
+                </select>
+                <span asp-validation-for="PatientId" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="Symptoms">Tri?u ch?ng</label>
+            <!-- Doctor -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="DoctorId" class="form-label">Bác sĩ</label> <!-- FIX -->
+                <select asp-for="DoctorId" class="form-select"
+                        asp-items="@(ViewBag.Doctors as SelectList ?? new SelectList(Enumerable.Empty<object>()))">
+                    <option value="">-- Chọn bác sĩ --</option>
+                </select>
+                <span asp-validation-for="DoctorId" class="text-danger"></span>
+            </div>
+
+            <!-- Symptoms -->
+            <div class="col-md-12 mb-3">
+                <label asp-for="Symptoms" class="form-label">Triệu chứng</label>
                 <textarea asp-for="Symptoms" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Symptoms" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="Diagnosis">Ch?n ?o�n</label>
+            <!-- Diagnosis -->
+            <div class="col-md-12 mb-3">
+                <label asp-for="Diagnosis" class="form-label">Chẩn đoán</label>
                 <textarea asp-for="Diagnosis" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Diagnosis" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="Treatment">?i?u tr?</label>
+            <!-- Treatment -->
+            <div class="col-md-12 mb-3">
+                <label asp-for="Treatment" class="form-label">Điều trị</label>
                 <textarea asp-for="Treatment" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Treatment" class="text-danger"></span>
             </div>
 
-            <div class="mt-3">
-                <button type="submit" class="btn btn-success">T?o</button>
-                <a asp-action="Index" class="btn btn-secondary">H?y</a>
+            <!-- Status -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="MedicalRecordStatus" class="form-label">Trạng thái</label>
+                <select asp-for="MedicalRecordStatus" class="form-select">
+                    <option value="">-- Chọn trạng thái --</option>
+                    <option value="NoiTru">Nội trú</option>
+                    <option value="NgoaiTru">Ngoại trú</option>
+                    <option value="XuatVien">Xuất viện</option>
+                    <option value="CapCuu">Cấp cứu</option>
+                </select>
+                <span asp-validation-for="MedicalRecordStatus" class="text-danger"></span>
+                <span asp-validation-for="MedicalRecordStatus" class="text-danger"></span>
             </div>
-        </form>
-    </div>
-</div>
 
-<style>
-    .card { background: #FAFAF8; border-radius:12px; box-shadow: 0 8px 16px rgba(0,0,0,0.06), 0 -8px 16px rgba(255,255,255,0.8); }
-    .btn-success { background: linear-gradient(135deg,#00A63D,#008C2E); border: none; }
-</style>
+            <!-- Attachment -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="Attachment" class="form-label">Đường dẫn / Tệp đính kèm</label>
+                <input type="file" name="file" class="form-control" />
+                <span asp-validation-for="Attachment" class="text-danger"></span>
+            </div>
+
+            <!-- Result -->
+            <div class="col-md-12 mb-3">
+                <label asp-for="Result" class="form-label">Kết quả</label>
+                <textarea asp-for="Result" class="form-control" rows="3" placeholder="Kết quả khám / xét nghiệm..."></textarea>
+                <span asp-validation-for="Result" class="text-danger"></span>
+            </div>
+
+            <!-- Note -->
+            <div class="col-md-12 mb-3">
+                <label asp-for="Note" class="form-label">Ghi chú</label>
+                <textarea asp-for="Note" class="form-control" rows="2" placeholder="Ghi chú thêm..."></textarea>
+                <span asp-validation-for="Note" class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <!-- ACTION -->
+        <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn-primary-hms">
+                <i class="fas fa-save"></i> Tạo hồ sơ
+            </button>
+
+            <a asp-action="Index" class="btn-view-all">
+                Hủy
+            </a>
+        </div>
+
+    </form>
+</div>
 
 @section Scripts {
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>

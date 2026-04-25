@@ -1,6 +1,12 @@
 ﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.UpdatePatientDto
 @{
     ViewData["Title"] = "Chỉnh Sửa Thông Tin Bệnh Nhân";
+
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Bệnh nhân", "/Patient"),
+        ("Sửa bênh nhân", null)
+    };
 }
 
 <div class="page-wrapper">

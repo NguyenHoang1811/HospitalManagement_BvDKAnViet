@@ -18,5 +18,17 @@ namespace HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO
 
         [StringLength(2000)]
         public string? Treatment { get; set; }
+
+        [StringLength(50)]
+        public string? MedicalRecordStatus { get; set; }
+
+        [StringLength(250)]
+        public string? Attachment { get; set; }
+
+        [StringLength(2000)]
+        public string? Result { get; set; }
+
+        [StringLength(2000)]
+        public string? Note { get; set; }
     }
 }

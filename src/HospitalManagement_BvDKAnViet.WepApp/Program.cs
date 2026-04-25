@@ -28,7 +28,7 @@ builder.Services.AddSession(options =>
 
 // TokenProvider and Auth handler (ensure these classes exist in project)
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
-builder.Services.AddTransient<AuthTokenHandler>();
+builder.Services.AddScoped<AuthTokenHandler>();
 
 // HttpClient-based API service
 builder.Services.AddHttpClient<IApiService, ApiService>(client =>

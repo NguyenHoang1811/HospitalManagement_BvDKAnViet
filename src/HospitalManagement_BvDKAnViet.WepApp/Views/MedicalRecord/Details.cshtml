@@ -1,34 +1,707 @@
-@model HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.MedicalRecordDto
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.MedicalRecordDto
 @{
-    ViewData["Title"] = "Chi ti?t H? s? Y t?";
+    ViewData["Title"] = "Chi tiết hồ sơ y tế";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Bệnh án", "/MedicalRecord"),
+        ("Chi tiết hồ sơ", null)
+    };
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2><i class="fas fa-file-medical-alt"></i> @ViewData["Title"]</h2>
-        <div>
-            <a asp-action="Edit" asp-route-id="@Model.RecordId" class="btn btn-primary">S?a</a>
-            <a asp-action="Index" class="btn btn-secondary">Quay l?i</a>
-        </div>
-    </div>
+<style>
+    /* ── 3-COLUMN RECORD LAYOUT ── */
+    .record-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr 260px;
+        gap: 16px;
+        align-items: start;
+    }
 
-    <div class="card p-4">
-        <h5>Th�ng tin c? b?n</h5>
-        <div class="row">
-            <div class="col-md-4"><strong>M�:</strong> @Model.RecordId</div>
-            <div class="col-md-4"><strong>B?nh nh�n:</strong> @(Model.PatientName ?? Model.PatientId.ToString())</div>
-            <div class="col-md-4"><strong>B�c s?:</strong> @(Model.DoctorName ?? Model.DoctorId.ToString())</div>
-        </div>
-        <hr />
-        <h5>Chi ti?t</h5>
-        <div class="mb-3"><strong>Tri?u ch?ng:</strong><div class="p-2 bg-light rounded">@((string.IsNullOrEmpty(Model.Symptoms) ? "-" : Model.Symptoms))</div></div>
-        <div class="mb-3"><strong>Ch?n ?o�n:</strong><div class="p-2 bg-light rounded">@((string.IsNullOrEmpty(Model.Diagnosis) ? "-" : Model.Diagnosis))</div></div>
-        <div class="mb-3"><strong>?i?u tr?:</strong><div class="p-2 bg-light rounded">@((string.IsNullOrEmpty(Model.Treatment) ? "-" : Model.Treatment))</div></div>
-        <div class="text-muted">Ng�y t?o: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+    /* ── LEFT: Patient Card ── */
+    .patient-sidebar {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e9eef5;
+        overflow: hidden;
+    }
+
+    .patient-sidebar-header {
+        background: linear-gradient(135deg, #0f2744 0%, #1a3a5c 100%);
+        padding: 24px 16px;
+        text-align: center;
+    }
+
+    .patient-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #60a5fa, #2dd4bf);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        border: 3px solid rgba(255,255,255,.2);
+    }
+
+    .patient-name {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .patient-role {
+        color: rgba(255,255,255,.5);
+        font-size: 11px;
+    }
+
+    .patient-view-btn {
+        display: block;
+        margin: 12px 16px 0;
+        padding: 7px;
+        background: rgba(45,212,191,.15);
+        border: 1px solid rgba(45,212,191,.3);
+        border-radius: 7px;
+        color: #2dd4bf;
+        font-size: 12px;
+        font-weight: 500;
+        text-align: center;
+        text-decoration: none;
+        transition: background .15s;
+    }
+
+        .patient-view-btn:hover {
+            background: rgba(45,212,191,.25);
+            color: #2dd4bf;
+        }
+
+    .patient-info-body {
+        padding: 16px;
+    }
+
+    .info-section-label {
+        font-size: 9.5px;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+        margin-bottom: 10px;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 9px;
+    }
+
+        .info-row i {
+            width: 15px;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+    .info-row-val {
+        font-size: 12px;
+        color: #334155;
+        line-height: 1.4;
+    }
+
+        .info-row-val.highlight {
+            color: #0f2744;
+            font-weight: 600;
+        }
+
+    .pt-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 5px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    /* ── CENTER: Record Form ── */
+    .record-main {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e9eef5;
+        overflow: hidden;
+    }
+
+    .record-tabs {
+        display: flex;
+        border-bottom: 1px solid #e9eef5;
+        padding: 0 20px;
+        background: #f8fafc;
+    }
+
+    .record-tab {
+        padding: 12px 16px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #64748b;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        text-decoration: none;
+        transition: color .15s;
+    }
+
+        .record-tab.active {
+            color: #0f2744;
+            border-bottom-color: #2dd4bf;
+            font-weight: 600;
+        }
+
+    .record-actions-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 10px 20px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .btn-rec {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 14px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: opacity .15s;
+    }
+
+        .btn-rec:hover {
+            opacity: .85;
+        }
+
+    .btn-rec-edit {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-rec-drug {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .record-body {
+        padding: 20px 24px;
+    }
+
+    .record-main-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-section {
+        margin-bottom: 20px;
+    }
+
+    .form-section-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .form-row-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .form-field label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+    .field-val {
+        background: #f8fafc;
+        border: 1px solid #e9eef5;
+        border-radius: 7px;
+        padding: 7px 10px;
+        font-size: 12.5px;
+        color: #1e293b;
+        min-height: 34px;
+    }
+
+        .field-val.full-width {
+            width: 100%;
+        }
+
+        .field-val.textarea-style {
+            min-height: 70px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .field-val.empty {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+    .form-field-unit {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .unit-label {
+        font-size: 11px;
+        color: #94a3b8;
+        white-space: nowrap;
+    }
+
+    .record-id-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        border-radius: 5px;
+        padding: 2px 9px;
+        font-size: 11.5px;
+        font-weight: 600;
+    }
+
+    /* ── RIGHT: Status Panel ── */
+    .status-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .status-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e9eef5;
+        overflow: hidden;
+    }
+
+    .status-card-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+    }
+
+    .status-card-body {
+        padding: 14px 16px;
+    }
+
+    .status-select {
+        width: 100%;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 7px 10px;
+        font-size: 12.5px;
+        color: #334155;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+    .status-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .doctor-select {
+        width: 100%;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 7px 10px;
+        font-size: 12.5px;
+        color: #334155;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+    .result-textarea {
+        width: 100%;
+        min-height: 110px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12px;
+        color: #334155;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+        .result-textarea::placeholder {
+            color: #94a3b8;
+        }
+
+    .note-textarea {
+        width: 100%;
+        min-height: 90px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12px;
+        color: #334155;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 10px;
+    }
+
+        .meta-row i {
+            font-size: 10px;
+        }
+
+    /* ── TOP ACTION BAR ── */
+    .page-action-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .page-action-bar-left {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f2744;
+    }
+
+        .page-action-bar-left span {
+            font-size: 13px;
+            font-weight: 400;
+            color: #94a3b8;
+            margin-left: 8px;
+        }
+
+    .page-action-bar-right {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-top {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: opacity .15s;
+    }
+
+        .btn-top:hover {
+            opacity: .85;
+            text-decoration: none;
+        }
+
+    .btn-top-primary {
+        background: #0f2744;
+        color: #fff;
+    }
+
+    .btn-top-teal {
+        background: #2dd4bf;
+        color: #0f2744;
+        font-weight: 600;
+    }
+
+    .btn-top-orange {
+        background: #f97316;
+        color: #fff;
+    }
+
+    .btn-top-outline {
+        background: #fff;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+</style>
+
+<!-- TOP ACTION BAR -->
+<div class="page-action-bar">
+    <div class="page-action-bar-left">
+        Bệnh án 
+    </div>
+    <div class="page-action-bar-right">       
+        <a asp-action="Index" class="btn-top btn-top-outline">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
     </div>
 </div>
 
-<style>
-    .card { background: #FAFAF8; border-radius:12px; box-shadow: 0 8px 16px rgba(0,0,0,0.06), 0 -8px 16px rgba(255,255,255,0.8); }
-    .btn-primary { background: linear-gradient(135deg,#006666,#004d4d); border: none; }
-</style>
+<!-- 3-COLUMN LAYOUT -->
+<div class="record-layout">
+
+    <!-- ══ LEFT: Patient Sidebar ══ -->
+    <div class="patient-sidebar">
+        <div class="patient-sidebar-header">
+            <div class="patient-avatar">
+                @{
+                    var initials = (Model.PatientName ?? "BN").Length >= 2
+                    ? Model.PatientName.Substring(0, 2).ToUpper()
+                    : (Model.PatientName ?? "BN").ToUpper();
+                }
+                @initials
+            </div>
+            <div class="patient-name">@(Model.PatientName ?? "Bệnh nhân")</div>
+            <div class="patient-role">Mã: HS-@Model.RecordId.ToString("D3")</div>
+        </div>
+        <a href="#" class="patient-view-btn">
+            <i class="fas fa-eye"></i> Xem chi tiết
+        </a>
+        <div class="patient-info-body">
+            <div class="info-section-label">Thông tin bệnh nhân</div>
+            <div class="info-row">
+                <i class="fas fa-hashtag"></i>
+                <div class="info-row-val">
+                    <span class="pt-badge">BN-@Model.PatientId</span>
+                </div>
+            </div>
+            <div class="info-row">
+                <i class="fas fa-map-marker-alt"></i>
+                <div class="info-row-val">
+                    @(ViewBag.PatientAddress as string ?? "—")
+                </div>
+            </div>
+            <div class="info-row">
+                <i class="fas fa-birthday-cake"></i>
+                <div class="info-row-val">
+                    @{
+                        string dobStr = "—";
+                        if (ViewBag.PatientDOB != null)
+                        {
+                            try { dobStr = ((DateOnly)ViewBag.PatientDOB).ToString("dd/MM/yyyy"); }
+                            catch { dobStr = ViewBag.PatientDOB.ToString(); }
+                        }
+                    }
+                    @dobStr
+                </div>
+            </div>
+            <div class="info-row">
+                <i class="fas fa-phone"></i>
+                <div class="info-row-val">
+                    @(ViewBag.PatientPhone as string ?? "—")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CENTER: Record Detail ══ -->
+    <div class="record-main">
+        <!-- Tabs -->
+        <div class="record-tabs">
+            <a href="#" class="record-tab active">Bệnh án</a>
+        </div>
+        <!-- Mini actions -->
+        <div class="record-actions-bar">
+            <a asp-action="Edit" asp-route-id="@Model.RecordId" class="btn-rec btn-rec-edit">
+                <i class="fas fa-pen"></i> Sửa
+            </a>
+            <a href="#" class="btn-rec btn-rec-drug">
+                <i class="fas fa-pills"></i> Cho thuốc
+            </a>
+        </div>
+
+        <div class="record-body">
+            <div class="record-main-title">
+                Bệnh án - Bệnh nhân: @(Model.PatientName ?? "Bệnh nhân")
+            </div>
+
+            <!-- I. Hành chính -->
+            <div class="form-section">
+                <div class="form-section-title">I. Hành chính</div>
+                <div class="form-field mb-3">
+                    <label>Tiêu đề</label>
+                    <div class="field-val full-width">
+                        Thăm khám @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss")
+                    </div>
+                </div>
+                <div class="form-row-2 mb-3">
+                    <div class="form-field">
+                        <label>Họ tên</label>
+                        <div class="field-val">
+                            <span class="pt-badge">BN-@Model.PatientId</span>
+                            — @(Model.PatientName ?? "—")
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label>Mã hồ sơ</label>
+                        <div class="field-val">
+                            <span class="record-id-badge">
+                                <i class="fas fa-file-medical"></i>
+                                HS-@Model.RecordId.ToString("D3")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-field">
+                        <label>Ngày tạo</label>
+                        <div class="field-val">@Model.CreatedDate.ToString("dd/MM/yyyy")</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- II. Triệu chứng & Điều trị -->
+            <div class="form-section">
+                <div class="form-section-title">II. Triệu chứng & Điều trị</div>
+                <div class="form-field mb-3">
+                    <label>Triệu chứng</label>
+                    <div class="field-val textarea-style @(string.IsNullOrEmpty(Model.Symptoms) ? "empty" : "")">
+                        @(string.IsNullOrEmpty(Model.Symptoms) ? "Chưa ghi nhận triệu chứng" : Model.Symptoms)
+                    </div>
+                </div>
+                <div class="form-field mb-3">
+                    <label>Chẩn đoán</label>
+                    <div class="field-val textarea-style @(string.IsNullOrEmpty(Model.Diagnosis) ? "empty" : "")">
+                        @(string.IsNullOrEmpty(Model.Diagnosis) ? "Chưa có chẩn đoán" : Model.Diagnosis)
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Điều trị</label>
+                    <div class="field-val textarea-style @(string.IsNullOrEmpty(Model.Treatment) ? "empty" : "")">
+                        @(string.IsNullOrEmpty(Model.Treatment) ? "Chưa có phác đồ điều trị" : Model.Treatment)
+                    </div>
+                </div>
+            </div>
+            <!-- III. Tệp đính kèm -->
+            <div class="form-section">
+                <div class="form-section-title">III. Tệp đính kèm</div>
+
+                @if (!string.IsNullOrEmpty(Model.Attachment))
+                {
+                    <div class="form-field">
+                        <label>File đính kèm</label>
+
+                        <div class="field-val full-width">
+                            <a href="@Model.Attachment" target="_blank" class="btn-rec btn-rec-edit">
+                                <i class="fas fa-paperclip"></i> Xem file
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Preview nếu là ảnh -->
+                    @if (Model.Attachment.EndsWith(".jpg")
+                                    || Model.Attachment.EndsWith(".jpeg")
+                                    || Model.Attachment.EndsWith(".png")
+                                    || Model.Attachment.EndsWith(".gif"))
+                    {
+                        <div class="form-field mt-2">
+                            <label>Xem trước</label>
+
+                            <div class="field-val full-width" style="background:#fff">
+                                <img src="@Model.Attachment"
+                                     style="max-width:100%; max-height:300px; border-radius:8px; border:1px solid #e2e8f0;" />
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="field-val empty">
+                        Không có tệp đính kèm
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ RIGHT: Status Panel ══ -->
+    <div class="status-panel">
+
+        <!-- Trạng thái bệnh án -->
+        <div class="status-card">
+            <div class="status-card-header">Trạng thái bệnh án</div>
+            <div class="status-card-body">
+                <div class="field-val">@(Model.MedicalRecordStatus ?? "—")</div>
+                <div class="meta-row">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bác sĩ hội chuẩn -->
+        <div class="status-card">
+            <div class="status-card-header">Bác sĩ hội chuẩn</div>
+            <div class="status-card-body">
+                <div class="field-val">@(Model.DoctorName ?? "—")</div>
+            </div>
+        </div>
+
+        <!-- Kết quả -->
+        <div class="status-card">
+            <div class="status-card-header">Kết quả</div>
+            <div class="status-card-body">
+                <textarea class="result-textarea"
+                          placeholder="Nhập kết quả điều trị…">@(Model.Result)</textarea>
+            </div>
+        </div>
+
+        <!-- Ghi chú -->
+        <div class="status-card">
+            <div class="status-card-header">Ghi chú</div>
+            <div class="status-card-body">
+                <textarea class="note-textarea"
+                          placeholder="Ghi chú thêm…">@(Model.Note)</textarea>
+            </div>
+        </div>
+
+    </div>
+</div>

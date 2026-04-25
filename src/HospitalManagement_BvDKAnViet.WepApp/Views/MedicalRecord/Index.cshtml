@@ -1,98 +1,269 @@
 ﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.MedicalRecordDto>
+
 @{
-	ViewData["Title"] = "Danh sách Hồ sơ Y tế";
+	ViewData["Title"] = "Danh sách hồ sơ y tế";
+
+	ViewData["Breadcrumb"] = new List<(string, string)>
+	{
+		("Bệnh án", "/MedicalRecord"),
+		("Danh sách hồ sơ", null)
+	};
 }
 
-<div class="container mt-4">
-	<div class="d-flex justify-content-between align-items-center mb-3">
-		<h2><i class="fas fa-notes-medical"></i> @ViewData["Title"]</h2>
-		<a asp-action="Create" class="btn btn-primary">
-			<i class="fas fa-plus"></i> Thêm Hồ Sơ
+<div class="page-wrapper">
+
+	<!-- HEADER -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div>
+			<h2 class="fw-bold text-dark mb-1">@ViewData["Title"]</h2>
+			<div class="text-muted small">Quản lý thông tin bệnh án trong hệ thống</div>
+		</div>
+
+		<a asp-action="Create" class="btn btn-accent">
+			<i class="fas fa-file-medical"></i> Thêm hồ sơ
 		</a>
 	</div>
 
+	<!-- ALERT -->
 	@if (TempData["SuccessMessage"] != null)
 	{
-		<div class="alert alert-success">@TempData["SuccessMessage"]</div>
+		<div class="alert alert-success shadow-sm">
+			<i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+		</div>
 	}
+
 	@if (TempData["ErrorMessage"] != null)
 	{
-		<div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+		<div class="alert alert-danger shadow-sm">
+			<i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+		</div>
 	}
 
-	<div class="card p-3">
-		<div class="table-responsive">
-			<table class="table table-hover">
-				<thead class="table-light">
-					<tr>
-						<th>Mã</th>
-						<th>Bệnh Nhân</th>
-						<th>Bác Sĩ</th>
-						<th>Chẩn đoán</th>
-						<th>Ngày Tạo</th>
-						<th>Hành động</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var r in Model ?? Enumerable.Empty<HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.MedicalRecordDto>())
-					{
+	<!-- CARD -->
+	<div class="card-custom">
+
+		@if (Model.Any())
+		{
+			<div class="table-responsive">
+				<table class="table table-modern align-middle">
+
+					<thead>
 						<tr>
-							<td>@r.RecordId</td>
-							<td>@(string.IsNullOrEmpty(r.PatientName) ? r.PatientId.ToString() : r.PatientName)</td>
-							<td>@(string.IsNullOrEmpty(r.DoctorName) ? r.DoctorId.ToString() : r.DoctorName)</td>
-							<td>@(string.IsNullOrEmpty(r.Diagnosis) ? "-" : r.Diagnosis.Length > 60 ? r.Diagnosis.Substring(0, 60) + "..." : r.Diagnosis)</td>
-							<td>@r.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
-							<td>
-								<a asp-action="Details" asp-route-id="@r.RecordId" class="btn btn-sm btn-info">Xem</a>
-								<a asp-action="Edit" asp-route-id="@r.RecordId" class="btn btn-sm btn-warning">Sửa</a>
-								<button type="button"
-										class="btn btn-sm btn-danger"
-										data-bs-toggle="modal"
-										data-bs-target="#deleteModal"
-										data-id="@r.RecordId">
-									Xóa
-								</button>
-							</td>
+							<th>STT</th>
+							<th>Mã HS</th>
+							<th>Bệnh nhân</th>
+							<th>Bác sĩ</th>
+							<th>Chẩn đoán</th>
+							<th>Ngày tạo</th>
+							<th class="text-end">Thao tác</th>
 						</tr>
-					}
-				</tbody>
-			</table>
-			<div class="modal fade" id="deleteModal" tabindex="-1">
-				<div class="modal-dialog modal-dialog-centered">
-					<div class="modal-content shadow-lg">
+					</thead>
 
-						<div class="modal-header bg-danger text-white">
-							<h5 class="modal-title">
-								<i class="fas fa-exclamation-triangle"></i> Xác nhận xóa
-							</h5>
-							<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-						</div>
+					<tbody>
+						@{
+							int stt = 1;
+						}
+						@foreach (var r in Model)
+						{
+							<tr>
+								<!-- STT -->
+								<td><span class="stt">@stt</span></td>
 
-						<div class="modal-body text-center">
-							<p class="fs-5 mb-0">
-								Bạn có chắc chắn muốn <strong>xóa hồ sơ này</strong>?
-							</p>
-						</div>
+								<!-- MÃ HS -->
+								<td>
+									<span class="patient-code">
+										HS-@r.RecordId.ToString("D3")
+									</span>
+								</td>
 
-						<div class="modal-footer justify-content-center">
-							<form id="deleteForm" method="post">
-								@Html.AntiForgeryToken()
-								<button type="submit" class="btn btn-danger px-4">
-									<i class="fas fa-trash"></i> Xóa
-								</button>
-							</form>
+								<!-- PATIENT -->
+								<td>
+									<div class="d-flex align-items-center gap-2">
+										<div class="avatar">
+											@(string.IsNullOrEmpty(r.PatientName) ? "BN" : r.PatientName.Substring(0, 1))
+										</div>
+										<div>
+											<div class="fw-semibold">
+												@(string.IsNullOrEmpty(r.PatientName) ? r.PatientId.ToString() : r.PatientName)
+											</div>
+											<div class="text-muted small">Patient</div>
+										</div>
+									</div>
+								</td>
 
-							<button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-								Hủy
-							</button>
-						</div>
+								<!-- DOCTOR -->
+								<td>
+									@(string.IsNullOrEmpty(r.DoctorName) ? r.DoctorId.ToString() : r.DoctorName)
+								</td>
 
-					</div>
-				</div>
+								<!-- DIAGNOSIS -->
+								<td class="text-muted">
+									@(string.IsNullOrEmpty(r.Diagnosis)
+																? "-"
+																: r.Diagnosis.Length > 50
+																? r.Diagnosis.Substring(0, 50) + "..."
+																: r.Diagnosis)
+						</td>
+
+								<!-- DATE -->
+								<td>
+									@r.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+								</td>
+
+								<!-- ACTION -->
+								<td class="text-end">
+									<a asp-action="Details" asp-route-id="@r.RecordId"
+									   class="btn-action text-info" title="Xem">
+										<i class="fas fa-eye"></i>
+									</a>
+
+									<a asp-action="Edit" asp-route-id="@r.RecordId"
+									   class="btn-action text-warning" title="Sửa">
+										<i class="fas fa-edit"></i>
+									</a>
+
+									<button type="button"
+											class="btn-action text-danger"
+											data-bs-toggle="modal"
+											data-bs-target="#deleteModal"
+											data-id="@r.RecordId">
+										<i class="fas fa-trash"></i>
+									</button>
+								</td>
+							</tr>
+										stt++;
+						}
+					</tbody>
+
+				</table>
 			</div>
+		}
+		else
+		{
+			<div class="text-center p-5 text-muted">
+				<i class="fas fa-file-medical-alt fa-2x mb-3"></i>
+				<div>Không có hồ sơ nào</div>
+				<a asp-action="Create" class="btn btn-accent mt-3">Thêm hồ sơ</a>
+			</div>
+		}
+	</div>
+</div>
+
+<!-- DELETE MODAL (GIỮ NGUYÊN LOGIC) -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content modern-modal">
+
+			<div class="modal-body text-center p-4">
+				<div class="mb-3 text-danger fs-2">
+					<i class="fas fa-trash"></i>
+				</div>
+				<h5 class="fw-semibold">Xác nhận xóa</h5>
+				<p class="text-muted">Bạn có chắc chắn muốn xóa hồ sơ này?</p>
+
+				<form id="deleteForm" method="post">
+					@Html.AntiForgeryToken()
+
+					<button type="submit" class="btn btn-danger px-4">
+						Xóa
+					</button>
+
+					<button type="button" class="btn btn-light px-4 ms-2" data-bs-dismiss="modal">
+						Hủy
+					</button>
+				</form>
+			</div>
+
 		</div>
 	</div>
 </div>
+
+<style>
+	/* LAYOUT */
+	.page-wrapper {
+		padding: 10px;
+	}
+
+	/* CARD */
+	.card-custom {
+		background: #fff;
+		border-radius: 14px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+		padding: 10px 0;
+	}
+
+	/* TABLE */
+	.table-modern {
+		margin: 0;
+	}
+
+		.table-modern thead th {
+			font-size: 12px;
+			color: #64748b;
+			text-transform: uppercase;
+			border-bottom: 1px solid #e2e8f0;
+		}
+
+		.table-modern tbody tr:hover {
+			background: #f8fafc;
+		}
+
+	/* AVATAR */
+	.avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: #60a5fa;
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+	}
+
+	/* BADGE */
+	.patient-code {
+		background: #e0f2fe;
+		color: #0369a1;
+		padding: 4px 10px;
+		border-radius: 8px;
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	/* ACTION */
+	.btn-action {
+		margin-left: 6px;
+		font-size: 14px;
+	}
+
+	/* ⭐ QUAN TRỌNG: BUTTON ACCENT */
+	.btn-accent {
+		background: #2dd4bf;
+		color: white;
+		border-radius: 8px;
+		border: none;
+		padding: 8px 14px;
+		font-weight: 500;
+		transition: 0.2s;
+	}
+
+		.btn-accent:hover {
+			background: #26c6a8;
+			color: white;
+		}
+
+	/* MODAL */
+	.modern-modal {
+		border-radius: 14px;
+		border: none;
+	}
+
+	.stt {
+		font-weight: 600;
+		color: #64748b;
+	}
+</style>
 
 <script>
 	var deleteModal = document.getElementById('deleteModal');
@@ -105,34 +276,3 @@
 		form.action = '/MedicalRecord/Delete/' + recordId;
 	});
 </script>
-
-<style>
-	.card {
-		background: #FAFAF8;
-		border-radius: 12px;
-		box-shadow: 0 8px 16px rgba(0,0,0,0.06), 0 -8px 16px rgba(255,255,255,0.8);
-	}
-
-	.btn-primary {
-		background: linear-gradient(135deg,#006666,#004d4d);
-		border: none;
-	}
-
-	.btn-sm {
-		margin-right: 6px;
-	}
-
-	.modal-content {
-		border-radius: 12px;
-	}
-
-	.modal-header {
-		border-top-left-radius: 12px;
-		border-top-right-radius: 12px;
-	}
-
-	.modal-body {
-		font-size: 16px;
-		color: #444;
-	}
-</style>

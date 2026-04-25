@@ -1,6 +1,12 @@
 ﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.CreatePatientDto
 @{
-    ViewData["Title"] = "Thêm Bệnh Nhân Mới";
+    ViewData["Title"] = "Thêm bệnh nhân";
+
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Bệnh nhân", "/Patient"),
+        ("Thêm bệnh nhân", null)
+    };
 }
 
 <div class="page-wrapper">
