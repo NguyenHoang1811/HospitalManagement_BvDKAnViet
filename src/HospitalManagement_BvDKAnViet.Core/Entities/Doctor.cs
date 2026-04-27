@@ -8,6 +8,7 @@ namespace HospitalManagement_BvDKAnViet.Core.Entities
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public int? DepartmentId { get; set; }
+        public string? DoctorImage { get; set; }
 
         // Navigation
         public Department? Department { get; set; }

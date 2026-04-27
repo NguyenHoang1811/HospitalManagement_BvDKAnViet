@@ -11,11 +11,16 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
     public class PatientController : ControllerBase
     {
         private readonly IPatientRepository _patientRepository;
+        private readonly IMedicalRecordRepository _medicalRecordRepository;
         private readonly IMapper _mapper;
 
-        public PatientController(IPatientRepository patientRepository, IMapper mapper)
+        public PatientController(
+        IPatientRepository patientRepository,
+        IMedicalRecordRepository medicalRecordRepository,
+        IMapper mapper)
         {
             _patientRepository = patientRepository;
+            _medicalRecordRepository = medicalRecordRepository;
             _mapper = mapper;
         }
 
@@ -76,9 +81,14 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var hasRecord = await _medicalRecordRepository.HasAnyByPatientIdAsync(id);
+            if (hasRecord)
+            {
+                return BadRequest("Bệnh nhân đã có bệnh án, không thể xoá");
+            }
+
             var deleted = await _patientRepository.DeleteAsync(id);
             if (!deleted) return NotFound();
-
             return NoContent();
         }
     }

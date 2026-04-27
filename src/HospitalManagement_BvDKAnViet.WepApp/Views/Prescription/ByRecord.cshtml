@@ -1,0 +1,230 @@
+﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.PrescriptionDTO.PrescriptionDto>
+@{
+	ViewData["Title"] = "Đơn thuốc";
+	int recordId = ViewBag.RecordId;
+	ViewData["Breadcrumb"] = new List<(string Text, string Url)>
+	{
+		("Bệnh án", "/MedicalRecord"),
+		("Chi tiết", $"/MedicalRecord/Details/{recordId}"),
+		("Đơn thuốc", null!)
+	};
+}
+
+<div class="hms-card">
+	<!-- HEADER -->
+	<div class="hms-card-header">
+		<div>
+			<div class="panel-title">
+				<i class="fas fa-pills me-2"></i> Đơn thuốc — Hồ sơ HS-@recordId.ToString("D3")
+			</div>
+			<div class="panel-sub">Quản lý đơn thuốc cho bệnh án này</div>
+		</div>
+		<a asp-action="Details" asp-controller="MedicalRecord"
+		   asp-route-id="@recordId" class="btn-view-all">
+			<i class="fas fa-arrow-left"></i> Quay lại
+		</a>
+	</div>
+
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<div class="alert alert-success mx-3 mt-3">
+			<i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+		</div>
+	}
+	@if (TempData["ErrorMessage"] != null)
+	{
+		<div class="alert alert-danger mx-3 mt-3">
+			<i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+		</div>
+	}
+
+	<!-- DANH SÁCH ĐƠN THUỐC -->
+	<div class="mb-4">
+		@if (Model.Any())
+		{
+			<table class="table table-hover align-middle">
+				<thead>
+					<tr>
+						<th>Thuốc</th>
+						<th>Liều dùng</th>
+						<th>Hướng dẫn</th>
+						<th class="text-end">Thao tác</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var p in Model)
+					{
+						<tr>
+							<td><strong>@(p.MedicineName ?? $"Medicine #{p.MedicineId}")</strong></td>
+							<td>@(p.Dosage ?? "—")</td>
+							<td>@(p.Instructions ?? "—")</td>
+							<td class="text-end">
+								<!-- Edit button → mở modal -->
+								<button class="btn btn-sm btn-warning btn-edit-prescription"
+										data-id="@p.PrescriptionId"
+										data-recordid="@p.RecordId"
+										data-medicineid="@p.MedicineId"
+										data-dosage="@p.Dosage"
+										data-instructions="@p.Instructions">
+									<i class="fas fa-edit"></i>
+								</button>
+
+								<!-- Delete -->
+								<form method="post" asp-action="Delete"
+									  asp-controller="Prescription"
+									  style="display:inline">
+									@Html.AntiForgeryToken()
+									<input type="hidden" name="id" value="@p.PrescriptionId" />
+									<input type="hidden" name="recordId" value="@p.RecordId" />
+									<button type="submit" class="btn btn-sm btn-danger"
+											onclick="return confirm('Xóa đơn thuốc này?')">
+										<i class="fas fa-trash"></i>
+									</button>
+								</form>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+		else
+		{
+			<div class="text-center text-muted py-4">
+				<i class="fas fa-pills fa-2x mb-2"></i>
+				<div>Chưa có đơn thuốc nào</div>
+			</div>
+		}
+	</div>
+
+	<!-- FORM THÊM MỚI -->
+	<div class="border-top pt-3">
+		<div class="panel-title mb-3">
+			<i class="fas fa-plus-circle me-1"></i> Thêm đơn thuốc
+		</div>
+		<form method="post" asp-action="Create" asp-controller="Prescription" novalidate>
+			@Html.AntiForgeryToken()
+			<input type="hidden" name="RecordId" value="@recordId" />
+
+			<div class="row g-3">
+				<div class="col-md-4">
+					<label class="form-label">Thuốc *</label>
+					<select name="MedicineId" id="medicineSelect" class="form-select"
+							asp-items="@(ViewBag.Medicines as SelectList ?? new SelectList(Enumerable.Empty<object>()))">
+						<option value="">-- Chọn thuốc --</option>
+					</select>
+				</div>
+				<div class="col-md-3">
+					<label class="form-label">Liều dùng</label>
+					<input type="text" name="Dosage" class="form-control"
+						   placeholder="VD: 1 viên x 2 lần/ngày" />
+				</div>
+				<div class="col-md-4">
+					<label class="form-label">Hướng dẫn</label>
+					<input type="text" name="Instructions" class="form-control"
+						   placeholder="VD: Uống sau ăn" />
+				</div>
+				<div class="col-md-1 d-flex align-items-end justify-content-center">
+					<button type="submit" class="btn-primary-hms w-100">
+						<i class="fas fa-plus"></i>
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal fade" id="editModal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content" style="border-radius:14px; border:none;">
+			<div class="modal-header border-0">
+				<h6 class="modal-title fw-bold">Chỉnh sửa đơn thuốc</h6>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<form method="post" asp-action="Edit" asp-controller="Prescription">
+				@Html.AntiForgeryToken()
+				<input type="hidden" id="edit-id" name="id" />
+				<div class="modal-body">
+					<input type="hidden" id="edit-recordid" name="RecordId" />
+
+					<div class="mb-3">
+						<label class="form-label">Thuốc *</label>
+						<select id="edit-medicineid" name="MedicineId" class="form-select"
+								asp-items="@(ViewBag.Medicines as SelectList ?? new SelectList(Enumerable.Empty<object>()))">
+							<option value="">-- Chọn thuốc --</option>
+						</select>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Liều dùng</label>
+						<input type="text" id="edit-dosage" name="Dosage"
+							   class="form-control" />
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Hướng dẫn</label>
+						<textarea id="edit-instructions" name="Instructions"
+								  class="form-control" rows="3"></textarea>
+					</div>
+				</div>
+				<div class="modal-footer border-0">
+					<button type="button" class="btn btn-light"
+							data-bs-dismiss="modal">
+						Hủy
+					</button>
+					<button type="submit" class="btn-primary-hms">
+						<i class="fas fa-save"></i> Lưu 
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+
+@section Scripts {
+
+	
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+	
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+	<script>
+		// Init Select2
+		$(document).ready(function () {
+			$('#medicineSelect').select2({
+				placeholder: "Tìm thuốc...",
+				allowClear: true,
+				width: '100%'
+			});
+		});
+
+		// Modal edit
+		document.querySelectorAll('.btn-edit-prescription').forEach(function(btn) {
+			btn.addEventListener('click', function() {
+				document.getElementById('edit-id').value = this.dataset.id;
+				document.getElementById('edit-recordid').value = this.dataset.recordid;
+				document.getElementById('edit-medicineid').value = this.dataset.medicineid;
+				document.getElementById('edit-dosage').value = this.dataset.dosage || '';
+				document.getElementById('edit-instructions').value = this.dataset.instructions || '';
+
+				var form = document.querySelector('#editModal form');
+				form.action = '/Prescription/Edit/' + this.dataset.id;
+
+				new bootstrap.Modal(document.getElementById('editModal')).show();
+			});
+		});
+	</script>
+}
+
+
+<style>
+	.btn-primary-hms {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 33px; /* match form-control */
+		padding: 0;
+	}
+</style>

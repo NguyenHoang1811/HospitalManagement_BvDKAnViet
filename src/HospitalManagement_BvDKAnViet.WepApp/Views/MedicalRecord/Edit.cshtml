@@ -1,6 +1,6 @@
 ﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.UpdateMedicalRecordDto
 @{
-    ViewData["Title"] = "Tạo hồ sơ y tế";
+    ViewData["Title"] = "Sửa hồ sơ y tế";
 
     ViewData["Breadcrumb"] = new List<(string Text, string Url)>
     {
@@ -35,7 +35,7 @@
             <!-- Patient -->
             <div class="col-md-6">
                 <label asp-for="PatientId" class="form-label">Bệnh nhân</label>
-                <select asp-for="PatientId" class="form-control" asp-items="ViewBag.Patients">
+                <select asp-for="PatientId" id="patientSelect" class="form-select" asp-items="ViewBag.Patients">
                     <option value="">-- Chọn bệnh nhân --</option>
                 </select>
                 <span asp-validation-for="PatientId" class="text-danger"></span>
@@ -44,7 +44,7 @@
             <!-- Doctor -->
             <div class="col-md-6">
                 <label asp-for="DoctorId" class="form-label">Bác sĩ</label>
-                <select asp-for="DoctorId" class="form-control" asp-items="ViewBag.Doctors">
+                <select asp-for="DoctorId" id="doctorSelect" class="form-select" asp-items="ViewBag.Doctors">
                     <option value="">-- Chọn bác sĩ --</option>
                 </select>
                 <span asp-validation-for="DoctorId" class="text-danger"></span>
@@ -71,10 +71,9 @@
                 <span asp-validation-for="Treatment" class="text-danger"></span>
             </div>
 
-            <!-- MedicalRecordStatus -->
+            <!-- MedicalRecordStatus + Attachment cùng hàng -->
             <div class="col-md-6">
                 <label asp-for="MedicalRecordStatus" class="form-label">Trạng thái</label>
-
                 <div class="d-flex flex-column justify-content-between h-100">
                     <select asp-for="MedicalRecordStatus" class="form-select">
                         <option value="">-- Chọn trạng thái --</option>
@@ -83,33 +82,40 @@
                         <option value="XuatVien">Xuất viện</option>
                         <option value="CapCuu">Cấp cứu</option>
                     </select>
-
                     <span asp-validation-for="MedicalRecordStatus" class="text-danger"></span>
                 </div>
             </div>
 
-            <!-- Attachment -->
             <div class="col-md-6">
                 <label asp-for="Attachment" class="form-label">Tệp đính kèm</label>
+                <input type="file" name="file" class="form-control mb-2" />
 
-                <div class="d-flex flex-column gap-2">
-
-                    <!-- dòng 1: nút xem file -->
-                    @if (!string.IsNullOrEmpty(Model.Attachment))
-                    {
-                        <a href="~/@Model.Attachment" target="_blank"
-                           class="btn btn-sm btn-outline-secondary">
+                @if (!string.IsNullOrEmpty(Model.Attachment))
+                {
+                    <div id="currentFileSection" class="d-flex align-items-center gap-2 mb-2">
+                        <!-- ✅ Dùng Url.Content() để resolve đúng đường dẫn -->
+                        <a href="@Url.Content(Model.Attachment)" target="_blank" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-file"></i> Xem file
                         </a>
-                    }
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                onclick="removeAttachment(event)">
+                            <i class="fas fa-trash"></i> Xoá
+                        </button>
+                    </div>
+                }
 
-                    <!-- dòng 2: input file -->
-                    <input type="file" name="file" class="form-control" />
-
-                    <input type="hidden" asp-for="Attachment" />
-                </div>
-
+                
+                <input type="hidden" asp-for="Attachment" />
+                <input type="hidden" id="flagRemoveAttachment" name="RemoveAttachment" value="false" />
                 <span asp-validation-for="Attachment" class="text-danger"></span>
+            </div>
+
+            <!-- ✅ Alert đặt NGOÀI, chiếm full row bên dưới, không chen vào giữa 2 col -->
+            <div class="col-12" id="removeNotice" style="display:none;">
+                <div class="alert alert-warning py-2">
+                    <i class="fas fa-info-circle"></i>
+                    File sẽ bị xoá sau khi bấm <b>Lưu thay đổi</b>
+                </div>
             </div>
 
             <!-- Result -->
@@ -143,6 +149,62 @@
 </div>
 
 @section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script> -->
+
+    <script>
+        $(document).ready(function () {
+
+            $('#patientSelect').select2({
+                placeholder: "Tìm bệnh nhân...",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#doctorSelect').select2({
+                placeholder: "Tìm bác sĩ...",
+                allowClear: true,
+                width: '100%'
+            });
+
+        });
+    </script>
+
+    <script>
+        function removeAttachment(e) {
+            if (confirm("Bạn có chắc muốn xoá file này không?")) {
+                document.getElementById("flagRemoveAttachment").value = "true";
+
+                // ❌ Bỏ dòng này - để controller đọc được đường dẫn file cũ
+                // document.querySelector('[name="Attachment"]').value = "";
+
+                document.getElementById("currentFileSection").style.display = "none";
+                document.getElementById("removeNotice").style.display = "block";
+            }
+        }
+    </script>
 }
+    
+
+<style>
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        border-radius: 6px;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .select2-selection__rendered {
+        line-height: normal !important;
+        padding-left: 0 !important;
+    }
+
+    .select2-selection__arrow {
+        height: 100% !important;
+        top: 0 !important;
+    }
+</style>

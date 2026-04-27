@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.IServices;
@@ -60,8 +60,18 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (!patientExists || !doctorExists)
                 return BadRequest("Patient or Doctor not found");
 
+            // 🚨 CHECK BỆNH ÁN ĐANG MỞ
+            var active = await _medicalRecordRepository
+                .GetActiveByPatientIdAsync(dto.PatientId);
+
+            if (active != null)
+            {
+                return BadRequest("Bệnh nhân đang có bệnh án chưa xuất viện");
+            }
+
             var record = _mapper.Map<MedicalRecord>(dto);
             var created = await _medicalRecordRepository.AddAsync(record);
+
             var result = _mapper.Map<MedicalRecordDto>(created);
 
             return CreatedAtAction(nameof(GetById), new { id = created.RecordId }, result);
@@ -75,6 +85,12 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
 
             var existing = await _medicalRecordRepository.GetByIdAsync(id);
             if (existing is null) return NotFound();
+
+            // 🚨 KHÔNG CHO SỬA nếu đã xuất viện
+            if (existing.MedicalRecordStatus == "XuatVien")
+            {
+                return BadRequest("Không thể sửa bệnh án đã xuất viện");
+            }
 
             var patientExists = await _patientRepository.GetByIdAsync(dto.PatientId) != null;
             var doctorExists = await _doctorRepository.GetByIdAsync(dto.DoctorId) != null;
@@ -94,7 +110,16 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var deleted = await _medicalRecordRepository.DeleteAsync(id); // will fix below
+            var record = await _medicalRecordRepository.GetByIdAsync(id);
+            if (record == null) return NotFound();
+
+            // 🚨 KHÔNG CHO XOÁ nếu đã xuất viện
+            if (record.MedicalRecordStatus == "XuatVien")
+            {
+                return BadRequest("Không thể xoá bệnh án đã xuất viện");
+            }
+
+            var deleted = await _medicalRecordRepository.DeleteAsync(id);
             if (!deleted) return NotFound();
 
             return NoContent();

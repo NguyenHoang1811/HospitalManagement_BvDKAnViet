@@ -1,5 +1,7 @@
 ﻿using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace HospitalManagement_BvDKAnViet.WepApp.Services
 {
@@ -29,10 +31,23 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Services
         /// </summary>
         public async Task<TResponse?> PostAsync<TRequest, TResponse>(string url, TRequest data)
         {
-            Console.WriteLine("BASE URL: " + _http.BaseAddress);
-            using var response = await _http.PostAsJsonAsync(url, data);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<TResponse>();
+            var response = await _http.PostAsJsonAsync(url, data);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(content, null, response.StatusCode);
+            }
+            if (string.IsNullOrWhiteSpace(content) ||
+        response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                return default;
+            }
+            return JsonSerializer.Deserialize<TResponse>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
         }
 
         /// <summary>
@@ -58,8 +73,15 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Services
         /// </summary>
         public async Task DeleteAsync(string url)
         {
-            using var response = await _http.DeleteAsync(url);
-            response.EnsureSuccessStatusCode();
+            var response = await _http.DeleteAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                throw new HttpRequestException(
+                    content, null, response.StatusCode);
+            }
         }
 
         /// <summary>

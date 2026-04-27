@@ -72,5 +72,17 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
             await _db.SaveChangesAsync();
             return true;
         }
+        public async Task<MedicalRecord?> GetActiveByPatientIdAsync(int patientId)
+        {
+            return await _db.MedicalRecords
+                .FirstOrDefaultAsync(x =>
+                    x.PatientId == patientId &&
+                    x.MedicalRecordStatus != "XuatVien");
+        }
+        public async Task<bool> HasAnyByPatientIdAsync(int patientId)
+        {
+            return await _db.MedicalRecords
+                .AnyAsync(r => r.PatientId == patientId);
+        }
     }
 }

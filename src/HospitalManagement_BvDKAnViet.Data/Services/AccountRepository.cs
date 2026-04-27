@@ -30,6 +30,122 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
             return VerifyPassword(request.Password, user.Password) ? user : null;
         }
 
+        public async Task<IEnumerable<User>> GetAllAsync()
+        {
+            return await _db.Users
+                            .AsNoTracking()
+                            .Include(u => u.Role)
+                            .OrderBy(u => u.Username)
+                            .ToListAsync();
+        }
+
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _db.Users
+                            .AsNoTracking()
+                            .Include(u => u.Role)
+                            .FirstOrDefaultAsync(u => u.UserId == id);
+        }
+
+        public async Task<User?> CreateAsync(CreateUserDto dto)
+        {
+            if (dto is null) throw new ArgumentNullException(nameof(dto));
+
+            // check username uniqueness
+            if (await _db.Users.AnyAsync(u => u.Username == dto.Username))
+                return null;
+
+            var user = new User
+            {
+                Username = dto.Username,
+                Password = CreatePasswordHash(dto.Password),
+                RoleId = dto.RoleId,
+                RefreshToken = null,
+                ExpriredTime = null
+            };
+
+            var entry = await _db.Users.AddAsync(user);
+            await _db.SaveChangesAsync();
+            return entry.Entity;
+        }
+
+        public async Task<bool> UpdateAsync(UpdateUserDto dto)
+        {
+            if (dto is null) throw new ArgumentNullException(nameof(dto));
+
+            var existing = await _db.Users.FindAsync(dto.UserId);
+            if (existing is null) return false;
+
+            // Update username if provided in DTO (some DTO variants may include it)
+            var usernameProp = dto.GetType().GetProperty("Username");
+            if (usernameProp != null)
+            {
+                var uname = usernameProp.GetValue(dto) as string;
+                if (!string.IsNullOrWhiteSpace(uname) && uname != existing.Username)
+                {
+                    // check uniqueness
+                    if (await _db.Users.AnyAsync(u => u.Username == uname && u.UserId != existing.UserId))
+                        return false; // username conflict
+                    existing.Username = uname;
+                }
+            }
+
+            existing.RoleId = dto.RoleId;
+
+            // If DTO contains NewPassword, update hashed password here (but require separate flow to confirm)
+            var newPassProp = dto.GetType().GetProperty("NewPassword");
+            if (newPassProp != null)
+            {
+                var newPass = newPassProp.GetValue(dto) as string;
+                if (!string.IsNullOrWhiteSpace(newPass))
+                {
+                    existing.Password = CreatePasswordHash(newPass);
+                }
+            }
+
+            _db.Users.Update(existing);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var existing = await _db.Users.FindAsync(id);
+            if (existing is null) return false;
+
+            _db.Users.Remove(existing);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ChangePasswordAsync(ChangePasswordDto dto)
+        {
+            if (dto is null) throw new ArgumentNullException(nameof(dto));
+
+            var user = await _db.Users.FindAsync(dto.UserId);
+            if (user is null) return false;
+
+            // verify current password
+            if (!VerifyPassword(dto.CurrentPassword, user.Password))
+                return false;
+
+            user.Password = CreatePasswordHash(dto.NewPassword);
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> IsUsernameTakenAsync(string username, int? excludeUserId = null)
+        {
+            if (string.IsNullOrWhiteSpace(username)) return false;
+
+            var query = _db.Users.AsQueryable();
+            if (excludeUserId.HasValue)
+                query = query.Where(u => u.UserId != excludeUserId.Value);
+
+            return await query.AnyAsync(u => u.Username == username);
+        }
+
         // Helper: create password hash string in format: {iterations}.{saltBase64}.{hashBase64}
         public static string CreatePasswordHash(string password, int iterations = DefaultIterations)
         {

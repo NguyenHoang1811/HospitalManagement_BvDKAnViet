@@ -11,6 +11,22 @@
 
 <div class="hms-card">
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mx-3 mt-3">
+            <i class="fas fa-exclamation-circle"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mx-3 mt-3">
+            <i class="fas fa-check-circle"></i>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
     <!-- HEADER -->
     <div class="hms-card-header">
         <div>
@@ -23,8 +39,16 @@
         </a>
     </div>
 
+    @if (ViewBag.PatientName != null)
+    {
+        <div class="alert alert-info mx-3 mt-3">
+            <i class="fas fa-user-check"></i>
+            Đang tạo hồ sơ cho: <b>@ViewBag.PatientName</b>
+        </div>
+    }
+
     <!-- FORM -->
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" novalidate>
         @Html.AntiForgeryToken()
 
         <div class="row">
@@ -32,7 +56,8 @@
             <!-- Patient -->
             <div class="col-md-6 mb-3">
                 <label asp-for="PatientId" class="form-label">Bệnh nhân</label>
-                <select asp-for="PatientId" class="form-select"
+                <select asp-for="PatientId" id="patientSelect" class="form-select"
+                        data-val="false"
                         asp-items="@(ViewBag.Patients as SelectList ?? new SelectList(Enumerable.Empty<object>()))">
                     <option value="">-- Chọn bệnh nhân --</option>
                 </select>
@@ -42,7 +67,8 @@
             <!-- Doctor -->
             <div class="col-md-6 mb-3">
                 <label asp-for="DoctorId" class="form-label">Bác sĩ</label> <!-- FIX -->
-                <select asp-for="DoctorId" class="form-select"
+                <select asp-for="DoctorId" id="doctorSelect" class="form-select"
+                        data-val="false"
                         asp-items="@(ViewBag.Doctors as SelectList ?? new SelectList(Enumerable.Empty<object>()))">
                     <option value="">-- Chọn bác sĩ --</option>
                 </select>
@@ -81,14 +107,6 @@
                     <option value="CapCuu">Cấp cứu</option>
                 </select>
                 <span asp-validation-for="MedicalRecordStatus" class="text-danger"></span>
-                <span asp-validation-for="MedicalRecordStatus" class="text-danger"></span>
-            </div>
-
-            <!-- Attachment -->
-            <div class="col-md-6 mb-3">
-                <label asp-for="Attachment" class="form-label">Đường dẫn / Tệp đính kèm</label>
-                <input type="file" name="file" class="form-control" />
-                <span asp-validation-for="Attachment" class="text-danger"></span>
             </div>
 
             <!-- Result -->
@@ -122,6 +140,73 @@
 </div>
 
 @section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $('#patientSelect').select2({
+                placeholder: "Tìm bệnh nhân...",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#doctorSelect').select2({
+                placeholder: "Tìm bác sĩ...",
+                allowClear: true,
+                width: '100%'
+            });
+
+        });
+    </script>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var valid = true;
+
+            var patientId = document.querySelector('[name="PatientId"]').value;
+            var patientErr = document.querySelector('[data-valmsg-for="PatientId"]');
+            if (!patientId || patientId === '') {
+                if (patientErr) patientErr.textContent = 'Vui lòng chọn bệnh nhân';
+                valid = false;
+            } else {
+                if (patientErr) patientErr.textContent = '';
+            }
+
+            var doctorId = document.querySelector('[name="DoctorId"]').value;
+            var doctorErr = document.querySelector('[data-valmsg-for="DoctorId"]');
+            if (!doctorId || doctorId === '') {
+                if (doctorErr) doctorErr.textContent = 'Vui lòng chọn bác sĩ';
+                valid = false;
+            } else {
+                if (doctorErr) doctorErr.textContent = '';
+            }
+
+            if (!valid) e.preventDefault();
+        });
+    </script>
 }
+
+<style>
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        border-radius: 6px;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .select2-selection__rendered {
+        line-height: normal !important;
+        padding-left: 0 !important;
+    }
+
+    .select2-selection__arrow {
+        height: 100% !important;
+        top: 0 !important;
+    }
+</style>

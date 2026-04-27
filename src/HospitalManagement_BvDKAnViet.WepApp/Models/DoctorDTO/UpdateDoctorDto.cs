@@ -17,5 +17,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Models.DoctorDTO
         public string? Email { get; set; }
 
         public int? DepartmentId { get; set; }
+
+        public string? DoctorImage { get; set; }
     }
 }

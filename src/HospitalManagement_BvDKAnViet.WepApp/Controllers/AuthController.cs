@@ -60,12 +60,25 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                     HttpContext.Session.SetString("Username", response.UserName ?? string.Empty);
                     HttpContext.Session.SetInt32("AccountID", response.AccountID);
 
+
+                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(response.token);
+                    var roleClaim = jwtToken.Claims
+                        .FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                                          || c.Type == ClaimTypes.Role
+                                          || c.Type == "role");
+
                     // Create authentication cookie so ASP.NET Core considers the user authenticated
                     var claims = new List<Claim>
                         {
                             new Claim(ClaimTypes.Name, response.UserName ?? string.Empty),
                             new Claim("AccessToken", response.token)
                         };
+
+                    if (roleClaim != null)
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, roleClaim.Value));
+                    }
 
                     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     var principal = new ClaimsPrincipal(identity);

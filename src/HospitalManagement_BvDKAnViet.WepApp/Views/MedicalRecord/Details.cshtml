@@ -554,7 +554,9 @@
             <a asp-action="Edit" asp-route-id="@Model.RecordId" class="btn-rec btn-rec-edit">
                 <i class="fas fa-pen"></i> Sửa
             </a>
-            <a href="#" class="btn-rec btn-rec-drug">
+            <a asp-action="ByRecord" asp-controller="Prescription"
+               asp-route-recordId="@Model.RecordId"
+               class="btn-rec btn-rec-drug">
                 <i class="fas fa-pills"></i> Cho thuốc
             </a>
         </div>

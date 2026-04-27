@@ -1,0 +1,115 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.AccountDTO.CreateUserDto
+
+@{
+    ViewData["Title"] = "Tạo tài khoản";
+
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Tạo tài khoản", "/Account"),
+        ("Tạo tài khoản", null)
+    };
+}
+
+<div class="card-custom p-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold">Tạo tài khoản</h4>
+            <div class="text-muted small">Nhập thông tin người dùng</div>
+        </div>
+
+        <a asp-action="Index" class="btn-view-all">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+
+    <form method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+
+            <!-- USERNAME -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-control" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" type="password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <!-- CONFIRM PASSWORD (QUAN TRỌNG) -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <!-- ROLE -->
+            <div class="col-md-6 mb-3">
+                <label asp-for="RoleId" class="form-label">Vai trò</label>
+                <select asp-for="RoleId"
+                        id="roleSelect"
+                        class="form-select"
+                        asp-items="ViewBag.Roles">
+                    <option value="">-- Chọn vai trò --</option>
+                </select>
+                <span asp-validation-for="RoleId" class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-accent">
+            <i class="fas fa-save"></i> Tạo
+        </button>
+
+        <a asp-action="Index" class="btn btn-light">Hủy</a>
+
+    </form>
+</div>
+
+
+<style>
+    /* CARD */
+    .card-custom {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    /* BUTTON ACCENT */
+    .btn-accent {
+        background: #2dd4bf;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 8px 14px;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+        .btn-accent:hover {
+            background: #26c6a8;
+            color: white;
+        }
+
+    /* BACK BUTTON */
+    .btn-view-all {
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 6px 12px;
+        text-decoration: none;
+        color: #334155;
+    }
+
+    /* INPUT */
+    .form-control, .form-select {
+        border-radius: 8px;
+    }
+</style>

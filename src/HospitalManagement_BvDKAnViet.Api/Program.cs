@@ -36,6 +36,7 @@ internal class Program
         builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
         builder.Services.AddScoped<IAccountRepository, AccountRepository>();
         builder.Services.AddScoped<IJwtService, JwtService>();
+        builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

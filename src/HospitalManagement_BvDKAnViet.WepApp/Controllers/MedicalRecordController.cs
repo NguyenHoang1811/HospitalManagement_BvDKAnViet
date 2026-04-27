@@ -1,6 +1,7 @@
 ﻿using HospitalManagement_BvDKAnViet.WepApp.Models.DoctorDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO;
+using HospitalManagement_BvDKAnViet.WepApp.Models.PrescriptionDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -66,16 +67,28 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
         // GET: /MedicalRecord/Create
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? patientId)
         {
             await LoadDropdownData();
-            return View();
+            var model = new CreateMedicalRecordDto();
+            if (patientId.HasValue)
+            {
+                model.PatientId = patientId.Value;
+                try
+                {
+                    var patient = await _apiService.GetAsync<PatientDto>($"api/Patient/{patientId}");
+                    ViewBag.PatientName = patient?.Name;
+                }
+                catch { }
+            }
+            return View(model);
         }
 
         // POST: /MedicalRecord/Create
+        // POST: /MedicalRecord/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateMedicalRecordDto model, IFormFile file)
+        public async Task<IActionResult> Create(CreateMedicalRecordDto model)
         {
             if (!ModelState.IsValid)
             {
@@ -85,47 +98,31 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
             try
             {
-                // ===== UPLOAD FILE =====
-                if (file != null && file.Length > 0)
-                {
-                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/attachment");
-
-                    // Tạo thư mục nếu chưa có
-                    if (!Directory.Exists(folderPath))
-                    {
-                        Directory.CreateDirectory(folderPath);
-                    }
-
-                    // Tạo tên file unique
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var filePath = Path.Combine(folderPath, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-
-                    // Lưu đường dẫn vào DTO
-                    model.Attachment = "/img/attachment/" + fileName;
-                }
-
-                // ===== CALL API =====
+                // ===== TẠO RECORD =====
                 var created = await _apiService.PostAsync<CreateMedicalRecordDto, MedicalRecordDto>(
                     "api/MedicalRecord", model);
 
                 if (created is null)
                 {
-                    ModelState.AddModelError(string.Empty, "Không thể tạo hồ sơ y tế");
+                    ModelState.AddModelError("", "Không thể tạo hồ sơ y tế");
                     await LoadDropdownData();
                     return View(model);
                 }
 
                 TempData["SuccessMessage"] = "Hồ sơ y tế được tạo thành công";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Details", new { id = created.RecordId });
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                ModelState.AddModelError(string.Empty, "Không thể kết nối tới máy chủ");
+                TempData["ErrorMessage"] = ex.StatusCode switch
+                {
+                    System.Net.HttpStatusCode.BadRequest =>
+                        "Bệnh nhân đang điều trị, không thể tạo thêm bệnh án",
+                    System.Net.HttpStatusCode.NotFound =>
+                        "Không tìm thấy bệnh nhân hoặc bác sĩ",
+                    _ => "Không thể kết nối tới máy chủ"
+                };
+
                 await LoadDropdownData();
                 return View(model);
             }
@@ -139,6 +136,13 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             {
                 var record = await _apiService.GetAsync<MedicalRecordDto>($"api/MedicalRecord/{id}");
                 if (record is null) return NotFound();
+
+                
+                if (record.MedicalRecordStatus == "XuatVien")
+                {
+                    TempData["ErrorMessage"] = "Không thể sửa bệnh án đã xuất viện";
+                    return RedirectToAction(nameof(Index));
+                }
 
                 ViewBag.RecordId = id;
 
@@ -168,7 +172,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         // POST: /MedicalRecord/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, UpdateMedicalRecordDto model, IFormFile file)
+        public async Task<IActionResult> Edit(int id, UpdateMedicalRecordDto model, IFormFile? file, bool RemoveAttachment)
         {
             if (!ModelState.IsValid)
             {
@@ -178,9 +182,27 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
             try
             {
+                // ===== XOÁ FILE =====
+                if (RemoveAttachment && !string.IsNullOrEmpty(model.Attachment))
+                {
+                    var oldPath = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot",
+                        model.Attachment.TrimStart('/')
+                    );
+
+                    if (System.IO.File.Exists(oldPath))
+                    {
+                        System.IO.File.Delete(oldPath); 
+                    }
+
+                    model.Attachment = null; 
+                }
+
                 // ===== Nếu có upload file mới =====
                 if (file != null && file.Length > 0)
                 {
+                    // xoá file cũ nếu có
                     if (!string.IsNullOrEmpty(model.Attachment))
                     {
                         var oldPath = Path.Combine(
@@ -194,12 +216,17 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                             System.IO.File.Delete(oldPath);
                         }
                     }
-                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/img/attachment");
+
+                    var folderPath = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot/img/medicalrecord",
+                        id.ToString()
+                    );
 
                     if (!Directory.Exists(folderPath))
                         Directory.CreateDirectory(folderPath);
 
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
                     var filePath = Path.Combine(folderPath, fileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
@@ -207,8 +234,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                         await file.CopyToAsync(stream);
                     }
 
-                    // Gán file mới
-                    model.Attachment = "/img/attachment/" + fileName;
+                    model.Attachment = $"/img/medicalrecord/{id}/{fileName}";
                 }
                 // nếu không upload → giữ nguyên Attachment (nhờ hidden input)
 
@@ -251,19 +277,39 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             {
                 // ===== LẤY RECORD TRƯỚC =====
                 var record = await _apiService.GetAsync<MedicalRecordDto>($"api/MedicalRecord/{id}");
-
+                // ===== XÓA FILE ĐÍNH KÈM =====
                 if (record != null && !string.IsNullOrEmpty(record.Attachment))
                 {
-                    var filePath = Path.Combine(
+                    var folderPath = Path.Combine(
                         Directory.GetCurrentDirectory(),
-                        "wwwroot",
-                        record.Attachment.TrimStart('/')
+                        "wwwroot/img/medicalrecord",
+                        id.ToString()
                     );
 
-                    if (System.IO.File.Exists(filePath))
+                    if (Directory.Exists(folderPath))
                     {
-                        System.IO.File.Delete(filePath);
+                        Directory.Delete(folderPath, true); // xóa toàn bộ folder
                     }
+                }
+
+                // ===== XÓA ĐƠN THUỐC THEO BỆNH ÁN =====
+                try
+                {
+                    var prescriptions = await _apiService
+                        .GetAsync<IEnumerable<PrescriptionDto>>("api/Prescription");
+
+                    var toDelete = prescriptions?
+                        .Where(p => p.RecordId == id)
+                        ?? Enumerable.Empty<PrescriptionDto>();
+
+                    foreach (var p in toDelete)
+                    {
+                        await _apiService.DeleteAsync($"api/Prescription/{p.PrescriptionId}");
+                    }
+                }
+                catch
+                {
+                    // Nếu không xóa được đơn thuốc thì vẫn tiếp tục xóa bệnh án
                 }
 
                 // ===== XÓA DB =====
@@ -271,9 +317,14 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
                 TempData["SuccessMessage"] = "Xóa hồ sơ thành công";
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                TempData["ErrorMessage"] = "Không thể kết nối tới máy chủ";
+                TempData["ErrorMessage"] = ex.StatusCode switch
+                {
+                    System.Net.HttpStatusCode.BadRequest => "Không thể xoá bệnh án đã xuất viện",
+                    System.Net.HttpStatusCode.NotFound => "Không tìm thấy bệnh án",
+                    _ => "Đã xảy ra lỗi, vui lòng thử lại sau"
+                };
             }
 
             return RedirectToAction(nameof(Index));

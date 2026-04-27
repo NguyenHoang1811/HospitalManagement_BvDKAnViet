@@ -4,10 +4,10 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO
 {
     public class CreateMedicalRecordDto
     {
-        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn bệnh nhân")]
         public int PatientId { get; set; }
 
-        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn bác sĩ")]
         public int DoctorId { get; set; }
 
         [StringLength(2000)]

@@ -9,5 +9,7 @@ namespace HospitalManagement_BvDKAnViet.Core.IServices
         Task<MedicalRecord> AddAsync(MedicalRecord record);
         Task<bool> UpdateAsync(MedicalRecord record);
         Task<bool> DeleteAsync(int id);
+        Task<MedicalRecord?> GetActiveByPatientIdAsync(int patientId);
+        Task<bool> HasAnyByPatientIdAsync(int patientId);
     }
 }

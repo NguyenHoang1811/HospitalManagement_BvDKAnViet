@@ -1,0 +1,87 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.AccountDTO.UpdateUserDto
+
+@{
+    ViewData["Title"] = "Đổi role";
+
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Đổi role", "/Account"),
+        ("Đổi role", null)
+    };
+}
+
+<div class="card-custom p-4">
+
+    <div class="mb-4">
+        <h4 class="fw-bold">Cập nhật tài khoản</h4>
+    </div>
+
+    <form method="post" asp-route-id="@Model.UserId">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="UserId" />
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label>Vai trò</label>
+                <select asp-for="RoleId"
+                        class="form-select"
+                        asp-items="ViewBag.Roles">
+                </select>
+            </div>
+
+        </div>
+
+        <button class="btn btn-accent">
+            <i class="fas fa-save"></i> Lưu
+        </button>
+
+        <a asp-action="Index" class="btn btn-light">Hủy</a>
+
+    </form>
+</div>
+
+<style>
+    /* LAYOUT */
+    .page-wrapper {
+        padding: 10px;
+    }
+
+    /* CARD */
+    .card-custom {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    /* BUTTON ACCENT */
+    .btn-accent {
+        background: #2dd4bf;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 8px 14px;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+        .btn-accent:hover {
+            background: #26c6a8;
+            color: white;
+        }
+
+    /* BACK BUTTON */
+    .btn-view-all {
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 6px 12px;
+        text-decoration: none;
+        color: #334155;
+    }
+
+    /* INPUT */
+    .form-control, .form-select {
+        border-radius: 8px;
+    }
+</style>

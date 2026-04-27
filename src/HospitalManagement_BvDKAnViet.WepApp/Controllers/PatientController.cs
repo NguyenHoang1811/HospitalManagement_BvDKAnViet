@@ -8,6 +8,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
     {
         private readonly IApiService _apiService;
 
+
         public PatientController(IApiService apiService)
         {
             _apiService = apiService;
@@ -68,7 +69,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                 }
 
                 TempData["SuccessMessage"] = "Bệnh nhân được tạo thành công";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Create", "MedicalRecord", new { patientId = created.PatientId });
             }
             catch (HttpRequestException)
             {
@@ -151,13 +152,18 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             {
                 await _apiService.DeleteAsync($"api/Patient/{id}");
                 TempData["SuccessMessage"] = "Bệnh nhân được xóa thành công";
-                return RedirectToAction(nameof(Index));
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                TempData["ErrorMessage"] = "Không thể kết nối tới máy chủ";
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = ex.StatusCode switch
+                {
+                    System.Net.HttpStatusCode.BadRequest => "Không thể xoá bệnh nhân vì đã có bệnh án",
+                    System.Net.HttpStatusCode.NotFound => "Không tìm thấy bệnh nhân",
+                    _ => "Đã xảy ra lỗi, vui lòng thử lại sau"
+                };
             }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

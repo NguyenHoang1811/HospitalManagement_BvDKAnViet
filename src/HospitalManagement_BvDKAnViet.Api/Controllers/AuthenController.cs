@@ -3,9 +3,6 @@ using HospitalManagement_BvDKAnViet.Core.Enums;
 using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -116,11 +113,11 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             return Convert.ToBase64String(randomBytes);
         }
 
-        [HttpGet("generate-hash")]
-        public IActionResult GenerateHash(string password)
-        {
-            var hash = AccountRepository.CreatePasswordHash(password);
-            return Ok(hash);
-        }
+        //[HttpGet("generate-hash")]
+        //public IActionResult GenerateHash(string password)
+        //{
+        //    var hash = AccountRepository.CreatePasswordHash(password);
+        //    return Ok(hash);
+        //}
     }
 }

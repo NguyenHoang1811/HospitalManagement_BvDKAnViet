@@ -7,6 +7,7 @@ using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.DTOs.PrescriptionDTO;
 using HospitalManagement_BvDKAnViet.Core.DTOs.MedicineDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
 
 public class MappingProfile : Profile
 {
@@ -59,5 +60,24 @@ public class MappingProfile : Profile
         CreateMap<Medicine, MedicineDto>();
         CreateMap<CreateMedicineDto, Medicine>();
         CreateMap<UpdateMedicineDto, Medicine>();
+
+        // Account / User mappings
+        // Map User entity -> UserDto (include role name if Role navigation present)
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.RoleName,
+                opt => opt.MapFrom(src => src.Role != null ? src.Role.RoleName : null));
+
+        // Map CreateUserDto -> User.
+        // NOTE: Do NOT map Password here to avoid storing plain text; repository should hash the password.
+        CreateMap<CreateUserDto, User>()
+            .ForMember(dest => dest.Password, opt => opt.Ignore())
+            .ForMember(dest => dest.RefreshToken, opt => opt.Ignore())
+            .ForMember(dest => dest.ExpriredTime, opt => opt.Ignore());
+
+        // Map UpdateUserDto -> User. Keep password handling out of AutoMapper.
+        CreateMap<UpdateUserDto, User>()
+            .ForMember(dest => dest.Password, opt => opt.Ignore())
+            .ForMember(dest => dest.RefreshToken, opt => opt.Ignore())
+            .ForMember(dest => dest.ExpriredTime, opt => opt.Ignore());
     }
 }

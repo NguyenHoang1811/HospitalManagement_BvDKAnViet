@@ -8,5 +8,6 @@
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public int? DepartmentId { get; set; }
+        public string? DoctorImage { get; set; }
     }
 }

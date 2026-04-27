@@ -43,6 +43,7 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
             existing.Phone = doctor.Phone;
             existing.Email = doctor.Email;
             existing.DepartmentId = doctor.DepartmentId;
+            existing.DoctorImage = doctor.DoctorImage;
 
             _db.Doctors.Update(existing);
             await _db.SaveChangesAsync();

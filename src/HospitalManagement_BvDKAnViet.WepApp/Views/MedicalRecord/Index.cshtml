@@ -55,6 +55,7 @@
 							<th>Bác sĩ</th>
 							<th>Chẩn đoán</th>
 							<th>Ngày tạo</th>
+							<th>Trạng thái</th>
 							<th class="text-end">Thao tác</th>
 						</tr>
 					</thead>
@@ -110,6 +111,21 @@
 									@r.CreatedDate.ToString("dd/MM/yyyy HH:mm")
 								</td>
 
+								<td>
+									@{
+										var status = r.MedicalRecordStatus ?? "—";
+										var badgeClass = status switch
+										{
+											"NoiTru" => "badge bg-primary",
+											"NgoaiTru" => "badge bg-success",
+											"XuatVien" => "badge bg-secondary",
+											"CapCuu" => "badge bg-danger",
+											_ => "badge bg-light text-dark"
+										};
+									}
+									<span class="@badgeClass">@status</span>
+								</td>
+
 								<!-- ACTION -->
 								<td class="text-end">
 									<a asp-action="Details" asp-route-id="@r.RecordId"
@@ -149,7 +165,7 @@
 	</div>
 </div>
 
-<!-- DELETE MODAL (GIỮ NGUYÊN LOGIC) -->
+<!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content modern-modal">
