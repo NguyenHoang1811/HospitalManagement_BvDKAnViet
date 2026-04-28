@@ -1,0 +1,211 @@
+﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.MedicineDTO.MedicineDto>
+
+@{
+	ViewData["Title"] = "Danh sách thuốc";
+
+	ViewData["Breadcrumb"] = new List<(string, string)>
+	{
+		("Thuốc", "/Medicine"),
+		("Danh sách thuốc", null)
+	};
+}
+
+<div class="page-wrapper">
+
+	<!-- HEADER -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div>
+			<h2 class="fw-bold mb-1">@ViewData["Title"]</h2>
+			<div class="text-muted small">Quản lý thuốc</div>
+		</div>
+
+		<a asp-action="Create" class="btn btn-accent">
+			<i class="fas fa-plus"></i> Thêm thuốc
+		</a>
+	</div>
+
+	<!-- ALERT -->
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<div class="alert alert-success shadow-sm">
+			<i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+		</div>
+	}
+
+	@if (TempData["ErrorMessage"] != null)
+	{
+		<div class="alert alert-danger shadow-sm">
+			<i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+		</div>
+	}
+
+	<!-- CARD -->
+	<div class="card-custom">
+
+		@if (Model.Any())
+		{
+			<div class="table-responsive">
+				<table class="table table-modern align-middle">
+
+					<thead>
+						<tr>
+							<th>STT</th>
+							<th>Tên thuốc</th>
+							<th>Giá</th>
+							<th class="text-end">Thao tác</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						@{
+							int stt = 1;
+						}
+
+						@foreach (var m in Model)
+						{
+							<tr>
+								<td>@stt</td>
+
+								<td class="fw-semibold">@m.Name</td>
+
+								<td>
+									<span class="badge bg-success">
+										@m.Price.ToString("N0") VNĐ
+									</span>
+								</td>
+
+								<td class="text-end">
+									<a asp-action="Edit" asp-route-id="@m.MedicineId"
+									   class="btn-action text-warning">
+										<i class="fas fa-edit"></i>
+									</a>
+
+									<button class="btn-action text-danger"
+											data-bs-toggle="modal"
+											data-bs-target="#deleteModal"
+											data-id="@m.MedicineId">
+										<i class="fas fa-trash"></i>
+									</button>
+								</td>
+							</tr>
+							stt++;
+						}
+					</tbody>
+
+				</table>
+			</div>
+		}
+		else
+		{
+			<div class="text-center p-5 text-muted">
+				<i class="fas fa-capsules fa-2x mb-3"></i>
+				<div>Không có thuốc</div>
+			</div>
+		}
+	</div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content modern-modal">
+
+			<div class="modal-body text-center p-4">
+				<div class="text-danger fs-2 mb-3">
+					<i class="fas fa-trash"></i>
+				</div>
+
+				<h5>Xác nhận xóa</h5>
+				<p>Bạn có chắc muốn xóa thuốc này?</p>
+
+				<form id="deleteForm" method="post">
+					@Html.AntiForgeryToken()
+
+					<button class="btn btn-danger px-4">Xóa</button>
+					<button type="button" class="btn btn-light ms-2" data-bs-dismiss="modal">Hủy</button>
+				</form>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<script>
+	var modal = document.getElementById('deleteModal');
+
+	modal.addEventListener('show.bs.modal', function (e) {
+		var id = e.relatedTarget.getAttribute("data-id");
+		document.getElementById("deleteForm").action = "/Medicine/Delete/" + id;
+	});
+</script>
+
+
+<style>
+
+
+	.page-wrapper {
+		padding: 10px;
+	}
+
+	.card-custom {
+		background: #fff;
+		border-radius: 14px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+		padding: 10px 0;
+	}
+
+	.table-modern thead th {
+		font-size: 12px;
+		color: #64748b;
+		text-transform: uppercase;
+		border-bottom: 1px solid #e2e8f0;
+	}
+
+	.table-modern tbody tr:hover {
+		background: #f8fafc;
+	}
+
+	.avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: #60a5fa;
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+	}
+
+	.btn-accent {
+		background: #2dd4bf;
+		color: white;
+		border-radius: 8px;
+	}
+
+		.btn-accent:hover {
+			background: #26c6a8;
+		}
+
+	.btn-action {
+		margin-left: 6px;
+		font-size: 14px;
+	}
+
+	.modern-modal {
+		border-radius: 14px;
+		border: none;
+	}
+
+	.stt {
+		font-weight: 600;
+		color: #64748b;
+	}
+
+	.id-badge {
+		background: #f1f5f9;
+		padding: 4px 8px;
+		border-radius: 6px;
+		font-size: 12px;
+	}
+</style>

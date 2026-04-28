@@ -1,4 +1,4 @@
-﻿using HospitalManagement_BvDKAnViet.WepApp.Model.MedicineDTO;
+﻿using HospitalManagement_BvDKAnViet.WepApp.Models.MedicineDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Models.PrescriptionDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;

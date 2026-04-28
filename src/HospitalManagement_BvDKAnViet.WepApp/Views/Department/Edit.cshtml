@@ -1,0 +1,73 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.DepartmentDTO.UpdateDepartmentDto
+
+@{
+    ViewData["Title"] = "Sửa phòng ban";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+    ("Phòng ban", "/Department"),
+    ("Sửa phòng ban", null)
+    };
+}
+
+<div class="card-custom p-4">
+
+    <div class="d-flex justify-content-between mb-4">
+        <h4 class="fw-bold">Cập nhật phòng ban</h4>
+
+        <a asp-action="Index" class="btn-view-all">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <form method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label class="form-label">Tên phòng ban</label>
+            <input asp-for="DepartmentName" class="form-control" />
+            <span asp-validation-for="DepartmentName" class="text-danger"></span>
+        </div>
+
+        <button class="btn btn-accent">
+            <i class="fas fa-save"></i> Lưu
+        </button>
+
+        <a asp-action="Index" class="btn btn-light">Hủy</a>
+    </form>
+</div>
+
+<style>
+    .card-custom {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .btn-accent {
+        background: #2dd4bf;
+
+
+
+
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 14px;
+    }
+
+    .btn-view-all {
+        background: #f1f5f9;
+        padding: 6px 12px;
+        border-radius: 8px;
+    }
+
+    .table-modern th {
+        background: #f8fafc;
+    }
+
+    .btn-action {
+        margin-left: 8px;
+        font-size: 16px;
+    }
+</style>

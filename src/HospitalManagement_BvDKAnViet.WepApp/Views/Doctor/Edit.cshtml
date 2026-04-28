@@ -1,0 +1,191 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.DoctorDTO.UpdateDoctorDto
+
+@{
+    ViewData["Title"] = "Sửa bác sĩ";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Bác sĩ", "/Doctor"),
+        ("Sửa bác sĩ", null)
+    };
+}
+
+<div class="card-custom p-4">
+
+    <h4 class="fw-bold mb-3">Cập nhật bác sĩ</h4>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <form method="post"
+          enctype="multipart/form-data"
+          asp-route-id="@ViewBag.DoctorId">
+
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Tên</label>
+                <input asp-for="Name" class="form-control" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Chuyên khoa</label>
+                <input asp-for="Specialty" class="form-control" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Điện thoại</label>
+                <input asp-for="Phone" class="form-control" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Khoa</label>
+                <select asp-for="DepartmentId"
+                        class="form-select"
+                        asp-items="ViewBag.Departments">
+                </select>
+            </div>
+
+            <!-- IMAGE -->
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Ảnh mới</label>
+                <input type="file" name="file" class="form-control" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.DoctorImage))
+            {
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Ảnh hiện tại</label><br />
+                    <img src="@Model.DoctorImage" class="preview-img" />
+
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="removeImage" value="true" class="form-check-input" />
+                        <label class="form-check-label">Xóa ảnh</label>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <button class="btn btn-accent">Lưu</button>
+        <a asp-action="Index" class="btn btn-light">Hủy</a>
+
+    </form>
+</div>
+
+<style>
+    /* ===== LAYOUT ===== */
+    .page-wrapper {
+        padding: 12px;
+    }
+
+    /* ===== CARD ===== */
+    .card-custom {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        transition: 0.2s;
+    }
+
+        .card-custom:hover {
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+        }
+
+    /* ===== TITLE ===== */
+    h4 {
+        color: #0f172a;
+    }
+
+    /* ===== FORM ===== */
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #334155;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 8px 12px;
+        transition: 0.2s;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #2dd4bf;
+            box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.15);
+        }
+
+    /* ===== VALIDATION ===== */
+    .text-danger {
+        font-size: 13px;
+    }
+
+    /* ===== BUTTON ===== */
+    .btn-accent {
+        background: #2dd4bf;
+        color: #fff;
+        border-radius: 8px;
+        border: none;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+        .btn-accent:hover {
+            background: #26c6a8;
+            color: #fff;
+        }
+
+    .btn-light {
+        border-radius: 8px;
+        padding: 8px 16px;
+    }
+
+    /* ===== IMAGE PREVIEW ===== */
+    .preview-img {
+        width: 90px;
+        height: 90px;
+        border-radius: 10px;
+        object-fit: cover;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        margin-top: 6px;
+    }
+
+    /* ===== FILE INPUT ===== */
+    input[type="file"] {
+        padding: 6px;
+        background: #f8fafc;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .form-check-input {
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        font-size: 14px;
+        color: #475569;
+    }
+
+    /* ===== SPACING ===== */
+    .mb-3 {
+        margin-bottom: 14px !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @@media (max-width: 768px) {
+        .card-custom
+
+    {
+        padding: 16px !important;
+    }
+
+    }
+</style>
