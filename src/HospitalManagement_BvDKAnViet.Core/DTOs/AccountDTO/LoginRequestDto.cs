@@ -10,6 +10,8 @@ namespace HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO
 
         [Required, StringLength(200)]
         public string Password { get; set; } = null!;
+        public int? PatientId { get; set; }
+        public int? DoctorId { get; set; }
 
     }
 }

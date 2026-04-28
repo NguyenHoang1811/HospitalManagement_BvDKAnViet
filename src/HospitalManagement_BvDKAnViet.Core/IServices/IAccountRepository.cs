@@ -44,5 +44,7 @@ namespace HospitalManagement_BvDKAnViet.Core.IServices
         /// Check whether username is already taken. If excludeUserId provided, exclude that user from check.
         /// </summary>
         Task<bool> IsUsernameTakenAsync(string username, int? excludeUserId = null);
+
+        Task UpdateEntity(User user);
     }
 }

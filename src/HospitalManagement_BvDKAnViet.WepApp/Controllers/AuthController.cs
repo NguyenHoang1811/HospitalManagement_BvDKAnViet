@@ -70,10 +70,15 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
                     // Create authentication cookie so ASP.NET Core considers the user authenticated
                     var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, response.UserName ?? string.Empty),
-                            new Claim("AccessToken", response.token)
-                        };
+{
+                        new Claim(ClaimTypes.Name, response.UserName ?? string.Empty),
+
+                        
+                        new Claim(ClaimTypes.NameIdentifier, response.AccountID.ToString()),
+
+                        // optional
+                        new Claim("AccessToken", response.token)
+                    };
 
                     if (roleClaim != null)
                     {

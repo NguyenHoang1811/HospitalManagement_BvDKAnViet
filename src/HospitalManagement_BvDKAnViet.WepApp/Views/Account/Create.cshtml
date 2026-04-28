@@ -1,115 +1,165 @@
 ﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.AccountDTO.CreateUserDto
 
 @{
-    ViewData["Title"] = "Tạo tài khoản";
+	ViewData["Title"] = "Tạo tài khoản";
 
-    ViewData["Breadcrumb"] = new List<(string, string)>
-    {
-        ("Tài khoản", "/Account"),
-        ("Tạo tài khoản", null)
-    };
+	bool isPatient = Model.PatientId != null;
+	bool isDoctor = Model.DoctorId != null;
+	bool isAuto = isPatient || isDoctor;
 }
 
 <div class="card-custom p-4">
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold">Tạo tài khoản</h4>
-            <div class="text-muted small">Nhập thông tin người dùng</div>
-        </div>
+	<!-- HEADER -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div>
+			<h4 class="fw-bold">Tạo tài khoản</h4>
+			<div class="text-muted small">
+				@(isPatient ? "Tạo tài khoản cho bệnh nhân"
+								: isDoctor ? "Tạo tài khoản cho bác sĩ"
+								: "Nhập thông tin người dùng")
+			</div>
+		</div>
 
-        <a asp-action="Index" class="btn-view-all">
-            <i class="fas fa-arrow-left"></i> Quay lại
-        </a>
-    </div>
+		<a asp-action="Index" class="btn-view-all">
+			<i class="fas fa-arrow-left"></i> Quay lại
+		</a>
+	</div>
 
+	@if (!ViewData.ModelState.IsValid)
+	{
+		<div class="alert alert-danger">
+			@Html.ValidationSummary(false, "", new { @class = "mb-0" })
+		</div>
+	}
 
-    <form method="post">
-        @Html.AntiForgeryToken()
+	<!-- ALERT -->
+	@if (isPatient)
+	{
+		<div class="alert alert-info">
+			<i class="fas fa-user"></i>
+			Bệnh nhân: <b>BN-@Model.PatientId</b>
+		</div>
+	}
 
-        <div class="row">
+	@if (isDoctor)
+	{
+		<div class="alert alert-success">
+			<i class="fas fa-user-md"></i>
+			Bác sĩ: <b>BS-@Model.DoctorId</b>
+		</div>
+	}
 
-            <!-- USERNAME -->
-            <div class="col-md-6 mb-3">
-                <label asp-for="Username" class="form-label"></label>
-                <input asp-for="Username" class="form-control" />
-                <span asp-validation-for="Username" class="text-danger"></span>
-            </div>
+	<form method="post">
+		@Html.AntiForgeryToken()
 
-            <!-- PASSWORD -->
-            <div class="col-md-6 mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" type="password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
+		<div class="row">
 
-            <!-- CONFIRM PASSWORD (QUAN TRỌNG) -->
-            <div class="col-md-6 mb-3">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" type="password" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
+			<!-- USERNAME -->
+			<div class="col-md-6 mb-3">
+				<label asp-for="Username" class="form-label"></label>
+				<input asp-for="Username"
+					   class="form-control"
+					   @@(isAuto ? "readonly" : "" ) />
+				<span asp-validation-for="Username" class="text-danger"></span>
+			</div>
 
-            <!-- ROLE -->
-            <div class="col-md-6 mb-3">
-                <label asp-for="RoleId" class="form-label">Vai trò</label>
-                <select asp-for="RoleId"
-                        id="roleSelect"
-                        class="form-select"
-                        asp-items="ViewBag.Roles">
-                    <option value="">-- Chọn vai trò --</option>
-                </select>
-                <span asp-validation-for="RoleId" class="text-danger"></span>
-            </div>
+			<!-- PASSWORD -->
+			@if (!isAuto)
+			{
+				<!-- tạo thường -->
+				<div class="col-md-6 mb-3">
+					<label asp-for="Password"></label>
+					<input asp-for="Password" type="password" class="form-control" />
+					<span asp-validation-for="Password" class="text-danger"></span>
+				</div>
 
-        </div>
+				<div class="col-md-6 mb-3">
+					<label asp-for="ConfirmPassword"></label>
+					<input asp-for="ConfirmPassword" type="password" class="form-control" />
+					<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+				</div>
+			}
+			else
+			{
+				<!-- auto -->
+				<div class="col-md-6 mb-3">
+					<label class="form-label">Mật khẩu mặc định</label>
+					<input value="123456" class="form-control" readonly />
+					<div class="text-muted small">
+						Người dùng sẽ đổi mật khẩu sau khi đăng nhập
+					</div>
+				</div>
 
-        <button type="submit" class="btn btn-accent">
-            <i class="fas fa-save"></i> Tạo
-        </button>
+				<input type="hidden" asp-for="Password" />
+				<input type="hidden" asp-for="ConfirmPassword" />
+			}
 
-        <a asp-action="Index" class="btn btn-light">Hủy</a>
+			<!-- ROLE -->
+			<div class="col-md-6 mb-3">
+				<label asp-for="RoleId">Vai trò</label>
 
-    </form>
+				<select asp-for="RoleId"
+						class="form-select"
+						asp-items="ViewBag.Roles"
+						@@(isAuto ? "disabled" : "" )>
+				</select>
+
+				<span asp-validation-for="RoleId" class="text-danger"></span>
+			</div>
+
+			<!-- HIDDEN -->
+			<input type="hidden" asp-for="PatientId" />
+			<input type="hidden" asp-for="DoctorId" />
+
+			@if (isAuto)
+			{
+				<input type="hidden" asp-for="RoleId" />
+			}
+
+		</div>
+
+		<!-- ACTION -->
+		<button type="submit" class="btn btn-accent">
+			<i class="fas fa-user-plus"></i> Tạo tài khoản
+		</button>
+
+		<a asp-action="Index" class="btn btn-light">Hủy</a>
+	</form>
 </div>
 
-
 <style>
-    /* CARD */
-    .card-custom {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-    }
+	.btn-accent {
+		background: #2dd4bf;
+		color: white;
+		border-radius: 8px;
+		border: none;
+	}
 
-    /* BUTTON ACCENT */
-    .btn-accent {
-        background: #2dd4bf;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        padding: 8px 14px;
-        font-weight: 500;
-        transition: 0.2s;
-    }
+		.btn-accent:hover {
+			background: #26c6a8;
+			color: white;
+		}
 
-        .btn-accent:hover {
-            background: #26c6a8;
-            color: white;
-        }
+	.btn-cancel {
+		background: #f1f5f9;
+		border-radius: 10px;
+		padding: 10px 18px;
+		text-decoration: none;
+		color: #334155;
+	}
 
-    /* BACK BUTTON */
-    .btn-view-all {
-        background: #f1f5f9;
-        border-radius: 8px;
-        padding: 6px 12px;
-        text-decoration: none;
-        color: #334155;
-    }
+	.btn-view-all {
+		background: #f1f5f9;
+		border-radius: 8px;
+		padding: 6px 12px;
+		text-decoration: none;
+		color: #334155;
+	}
 
-    /* INPUT */
-    .form-control, .form-select {
-        border-radius: 8px;
-    }
+	.card-custom {
+		background: #fff;
+		border-radius: 14px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+	}
 </style>

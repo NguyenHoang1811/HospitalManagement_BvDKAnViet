@@ -1,1103 +1,1115 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Hệ Thống Quản Lý Bệnh Viện</title>
-
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-    <style>
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --navy: #0f2744;
-            --navy-2: #1a3a5c;
-            --navy-3: rgba(255,255,255,0.06);
-            --teal: #2dd4bf;
-            --blue: #60a5fa;
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --success: #22c55e;
-            --warning: #f97316;
-            --text-1: #1e293b;
-            --text-2: #64748b;
-            --border: rgba(0,0,0,0.07);
-            --sidebar-w: 240px;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-        }
-
-        html, body {
-            height: 100%;
-            font-family: 'DM Sans', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text-1);
-            font-size: 14px;
-        }
-
-        /* ─── WRAPPER ─── */
-        .hms-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* ═══════════════════════════
-                   SIDEBAR
-                ═══════════════════════════ */
-        .hms-sidebar {
-            width: var(--sidebar-w);
-            min-width: var(--sidebar-w);
-            background: var(--navy);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            z-index: 100;
-            overflow-y: auto;
-        }
-
-        /* Logo */
-        .sb-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 18px 16px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-        }
-
-        .sb-logo-icon {
-            width: 34px;
-            height: 34px;
-            background: var(--teal);
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-            .sb-logo-icon i {
-                color: var(--navy);
-                font-size: 15px;
-            }
-
-        .sb-logo-title {
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1.2;
-        }
-
-        .sb-logo-sub {
-            color: rgba(255,255,255,0.4);
-            font-size: 10px;
-        }
-
-        /* Nav section labels */
-        .sb-section {
-            padding: 16px 16px 4px;
-            font-size: 10px;
-            font-weight: 500;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.28);
-        }
-
-        /* Nav items */
-        .sb-nav {
-            flex: 1;
-            padding: 4px 10px;
-        }
-
-            .sb-nav .nav-link {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 9px 12px;
-                border-radius: var(--radius-sm);
-                color: rgba(255,255,255,0.52);
-                font-size: 13px;
-                font-weight: 400;
-                margin-bottom: 2px;
-                transition: background .15s, color .15s;
-                position: relative;
-                border-left: 2px solid transparent;
-                text-decoration: none;
-            }
-
-                .sb-nav .nav-link i {
-                    width: 16px;
-                    text-align: center;
-                    font-size: 13px;
-                    flex-shrink: 0;
-                }
-
-                .sb-nav .nav-link:hover {
-                    background: rgba(255,255,255,0.05);
-                    color: rgba(255,255,255,0.85);
-                }
-
-                .sb-nav .nav-link.active {
-                    background: rgba(45,212,191,0.11);
-                    color: var(--teal);
-                    border-left: 2px solid var(--teal);
-                    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-                }
-
-        .sb-badge {
-            margin-left: auto;
-            background: var(--warning);
-            color: #fff;
-            font-size: 10px;
-            padding: 1px 7px;
-            border-radius: 99px;
-            font-weight: 600;
-        }
-
-        /* User profile at bottom */
-        .sb-footer {
-            padding: 10px 10px 14px;
-            border-top: 1px solid rgba(255,255,255,0.07);
-        }
-
-        .sb-user {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 12px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: background .15s;
-        }
-
-            .sb-user:hover {
-                background: rgba(255,255,255,0.05);
-            }
-
-        .sb-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #1e4a7a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--blue);
-            flex-shrink: 0;
-        }
-
-        .sb-user-name {
-            color: #fff;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .sb-user-role {
-            color: rgba(255,255,255,0.38);
-            font-size: 10px;
-        }
-
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            width: 100%;
-            margin-top: 6px;
-            padding: 7px 0;
-            background: rgba(249,115,22,0.12);
-            color: #fb923c;
-            border: 1px solid rgba(249,115,22,0.22);
-            border-radius: var(--radius-sm);
-            font-size: 12px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: background .15s;
-        }
-
-            .btn-logout:hover {
-                background: rgba(249,115,22,0.2);
-                color: #fb923c;
-            }
-
-        /* ═══════════════════════════
-                   MAIN AREA
-                ═══════════════════════════ */
-        .hms-main {
-            margin-left: var(--sidebar-w);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* ─── TOPBAR ─── */
-        .hms-topbar {
-            position: sticky;
-            top: 0;
-            z-index: 90;
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        /* Search — pill shape, centered */
-        .tb-search {
-            flex: 1;
-            max-width: 340px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-            .tb-search i {
-                position: absolute;
-                left: 12px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: var(--text-2);
-                font-size: 12px;
-                pointer-events: none;
-            }
-
-            .tb-search input {
-                width: 100%;
-                padding: 7px 14px 7px 34px;
-                border-radius: 99px;
-                border: 1px solid var(--border);
-                background: var(--bg);
-                font-size: 12px;
-                font-family: 'DM Sans', sans-serif;
-                color: var(--text-1);
-                outline: none;
-                transition: border-color .15s;
-            }
-
-                .tb-search input:focus {
-                    border-color: var(--teal);
-                }
-
-                .tb-search input::placeholder {
-                    color: var(--text-2);
-                }
-
-        /* Right actions */
-        .tb-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: auto;
-        }
-
-        .tb-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 13px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            background: transparent;
-            font-size: 12px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--text-1);
-            cursor: pointer;
-            transition: background .15s;
-        }
-
-            .tb-btn:hover {
-                background: var(--bg);
-            }
-
-            .tb-btn i {
-                font-size: 11px;
-                color: var(--text-2);
-            }
-
-        .tb-notif {
-            position: relative;
-            width: 34px;
-            height: 34px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background .15s;
-        }
-
-            .tb-notif:hover {
-                background: var(--bg);
-            }
-
-            .tb-notif i {
-                font-size: 13px;
-                color: var(--text-2);
-            }
-
-        .notif-dot {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 7px;
-            height: 7px;
-            background: var(--warning);
-            border-radius: 50%;
-            border: 1.5px solid var(--card);
-        }
-
-        .tb-divider {
-            width: 1px;
-            height: 18px;
-            background: var(--border);
-        }
-
-        .tb-datetime {
-            text-align: right;
-        }
-
-        .tb-time {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-1);
-        }
-
-        .tb-date {
-            font-size: 10px;
-            color: var(--text-2);
-        }
-
-        /* ─── CONTENT ─── */
-        .hms-content {
-            padding: 24px;
-            flex: 1;
-        }
-
-        /* Page header */
-        .page-header {
-            margin-bottom: 20px;
-        }
-
-        .page-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-1);
-        }
-
-        .page-sub {
-            font-size: 12px;
-            color: var(--text-2);
-            margin-top: 2px;
-        }
-
-        /* ─── KPI CARDS ─── */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-
-        .kpi-card {
-            background: var(--card);
-            border-radius: var(--radius-lg);
-            padding: 16px 18px;
-            border: 1px solid var(--border);
-            position: relative;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            transition: box-shadow .2s;
-        }
-
-            .kpi-card:hover {
-                box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-            }
-
-        .kpi-icon-wrap {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            width: 36px;
-            height: 36px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-            .kpi-icon-wrap i {
-                font-size: 15px;
-            }
-
-        .kpi-icon-teal {
-            background: rgba(45,212,191,0.12);
-            color: #0d9488;
-        }
-
-        .kpi-icon-blue {
-            background: rgba(96,165,250,0.14);
-            color: #2563eb;
-        }
-
-        .kpi-icon-green {
-            background: rgba(34,197,94,0.12);
-            color: #16a34a;
-        }
-
-        .kpi-icon-warn {
-            background: rgba(249,115,22,0.12);
-            color: #c2410c;
-        }
-
-        .kpi-label {
-            font-size: 11px;
-            color: var(--text-2);
-            margin-bottom: 6px;
-        }
-
-        .kpi-value {
-            font-size: 26px;
-            font-weight: 600;
-            color: var(--text-1);
-            line-height: 1;
-        }
-
-        .kpi-trend {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 7px;
-            font-size: 11px;
-        }
-
-        .trend-up {
-            color: var(--success);
-        }
-
-        .trend-down {
-            color: var(--warning);
-        }
-
-        .kpi-trend span:last-child {
-            color: var(--text-2);
-        }
-
-        /* ─── DATA PANEL ─── */
-        .data-panel {
-            background: var(--card);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-1);
-        }
-
-        .panel-sub {
-            font-size: 11px;
-            color: var(--text-2);
-            margin-top: 1px;
-        }
-
-        .btn-view-all {
-            padding: 6px 14px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            background: transparent;
-            font-size: 12px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--text-1);
-            cursor: pointer;
-            text-decoration: none;
-            transition: background .15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-            .btn-view-all:hover {
-                background: var(--bg);
-                color: var(--text-1);
-            }
-
-        /* ─── TABLE ─── */
-        .hms-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-            .hms-table thead th {
-                font-size: 11px;
-                font-weight: 500;
-                color: var(--text-2);
-                text-align: left;
-                padding: 10px 20px;
-                border-bottom: 1px solid var(--border);
-                white-space: nowrap;
-                background: #fafbfc;
-            }
-
-            .hms-table tbody td {
-                padding: 12px 20px;
-                border-bottom: 1px solid var(--border);
-                vertical-align: middle;
-            }
-
-            .hms-table tbody tr:last-child td {
-                border-bottom: none;
-            }
-
-            .hms-table tbody tr:hover td {
-                background: #f8fafc;
-            }
-
-        /* Patient cell */
-        .pt-cell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .pt-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .pt-name {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-1);
-        }
-
-        .pt-id {
-            font-size: 10px;
-            color: var(--text-2);
-            background: #f1f5f9;
-            padding: 1px 7px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
-        }
-
-        /* Risk badges */
-        .badge-risk {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 500;
-            padding: 3px 10px;
-            border-radius: 99px;
-        }
-
-        .risk-high {
-            background: #fff7ed;
-            color: #c2410c;
-        }
-
-        .risk-moderate {
-            background: #fefce8;
-            color: #854d0e;
-        }
-
-        .risk-low {
-            background: #f0fdf4;
-            color: #166534;
-        }
-
-        .risk-critical {
-            background: #fef2f2;
-            color: #991b1b;
-        }
-
-        /* CKD stage pills */
-        .ckd-pill {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 500;
-            padding: 3px 9px;
-            border-radius: 6px;
-        }
-
-        .ckd-2 {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .ckd-3 {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .ckd-4 {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .ckd-5 {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Action buttons */
-        .act-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: transparent;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            margin-right: 4px;
-            transition: background .12s;
-            text-decoration: none;
-            color: var(--text-2);
-        }
-
-            .act-btn:hover {
-                background: var(--bg);
-                color: var(--text-1);
-            }
-
-            .act-btn i {
-                font-size: 12px;
-            }
-
-        /* Generic card used by child pages */
-        .hms-card {
-            background: var(--card);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-
-        .hms-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* Buttons — primary */
-        .btn-primary-hms {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 8px 16px;
-            background: var(--navy);
-            color: #fff;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background .15s;
-        }
-
-            .btn-primary-hms:hover {
-                background: var(--navy-2);
-                color: #fff;
-            }
-
-        .btn-teal-hms {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 8px 16px;
-            background: var(--teal);
-            color: var(--navy);
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: opacity .15s;
-        }
-
-            .btn-teal-hms:hover {
-                opacity: .88;
-                color: var(--navy);
-            }
-
-        /* ─── FOOTER ─── */
-        .hms-footer {
-            padding: 16px 24px;
-            text-align: center;
-            font-size: 11px;
-            color: var(--text-2);
-            border-top: 1px solid var(--border);
-        }
-
-        /* ─── FORMS inside content ─── */
-        .form-control, .form-select {
-            border-radius: var(--radius-sm) !important;
-            border-color: var(--border) !important;
-            font-size: 13px !important;
-            font-family: 'DM Sans', sans-serif !important;
-        }
-
-            .form-control:focus, .form-select:focus {
-                border-color: var(--teal) !important;
-                box-shadow: 0 0 0 3px rgba(45,212,191,0.12) !important;
-            }
-
-        .form-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-2);
-            margin-bottom: 5px;
-        }
-
-        /* Bootstrap override — table */
-        .table {
-            margin-bottom: 0;
-        }
-
-            .table th {
-                font-size: 11px;
-                color: var(--text-2);
-                font-weight: 500;
-                border-color: var(--border);
-                background: #fafbfc;
-            }
-
-            .table td {
-                font-size: 13px;
-                border-color: var(--border);
-                vertical-align: middle;
-            }
-
-        .table-hover tbody tr:hover {
-            background: #f8fafc;
-        }
-
-        /* Alert override */
-        .alert {
-            border-radius: var(--radius-md) !important;
-            border: 1px solid var(--border) !important;
-            font-size: 13px;
-        }
-
-        /* Responsive */
-        @@media (max-width: 1024px) {
-            : root
-
-        {
-            --sidebar-w: 200px;
-        }
-
-        }
-        @@media (max-width: 768px) {
-            .hms-sidebar
-
-        {
-            transform: translateX(-100%);
-        }
-
-        .hms-main {
-            margin-left: 0;
-        }
-
-        .kpi-grid {
-            grid-template-columns: repeat(2,1fr);
-        }
-
-        }
-
-        .breadcrumb {
-            font-size: 14px;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* bỏ dấu / mặc định của bootstrap */
-        .breadcrumb-item + .breadcrumb-item::before {
-            content: ">";
-            color: var(--text-2);
-            font-weight: 500;
-            margin: 0 6px;
-        }
-
-        /* link */
-        .breadcrumb a {
-            color: var(--text-1);
-            text-decoration: none;
-            font-weight: 600; /* in đậm */
-        }
-
-            .breadcrumb a:hover {
-                color: var(--teal);
-            }
-
-        /* item cuối */
-        .breadcrumb-item.active {
-            color: var(--text-1);
-            font-weight: 700; /* đậm hơn */
-        }
-    </style>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - Hệ Thống Quản Lý Bệnh Viện</title>
+
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+	<style>
+		*, *::before, *::after {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		:root {
+			--navy: #0f2744;
+			--navy-2: #1a3a5c;
+			--navy-3: rgba(255,255,255,0.06);
+			--teal: #2dd4bf;
+			--blue: #60a5fa;
+			--bg: #f1f5f9;
+			--card: #ffffff;
+			--success: #22c55e;
+			--warning: #f97316;
+			--text-1: #1e293b;
+			--text-2: #64748b;
+			--border: rgba(0,0,0,0.07);
+			--sidebar-w: 240px;
+			--radius-sm: 8px;
+			--radius-md: 12px;
+			--radius-lg: 16px;
+		}
+
+		html, body {
+			height: 100%;
+			font-family: 'DM Sans', system-ui, sans-serif;
+			background: var(--bg);
+			color: var(--text-1);
+			font-size: 14px;
+		}
+
+		/* ─── WRAPPER ─── */
+		.hms-wrapper {
+			display: flex;
+			min-height: 100vh;
+		}
+
+		/* ═══════════════════════════
+						   SIDEBAR
+						═══════════════════════════ */
+		.hms-sidebar {
+			width: var(--sidebar-w);
+			min-width: var(--sidebar-w);
+			background: var(--navy);
+			display: flex;
+			flex-direction: column;
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			z-index: 100;
+			overflow-y: auto;
+		}
+
+		/* Logo */
+		.sb-logo {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 18px 16px 16px;
+			border-bottom: 1px solid rgba(255,255,255,0.07);
+		}
+
+		.sb-logo-icon {
+			width: 34px;
+			height: 34px;
+			background: var(--teal);
+			border-radius: 9px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+		}
+
+			.sb-logo-icon i {
+				color: var(--navy);
+				font-size: 15px;
+			}
+
+		.sb-logo-title {
+			color: #fff;
+			font-size: 14px;
+			font-weight: 600;
+			line-height: 1.2;
+		}
+
+		.sb-logo-sub {
+			color: rgba(255,255,255,0.4);
+			font-size: 10px;
+		}
+
+		/* Nav section labels */
+		.sb-section {
+			padding: 16px 16px 4px;
+			font-size: 10px;
+			font-weight: 500;
+			letter-spacing: .08em;
+			text-transform: uppercase;
+			color: rgba(255,255,255,0.28);
+		}
+
+		/* Nav items */
+		.sb-nav {
+			flex: 1;
+			padding: 4px 10px;
+		}
+
+			.sb-nav .nav-link {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				padding: 9px 12px;
+				border-radius: var(--radius-sm);
+				color: rgba(255,255,255,0.52);
+				font-size: 13px;
+				font-weight: 400;
+				margin-bottom: 2px;
+				transition: background .15s, color .15s;
+				position: relative;
+				border-left: 2px solid transparent;
+				text-decoration: none;
+			}
+
+				.sb-nav .nav-link i {
+					width: 16px;
+					text-align: center;
+					font-size: 13px;
+					flex-shrink: 0;
+				}
+
+				.sb-nav .nav-link:hover {
+					background: rgba(255,255,255,0.05);
+					color: rgba(255,255,255,0.85);
+				}
+
+				.sb-nav .nav-link.active {
+					background: rgba(45,212,191,0.11);
+					color: var(--teal);
+					border-left: 2px solid var(--teal);
+					border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+				}
+
+		.sb-badge {
+			margin-left: auto;
+			background: var(--warning);
+			color: #fff;
+			font-size: 10px;
+			padding: 1px 7px;
+			border-radius: 99px;
+			font-weight: 600;
+		}
+
+		/* User profile at bottom */
+		.sb-footer {
+			padding: 10px 10px 14px;
+			border-top: 1px solid rgba(255,255,255,0.07);
+		}
+
+		.sb-user {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 9px 12px;
+			border-radius: var(--radius-sm);
+			cursor: pointer;
+			transition: background .15s;
+		}
+
+			.sb-user:hover {
+				background: rgba(255,255,255,0.05);
+			}
+
+		.sb-avatar {
+			width: 32px;
+			height: 32px;
+			border-radius: 50%;
+			background: #1e4a7a;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 11px;
+			font-weight: 600;
+			color: var(--blue);
+			flex-shrink: 0;
+		}
+
+		.sb-user-name {
+			color: #fff;
+			font-size: 12px;
+			font-weight: 500;
+		}
+
+		.sb-user-role {
+			color: rgba(255,255,255,0.38);
+			font-size: 10px;
+		}
+
+		.btn-logout {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 7px;
+			width: 100%;
+			margin-top: 6px;
+			padding: 7px 0;
+			background: rgba(249,115,22,0.12);
+			color: #fb923c;
+			border: 1px solid rgba(249,115,22,0.22);
+			border-radius: var(--radius-sm);
+			font-size: 12px;
+			font-weight: 500;
+			text-decoration: none;
+			transition: background .15s;
+		}
+
+			.btn-logout:hover {
+				background: rgba(249,115,22,0.2);
+				color: #fb923c;
+			}
+
+		/* ═══════════════════════════
+						   MAIN AREA
+						═══════════════════════════ */
+		.hms-main {
+			margin-left: var(--sidebar-w);
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			min-height: 100vh;
+		}
+
+		/* ─── TOPBAR ─── */
+		.hms-topbar {
+			position: sticky;
+			top: 0;
+			z-index: 90;
+			background: var(--card);
+			border-bottom: 1px solid var(--border);
+			padding: 10px 24px;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		/* Search — pill shape, centered */
+		.tb-search {
+			flex: 1;
+			max-width: 340px;
+			margin: 0 auto;
+			position: relative;
+		}
+
+			.tb-search i {
+				position: absolute;
+				left: 12px;
+				top: 50%;
+				transform: translateY(-50%);
+				color: var(--text-2);
+				font-size: 12px;
+				pointer-events: none;
+			}
+
+			.tb-search input {
+				width: 100%;
+				padding: 7px 14px 7px 34px;
+				border-radius: 99px;
+				border: 1px solid var(--border);
+				background: var(--bg);
+				font-size: 12px;
+				font-family: 'DM Sans', sans-serif;
+				color: var(--text-1);
+				outline: none;
+				transition: border-color .15s;
+			}
+
+				.tb-search input:focus {
+					border-color: var(--teal);
+				}
+
+				.tb-search input::placeholder {
+					color: var(--text-2);
+				}
+
+		/* Right actions */
+		.tb-right {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-left: auto;
+		}
+
+		.tb-btn {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 13px;
+			border-radius: var(--radius-sm);
+			border: 1px solid var(--border);
+			background: transparent;
+			font-size: 12px;
+			font-family: 'DM Sans', sans-serif;
+			color: var(--text-1);
+			cursor: pointer;
+			transition: background .15s;
+		}
+
+			.tb-btn:hover {
+				background: var(--bg);
+			}
+
+			.tb-btn i {
+				font-size: 11px;
+				color: var(--text-2);
+			}
+
+		.tb-notif {
+			position: relative;
+			width: 34px;
+			height: 34px;
+			border-radius: var(--radius-sm);
+			border: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			transition: background .15s;
+		}
+
+			.tb-notif:hover {
+				background: var(--bg);
+			}
+
+			.tb-notif i {
+				font-size: 13px;
+				color: var(--text-2);
+			}
+
+		.notif-dot {
+			position: absolute;
+			top: 6px;
+			right: 6px;
+			width: 7px;
+			height: 7px;
+			background: var(--warning);
+			border-radius: 50%;
+			border: 1.5px solid var(--card);
+		}
+
+		.tb-divider {
+			width: 1px;
+			height: 18px;
+			background: var(--border);
+		}
+
+		.tb-datetime {
+			text-align: right;
+		}
+
+		.tb-time {
+			font-size: 13px;
+			font-weight: 500;
+			color: var(--text-1);
+		}
+
+		.tb-date {
+			font-size: 10px;
+			color: var(--text-2);
+		}
+
+		/* ─── CONTENT ─── */
+		.hms-content {
+			padding: 24px;
+			flex: 1;
+		}
+
+		/* Page header */
+		.page-header {
+			margin-bottom: 20px;
+		}
+
+		.page-title {
+			font-size: 18px;
+			font-weight: 600;
+			color: var(--text-1);
+		}
+
+		.page-sub {
+			font-size: 12px;
+			color: var(--text-2);
+			margin-top: 2px;
+		}
+
+		/* ─── KPI CARDS ─── */
+		.kpi-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 14px;
+			margin-bottom: 24px;
+		}
+
+		.kpi-card {
+			background: var(--card);
+			border-radius: var(--radius-lg);
+			padding: 16px 18px;
+			border: 1px solid var(--border);
+			position: relative;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+			transition: box-shadow .2s;
+		}
+
+			.kpi-card:hover {
+				box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+			}
+
+		.kpi-icon-wrap {
+			position: absolute;
+			top: 14px;
+			right: 14px;
+			width: 36px;
+			height: 36px;
+			border-radius: 9px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+			.kpi-icon-wrap i {
+				font-size: 15px;
+			}
+
+		.kpi-icon-teal {
+			background: rgba(45,212,191,0.12);
+			color: #0d9488;
+		}
+
+		.kpi-icon-blue {
+			background: rgba(96,165,250,0.14);
+			color: #2563eb;
+		}
+
+		.kpi-icon-green {
+			background: rgba(34,197,94,0.12);
+			color: #16a34a;
+		}
+
+		.kpi-icon-warn {
+			background: rgba(249,115,22,0.12);
+			color: #c2410c;
+		}
+
+		.kpi-label {
+			font-size: 11px;
+			color: var(--text-2);
+			margin-bottom: 6px;
+		}
+
+		.kpi-value {
+			font-size: 26px;
+			font-weight: 600;
+			color: var(--text-1);
+			line-height: 1;
+		}
+
+		.kpi-trend {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			margin-top: 7px;
+			font-size: 11px;
+		}
+
+		.trend-up {
+			color: var(--success);
+		}
+
+		.trend-down {
+			color: var(--warning);
+		}
+
+		.kpi-trend span:last-child {
+			color: var(--text-2);
+		}
+
+		/* ─── DATA PANEL ─── */
+		.data-panel {
+			background: var(--card);
+			border-radius: var(--radius-lg);
+			border: 1px solid var(--border);
+			overflow: hidden;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+		}
+
+		.panel-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 16px 20px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.panel-title {
+			font-size: 14px;
+			font-weight: 600;
+			color: var(--text-1);
+		}
+
+		.panel-sub {
+			font-size: 11px;
+			color: var(--text-2);
+			margin-top: 1px;
+		}
+
+		.btn-view-all {
+			padding: 6px 14px;
+			border-radius: var(--radius-sm);
+			border: 1px solid var(--border);
+			background: transparent;
+			font-size: 12px;
+			font-family: 'DM Sans', sans-serif;
+			color: var(--text-1);
+			cursor: pointer;
+			text-decoration: none;
+			transition: background .15s;
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+		}
+
+			.btn-view-all:hover {
+				background: var(--bg);
+				color: var(--text-1);
+			}
+
+		/* ─── TABLE ─── */
+		.hms-table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+
+			.hms-table thead th {
+				font-size: 11px;
+				font-weight: 500;
+				color: var(--text-2);
+				text-align: left;
+				padding: 10px 20px;
+				border-bottom: 1px solid var(--border);
+				white-space: nowrap;
+				background: #fafbfc;
+			}
+
+			.hms-table tbody td {
+				padding: 12px 20px;
+				border-bottom: 1px solid var(--border);
+				vertical-align: middle;
+			}
+
+			.hms-table tbody tr:last-child td {
+				border-bottom: none;
+			}
+
+			.hms-table tbody tr:hover td {
+				background: #f8fafc;
+			}
+
+		/* Patient cell */
+		.pt-cell {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.pt-avatar {
+			width: 34px;
+			height: 34px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 11px;
+			font-weight: 600;
+			flex-shrink: 0;
+		}
+
+		.pt-name {
+			font-size: 13px;
+			font-weight: 500;
+			color: var(--text-1);
+		}
+
+		.pt-id {
+			font-size: 10px;
+			color: var(--text-2);
+			background: #f1f5f9;
+			padding: 1px 7px;
+			border-radius: 4px;
+			display: inline-block;
+			margin-top: 2px;
+		}
+
+		/* Risk badges */
+		.badge-risk {
+			display: inline-block;
+			font-size: 11px;
+			font-weight: 500;
+			padding: 3px 10px;
+			border-radius: 99px;
+		}
+
+		.risk-high {
+			background: #fff7ed;
+			color: #c2410c;
+		}
+
+		.risk-moderate {
+			background: #fefce8;
+			color: #854d0e;
+		}
+
+		.risk-low {
+			background: #f0fdf4;
+			color: #166534;
+		}
+
+		.risk-critical {
+			background: #fef2f2;
+			color: #991b1b;
+		}
+
+		/* CKD stage pills */
+		.ckd-pill {
+			display: inline-block;
+			font-size: 11px;
+			font-weight: 500;
+			padding: 3px 9px;
+			border-radius: 6px;
+		}
+
+		.ckd-2 {
+			background: #d1fae5;
+			color: #065f46;
+		}
+
+		.ckd-3 {
+			background: #dbeafe;
+			color: #1d4ed8;
+		}
+
+		.ckd-4 {
+			background: #fef3c7;
+			color: #92400e;
+		}
+
+		.ckd-5 {
+			background: #fee2e2;
+			color: #991b1b;
+		}
+
+		/* Action buttons */
+		.act-btn {
+			width: 28px;
+			height: 28px;
+			border-radius: 6px;
+			border: 1px solid var(--border);
+			background: transparent;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			margin-right: 4px;
+			transition: background .12s;
+			text-decoration: none;
+			color: var(--text-2);
+		}
+
+			.act-btn:hover {
+				background: var(--bg);
+				color: var(--text-1);
+			}
+
+			.act-btn i {
+				font-size: 12px;
+			}
+
+		/* Generic card used by child pages */
+		.hms-card {
+			background: var(--card);
+			border-radius: var(--radius-lg);
+			border: 1px solid var(--border);
+			box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+			padding: 24px;
+			margin-bottom: 20px;
+		}
+
+		.hms-card-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 18px;
+			padding-bottom: 14px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		/* Buttons — primary */
+		.btn-primary-hms {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			padding: 8px 16px;
+			background: var(--navy);
+			color: #fff;
+			border: none;
+			border-radius: var(--radius-sm);
+			font-size: 13px;
+			font-family: 'DM Sans', sans-serif;
+			font-weight: 500;
+			cursor: pointer;
+			text-decoration: none;
+			transition: background .15s;
+		}
+
+			.btn-primary-hms:hover {
+				background: var(--navy-2);
+				color: #fff;
+			}
+
+		.btn-teal-hms {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			padding: 8px 16px;
+			background: var(--teal);
+			color: var(--navy);
+			border: none;
+			border-radius: var(--radius-sm);
+			font-size: 13px;
+			font-family: 'DM Sans', sans-serif;
+			font-weight: 600;
+			cursor: pointer;
+			text-decoration: none;
+			transition: opacity .15s;
+		}
+
+			.btn-teal-hms:hover {
+				opacity: .88;
+				color: var(--navy);
+			}
+
+		/* ─── FOOTER ─── */
+		.hms-footer {
+			padding: 16px 24px;
+			text-align: center;
+			font-size: 11px;
+			color: var(--text-2);
+			border-top: 1px solid var(--border);
+		}
+
+		/* ─── FORMS inside content ─── */
+		.form-control, .form-select {
+			border-radius: var(--radius-sm) !important;
+			border-color: var(--border) !important;
+			font-size: 13px !important;
+			font-family: 'DM Sans', sans-serif !important;
+		}
+
+			.form-control:focus, .form-select:focus {
+				border-color: var(--teal) !important;
+				box-shadow: 0 0 0 3px rgba(45,212,191,0.12) !important;
+			}
+
+		.form-label {
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--text-2);
+			margin-bottom: 5px;
+		}
+
+		/* Bootstrap override — table */
+		.table {
+			margin-bottom: 0;
+		}
+
+			.table th {
+				font-size: 11px;
+				color: var(--text-2);
+				font-weight: 500;
+				border-color: var(--border);
+				background: #fafbfc;
+			}
+
+			.table td {
+				font-size: 13px;
+				border-color: var(--border);
+				vertical-align: middle;
+			}
+
+		.table-hover tbody tr:hover {
+			background: #f8fafc;
+		}
+
+		/* Alert override */
+		.alert {
+			border-radius: var(--radius-md) !important;
+			border: 1px solid var(--border) !important;
+			font-size: 13px;
+		}
+
+		/* Responsive */
+		@@media (max-width: 1024px) {
+			: root {
+				--sidebar-w: 200px;
+			}
+		}
+
+		@@media (max-width: 768px) {
+			.hms-sidebar {
+				transform: translateX(-100%);
+			}
+
+			.hms-main {
+				margin-left: 0;
+			}
+
+			.kpi-grid {
+				grid-template-columns: repeat(2,1fr);
+			}
+		}
+
+		.breadcrumb {
+			font-size: 14px;
+			margin-bottom: 6px;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		/* bỏ dấu / mặc định của bootstrap */
+		.breadcrumb-item + .breadcrumb-item::before {
+			content: ">";
+			color: var(--text-2);
+			font-weight: 500;
+			margin: 0 6px;
+		}
+
+		/* link */
+		.breadcrumb a {
+			color: var(--text-1);
+			text-decoration: none;
+			font-weight: 600; /* in đậm */
+		}
+
+			.breadcrumb a:hover {
+				color: var(--teal);
+			}
+
+		/* item cuối */
+		.breadcrumb-item.active {
+			color: var(--text-1);
+			font-weight: 700; /* đậm hơn */
+		}
+		
+	</style>
 </head>
 
 <body>
-    <div class="hms-wrapper">
+	<div class="hms-wrapper">
 
-        <!-- ═══ SIDEBAR ═══ -->
-        <nav class="hms-sidebar">
+		<!-- ═══ SIDEBAR ═══ -->
+		<nav class="hms-sidebar">
 
-            <!-- Logo -->
-            <div class="sb-logo">
-                <div class="sb-logo-icon">
-                    <i class="fas fa-hospital-user"></i>
-                </div>
-                <div>
-                    <div class="sb-logo-title">An Việt</div>
-                    <div class="sb-logo-sub">Hospital System</div>
-                </div>
-            </div>
+			<!-- Logo -->
+			<div class="sb-logo">
+				<div class="sb-logo-icon">
+					<i class="fas fa-hospital-user"></i>
+				</div>
+				<div>
+					<div class="sb-logo-title">An Việt</div>
+					<div class="sb-logo-sub">Hospital System</div>
+				</div>
+			</div>
 
-            <!-- Navigation -->
-            <div class="sb-nav">
+			<!-- Navigation -->
+			<div class="sb-nav">
 
-                <div class="sb-section">Tổng Quan</div>
+				<div class="sb-section">Tổng Quan</div>
 
-                <a class="nav-link" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-home"></i> Trang Chủ
-                </a>
+				<a class="nav-link" asp-controller="Home" asp-action="Index">
+					<i class="fas fa-home"></i> Trang Chủ
+				</a>
 
-                <a class="nav-link" asp-controller="Home" asp-action="Privacy">
-                    <i class="fas fa-calendar-check"></i> Đặt Lịch
-                </a>
+				<a class="nav-link" asp-controller="Home" asp-action="Privacy">
+					<i class="fas fa-calendar-check"></i> Đặt Lịch
+				</a>
 
-                <div class="sb-section">Lâm Sàng</div>
+				<div class="sb-section">Lâm Sàng</div>
 
-                <a class="nav-link" asp-controller="Patient" asp-action="Index">
-                    <i class="fas fa-user-injured"></i> Bệnh Nhân
-                </a>
+				<a class="nav-link" asp-controller="Patient" asp-action="Index">
+					<i class="fas fa-user-injured"></i> Bệnh Nhân
+				</a>
 
-                <a class="nav-link" asp-controller="MedicalRecord" asp-action="Index">
-                    <i class="fas fa-file-medical"></i> Bệnh Án
-                </a>
+				<a class="nav-link" asp-controller="MedicalRecord" asp-action="Index">
+					<i class="fas fa-file-medical"></i> Bệnh Án
+				</a>
 
-                <a class="nav-link" asp-controller="Medicine" asp-action="Index">
-                    <i class="fas fa-pills"></i> Thuốc
-                </a>
+				<a class="nav-link" asp-controller="Medicine" asp-action="Index">
+					<i class="fas fa-pills"></i> Thuốc
+				</a>
 
-                <div class="sb-section">Tổ Chức</div>
+				<div class="sb-section">Tổ Chức</div>
 
-                <a class="nav-link" asp-controller="Department" asp-action="Index">
-                    <i class="fas fa-building-columns"></i> Khoa
-                </a>
+				<a class="nav-link" asp-controller="Department" asp-action="Index">
+					<i class="fas fa-building-columns"></i> Khoa
+				</a>
 
-                <a class="nav-link" asp-controller="Doctor" asp-action="Index">
-                    <i class="fas fa-user-doctor"></i> Bác Sĩ
-                </a>
+				<a class="nav-link" asp-controller="Doctor" asp-action="Index">
+					<i class="fas fa-user-doctor"></i> Bác Sĩ
+				</a>
 
-                <a class="nav-link" asp-controller="Account" asp-action="Index">
-                    <i class="fas fa-user-gear"></i> Tài Khoản
-                </a>
+				<a class="nav-link" asp-controller="Account" asp-action="Index">
+					<i class="fas fa-user-gear"></i> Tài Khoản
+				</a>
 
-                <div class="sb-section">Phân Tích</div>
+				<div class="sb-section">Phân Tích</div>
 
-                <a class="nav-link" asp-controller="Home" asp-action="Privacy">
-                    <i class="fas fa-chart-line"></i> Thống Kê
-                </a>
+				<a class="nav-link" asp-controller="Home" asp-action="Privacy">
+					<i class="fas fa-chart-line"></i> Thống Kê
+				</a>
 
-            </div><!-- /.sb-nav -->
-            <!-- User profile -->
-            <div class="sb-footer">
-                <div class="sb-user">
-                    <div class="sb-avatar">
-                        @{
-                            var uname = User.Identity?.Name ??
-                            Context.Session.GetString("Username") ?? "ND";
-                            var initials = uname.Length >= 2
-                            ? uname.Substring(0, 2).ToUpper()
-                            : uname.ToUpper();
-                        }
-                        @initials
-                    </div>
-                    <div>
-                        <div class="sb-user-name">@(Context.Session.GetString("Username") ?? "Người dùng")</div>
-                        <div class="sb-user-role">Nhân viên y tế</div>
-                    </div>
-                </div>
-                <a class="btn-logout"
-                   asp-controller="Auth"
-                   asp-action="Logout">
-                    <i class="fas fa-arrow-right-from-bracket"></i> Đăng xuất
-                </a>
-            </div>
+			</div><!-- /.sb-nav -->
+			<!-- User profile -->
+			<div class="sb-footer">
+				<div class="sb-user">
+					<div class="sb-avatar">
+						@{
+							var uname = User.Identity?.Name ??
+							Context.Session.GetString("Username") ?? "ND";
+							var initials = uname.Length >= 2
+							? uname.Substring(0, 2).ToUpper()
+							: uname.ToUpper();
+						}
+						@initials
+					</div>
+					<div>
+						<div class="sb-user-name">@(Context.Session.GetString("Username") ?? "Người dùng")</div>
+						<div class="sb-user-role">
+							@(User.IsInRole("Admin") ? "Quản trị viên"
+														: User.IsInRole("Doctor") ? "Bác sĩ"
+														: User.IsInRole("Patient") ? "Bệnh nhân"
+														: "Người dùng")
+						</div>
+					</div>
+				</div>
+				<a class="btn-logout"
+				   asp-controller="Account"
+				   asp-action="ChangePasswordSelf">
+					<i class="fas fa-key"></i> Đổi mật khẩu
+				</a>
+				<a class="btn-logout"
+				   asp-controller="Auth"
+				   asp-action="Logout">
+					<i class="fas fa-arrow-right-from-bracket"></i> Đăng xuất
+				</a>
+			</div>
 
-        </nav>
-        <!-- /.hms-sidebar -->
-        <!-- ═══ MAIN ═══ -->
-        <div class="hms-main">
+		</nav>
+		<!-- /.hms-sidebar -->
+		<!-- ═══ MAIN ═══ -->
+		<div class="hms-main">
 
-            <!-- TOP BAR -->
-            <header class="hms-topbar">
+			<!-- TOP BAR -->
+			<header class="hms-topbar">
 
-                <!-- Search pill — centered -->
-                <div class="tb-search">
-                    <i class="fas fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Tìm bệnh nhân, hồ sơ, xét nghiệm…" />
-                </div>
+				<!-- Search pill — centered -->
+				<!--<div class="tb-search">
+					<i class="fas fa-magnifying-glass"></i>
+					<input id="globalSearch" type="text" placeholder="Tìm bệnh nhân, bác sĩ, thuốc..." autocomplete="off" />
+				</div>-->
 
-                <!-- Right side -->
-                <div class="tb-right">
 
-                    <!-- Quick Actions dropdown -->
-                    <div class="dropdown">
-                        <button class="tb-btn" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-plus"></i>
-                            Thao Tác Nhanh
-                            <i class="fas fa-chevron-down" style="font-size:9px;"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" style="font-size:13px;min-width:190px;border-radius:10px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,0.1);">
-                            <li><a class="dropdown-item" asp-controller="Patient" asp-action="Create"><i class="fas fa-user-plus me-2 text-muted" style="width:16px;"></i>Thêm bệnh nhân</a></li>
-                            <li><a class="dropdown-item" asp-controller="MedicalRecord" asp-action="Create"><i class="fas fa-file-circle-plus me-2 text-muted" style="width:16px;"></i>Tạo bệnh án</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus me-2 text-muted" style="width:16px;"></i>Đặt lịch khám</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-chart-bar me-2 text-muted" style="width:16px;"></i>Xuất báo cáo</a></li>
-                        </ul>
-                    </div>
 
-                    <!-- Notification bell -->
-                    <div class="tb-notif">
-                        <i class="fas fa-bell"></i>
-                        <span class="notif-dot"></span>
-                    </div>
+				<!-- Right side -->
+				<div class="tb-right">
 
-                    <div class="tb-divider"></div>
+					<!-- Quick Actions dropdown -->
+					<div class="dropdown">
+						<button class="tb-btn" data-bs-toggle="dropdown" aria-expanded="false">
+							<i class="fas fa-plus"></i>
+							Thao Tác Nhanh
+							<i class="fas fa-chevron-down" style="font-size:9px;"></i>
+						</button>
+						<ul class="dropdown-menu dropdown-menu-end" style="font-size:13px;min-width:190px;border-radius:10px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,0.1);">
+							<li><a class="dropdown-item" asp-controller="Patient" asp-action="Create"><i class="fas fa-user-plus me-2 text-muted" style="width:16px;"></i>Thêm bệnh nhân</a></li>
+							<li><a class="dropdown-item" asp-controller="MedicalRecord" asp-action="Create"><i class="fas fa-file-circle-plus me-2 text-muted" style="width:16px;"></i>Tạo bệnh án</a></li>
+							<li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus me-2 text-muted" style="width:16px;"></i>Đặt lịch khám</a></li>
+							<li><hr class="dropdown-divider"></li>
+							<li><a class="dropdown-item" href="#"><i class="fas fa-chart-bar me-2 text-muted" style="width:16px;"></i>Xuất báo cáo</a></li>
+						</ul>
+					</div>
 
-                    <!-- Date-time -->
-                    <div class="tb-datetime">
-                        <div class="tb-time" id="tb-clock">@DateTime.Now.ToString("HH:mm")</div>
-                        <div class="tb-date">@DateTime.Now.ToString("dd/MM/yyyy")</div>
-                    </div>
+					<!-- Notification bell -->
+					<div class="tb-notif">
+						<i class="fas fa-bell"></i>
+						<span class="notif-dot"></span>
+					</div>
 
-                </div>
-            </header>
-            <!-- /.hms-topbar -->
-            <!-- CONTENT AREA -->
-            <div class="hms-content">
+					<div class="tb-divider"></div>
 
-                <!-- Page header -->
-                <div class="page-header">
+					<!-- Date-time -->
+					<div class="tb-datetime">
+						<div class="tb-time" id="tb-clock">@DateTime.Now.ToString("HH:mm")</div>
+						<div class="tb-date">@DateTime.Now.ToString("dd/MM/yyyy")</div>
+					</div>
 
-                    <!-- BREADCRUMB -->
-                    @if (ViewData["Breadcrumb"] != null)
-                    {
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb mb-1">
-                                @foreach (var item in (List<(string Text, string Url)>)ViewData["Breadcrumb"])
-                                {
-                                    if (!string.IsNullOrEmpty(item.Url))
-                                    {
-                                        <li class="breadcrumb-item">
-                                            <a href="@item.Url">@item.Text</a>
-                                        </li>
-                                    }
-                                    else
-                                    {
-                                        <li class="breadcrumb-item active fw-semibold" aria-current="page">
-                                            @item.Text
-                                        </li>
-                                    }
-                                }
-                            </ol>
-                        </nav>
-                    }
-                </div>
+				</div>
+			</header>
+			<!-- /.hms-topbar -->
+			<!-- CONTENT AREA -->
+			<div class="hms-content">
 
-                <!-- Child page renders here -->
-                <main role="main">
-                    @RenderBody()
-                </main>
+				<!-- Page header -->
+				<div class="page-header">
 
-            </div>
-            <!-- /.hms-content -->
+					<!-- BREADCRUMB -->
+					@if (ViewData["Breadcrumb"] != null)
+					{
+						<nav aria-label="breadcrumb">
+							<ol class="breadcrumb mb-1">
+								@foreach (var item in (List<(string Text, string Url)>)ViewData["Breadcrumb"])
+								{
+									if (!string.IsNullOrEmpty(item.Url))
+									{
+										<li class="breadcrumb-item">
+											<a href="@item.Url">@item.Text</a>
+										</li>
+									}
+									else
+									{
+										<li class="breadcrumb-item active fw-semibold" aria-current="page">
+											@item.Text
+										</li>
+									}
+								}
+							</ol>
+						</nav>
+					}
+				</div>
 
-            <footer class="hms-footer">
-                &copy; 2026 — Hệ Thống Quản Lý Bệnh Viện Đa Khoa An Việt
-            </footer>
+				<!-- Child page renders here -->
+				<main role="main">
+					@RenderBody()
+				</main>
 
-        </div>
-        <!-- /.hms-main -->
+			</div>
+			<!-- /.hms-content -->
 
-    </div>
-    <!-- /.hms-wrapper -->
+			<footer class="hms-footer">
+				&copy; 2026 — Hệ Thống Quản Lý Bệnh Viện Đa Khoa An Việt
+			</footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+		</div>
+		<!-- /.hms-main -->
 
-    <script>
-        /* Live clock */
-        function updateClock() {
-            var now = new Date();
-            var h = String(now.getHours()).padStart(2,'0');
-            var m = String(now.getMinutes()).padStart(2,'0');
-            var el = document.getElementById('tb-clock');
-            if (el) el.textContent = h + ':' + m;
-        }
-        setInterval(updateClock, 1000);
+	</div>
+	<!-- /.hms-wrapper -->
 
-        /* Active nav link highlight */
-        (function () {
-            var path = window.location.pathname.toLowerCase();
-            document.querySelectorAll('.sb-nav .nav-link').forEach(function (link) {
-                var href = link.getAttribute('href') || '';
-                if (href && href !== '/' && path.startsWith(href.toLowerCase())) {
-                    link.classList.add('active');
-                } else if (href === '/' && path === '/') {
-                    link.classList.add('active');
-                }
-            });
-        })();
-    </script>
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+	
+
+	<script>
+		/* Live clock */
+		function updateClock() {
+			var now = new Date();
+			var h = String(now.getHours()).padStart(2,'0');
+			var m = String(now.getMinutes()).padStart(2,'0');
+			var el = document.getElementById('tb-clock');
+			if (el) el.textContent = h + ':' + m;
+		}
+		setInterval(updateClock, 1000);
+
+		/* Active nav link highlight */
+		(function () {
+			var path = window.location.pathname.toLowerCase();
+			document.querySelectorAll('.sb-nav .nav-link').forEach(function (link) {
+				var href = link.getAttribute('href') || '';
+				if (href && href !== '/' && path.startsWith(href.toLowerCase())) {
+					link.classList.add('active');
+				} else if (href === '/' && path === '/') {
+					link.classList.add('active');
+				}
+			});
+		})();
+	</script>
+
+	@await RenderSectionAsync("Scripts", required: false)
+
+	@await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

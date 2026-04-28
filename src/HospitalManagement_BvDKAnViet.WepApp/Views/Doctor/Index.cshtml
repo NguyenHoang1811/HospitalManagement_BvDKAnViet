@@ -90,6 +90,14 @@
                                 <!-- ACTION -->
                                 <td class="text-end">
 
+                                    <a asp-controller="Account"
+                                       asp-action="Create"
+                                       asp-route-doctorId="@d.DoctorId"
+                                       class="btn-action text-success"
+                                       title="Tạo tài khoản">
+                                        <i class="fas fa-user-plus"></i>
+                                    </a>
+
                                     <a asp-action="Details" asp-route-id="@d.DoctorId"
                                        class="btn-action text-info" title="Xem">
                                         <i class="fas fa-eye"></i>

@@ -1,7 +1,6 @@
 ﻿using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
 using HospitalManagement_BvDKAnViet.Core.Enums;
 using HospitalManagement_BvDKAnViet.Core.IServices;
-using HospitalManagement_BvDKAnViet.Data.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -63,6 +62,7 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
                 // Build claims
                 var authClaims = new List<Claim>
                 {
+
                     new Claim(ClaimTypes.Name, account.Username),
                     new Claim(ClaimTypes.NameIdentifier, account.UserId.ToString())
                 };
@@ -70,6 +70,16 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
                 if (account.Role != null && !string.IsNullOrWhiteSpace(account.Role.RoleName))
                 {
                     authClaims.Add(new Claim(ClaimTypes.Role, account.Role.RoleName));
+                }
+
+                if (account.PatientId != null)
+                {
+                    authClaims.Add(new Claim("PatientId", account.PatientId.ToString()));
+                }
+
+                if (account.DoctorId != null)
+                {
+                    authClaims.Add(new Claim("DoctorId", account.DoctorId.ToString()));
                 }
 
                 // Generate JWT (uses registered IJwtService)
@@ -95,6 +105,8 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
                     ResponseCode = (int)AccountManagerStatus.ACCOUNT_INSERT_SUCCESS,
                     ResponseMessage = "Đăng nhập thành công",
                     token = token,
+                    PatientId = account.PatientId,
+                    DoctorId = account.DoctorId,
                     UserName = account.Username,
                     AccountID = account.UserId,
                     resfeshToken = refreshToken

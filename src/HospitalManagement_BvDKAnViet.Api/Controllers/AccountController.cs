@@ -1,6 +1,7 @@
-using AutoMapper;
+﻿using AutoMapper;
 using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
 using HospitalManagement_BvDKAnViet.Core.IServices;
+using HospitalManagement_BvDKAnViet.Data.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HospitalManagement_BvDKAnViet.Api.Controllers
@@ -46,27 +47,41 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (await _accountRepository.IsUsernameTakenAsync(model.Username))
                 return Conflict(new { message = "Username already taken" });
 
-            var created = await _accountRepository.CreateAsync(model);
-            if (created is null)
-                return BadRequest(new { message = "Unable to create user" });
+            try
+            {
+                var created = await _accountRepository.CreateAsync(model);
 
-            var dto = _mapper.Map<UserDto>(created);
-            return CreatedAtAction(nameof(GetById), new { id = dto.UserId }, dto);
+                if (created is null)
+                    return BadRequest(new { message = "Unable to create user" });
+
+                var dto = _mapper.Map<UserDto>(created);
+                return CreatedAtAction(nameof(GetById), new { id = dto.UserId }, dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // PUT: api/Account/5
-        // NOTE: Username is an immutable public identifier � controller will NOT allow changing it.
+        // NOTE: Username is an immutable public identifier — controller will NOT allow changing it.
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             if (model.UserId != id) return BadRequest(new { message = "Id mismatch" });
 
-            // Do not accept or process Username changes here (immutable identifier).
-            // The repository UpdateAsync only updates role and optional password when provided.
-            var ok = await _accountRepository.UpdateAsync(model);
-            if (!ok) return NotFound();
-            return NoContent();
+            try
+            {
+                var ok = await _accountRepository.UpdateAsync(model);
+                if (!ok) return NotFound();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // DELETE: api/Account/5
@@ -87,6 +102,40 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             var ok = await _accountRepository.ChangePasswordAsync(model);
             if (!ok) return BadRequest(new { message = "Current password invalid or user not found" });
             return NoContent();
+        }
+
+        [HttpPost("AdminResetPassword/{id:int}")]
+        public async Task<IActionResult> AdminResetPassword(int id)
+        {
+            try
+            {
+                var user = await _accountRepository.GetByIdAsync(id);
+                if (user == null)
+                    return NotFound(new { message = "Tài khoản không tồn tại" });
+
+                var defaultPassword = "123456";
+
+                user.Password = AccountRepository.CreatePasswordHash(defaultPassword);
+
+                // nếu có field này thì dùng
+                var prop = user.GetType().GetProperty("MustChangePassword");
+                if (prop != null)
+                {
+                    prop.SetValue(user, true);
+                }
+
+                await _accountRepository.UpdateEntity(user);
+
+                return Ok(new
+                {
+                    message = "Reset mật khẩu thành công",
+                    password = defaultPassword
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

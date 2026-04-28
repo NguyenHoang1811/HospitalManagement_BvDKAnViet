@@ -11,6 +11,7 @@ namespace HospitalManagement_BvDKAnViet.Core.Entities
         public string? DoctorImage { get; set; }
 
         // Navigation
+        public User? User { get; set; }
         public Department? Department { get; set; }
         public ICollection<Appointment>? Appointments { get; set; }
         public ICollection<MedicalRecord>? MedicalRecords { get; set; }

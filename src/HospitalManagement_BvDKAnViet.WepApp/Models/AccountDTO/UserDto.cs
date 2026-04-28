@@ -6,6 +6,8 @@
         public string Username { get; set; } = null!;
         public int RoleId { get; set; }
         public string? RoleName { get; set; }
+        public int? PatientId { get; set; }
+        public int? DoctorId { get; set; }
 
     }
 }

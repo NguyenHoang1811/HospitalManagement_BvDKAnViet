@@ -47,14 +47,14 @@ namespace HospitalManagement_BvDKAnViet.Data.Context
                 .HasForeignKey(k => k.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            
+
             modelBuilder.Entity<Prescription>()
                 .HasOne(p => p.MedicalRecord)
                 .WithMany(m => m.Prescriptions)
                 .HasForeignKey(p => p.RecordId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            
+
             modelBuilder.Entity<Prescription>()
                 .HasOne(p => p.Medicine)
                 .WithMany(m => m.Prescriptions)
@@ -90,6 +90,36 @@ namespace HospitalManagement_BvDKAnViet.Data.Context
             modelBuilder.Entity<Invoice>()
                 .Property(i => i.CreatedDate)
                 .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Patient)
+                .WithOne(p => p.User)
+                .HasForeignKey<User>(u => u.PatientId)
+                .OnDelete(DeleteBehavior.SetNull);
+            // Patient - User (1-1)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Patient)
+                .WithOne(p => p.User)
+                .HasForeignKey<User>(u => u.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Doctor - User (1-1)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Doctor)
+                .WithOne(d => d.User)
+                .HasForeignKey<User>(u => u.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Unique constraint
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.PatientId)
+                .IsUnique()
+                .HasFilter("[PatientId] IS NOT NULL");
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.DoctorId)
+                .IsUnique()
+                .HasFilter("[DoctorId] IS NOT NULL");
         }
     }
 }

@@ -12,6 +12,8 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Models.AccountDTO
         [StringLength(200)]
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         public string Password { get; set; } = null!;
+        public int? PatientId { get; set; }
+        public int? DoctorId { get; set; }
 
     }
 }

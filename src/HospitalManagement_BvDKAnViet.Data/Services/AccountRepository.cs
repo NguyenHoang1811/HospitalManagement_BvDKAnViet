@@ -23,6 +23,8 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
 
             var user = await _db.Users
                                 .Include(u => u.Role)
+                                .Include(u => u.Patient) // include patient info for users with Patient role
+                                .Include(u => u.Doctor) // include doctor info for users with Doctor role
                                 .FirstOrDefaultAsync(u => u.Username == request.Username);
 
             if (user is null) return null;
@@ -35,6 +37,8 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
             return await _db.Users
                             .AsNoTracking()
                             .Include(u => u.Role)
+                            .Include(u => u.Patient) // include patient info for users with Patient role
+                            .Include(u => u.Doctor) // include doctor info for users with Doctor role
                             .OrderBy(u => u.Username)
                             .ToListAsync();
         }
@@ -44,6 +48,7 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
             return await _db.Users
                             .AsNoTracking()
                             .Include(u => u.Role)
+                            .Include(u => u.Patient) // include patient info for users with Patient role
                             .FirstOrDefaultAsync(u => u.UserId == id);
         }
 
@@ -51,15 +56,54 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
         {
             if (dto is null) throw new ArgumentNullException(nameof(dto));
 
-            // check username uniqueness
+            // username unique
             if (await _db.Users.AnyAsync(u => u.Username == dto.Username))
                 return null;
+
+            var role = await _db.Roles.FindAsync(dto.RoleId);
+
+            if (role == null)
+                throw new Exception("Role không tồn tại");
+
+            // ================= PATIENT =================
+            if (role.RoleName == "Patient")
+            {
+                if (dto.PatientId == null)
+                    throw new Exception("Patient phải có PatientId");
+
+                var exists = await _db.Users.AnyAsync(u => u.PatientId == dto.PatientId);
+                if (exists)
+                    throw new Exception("Patient đã có tài khoản");
+
+                var patientExists = await _db.Patients.AnyAsync(p => p.PatientId == dto.PatientId);
+                if (!patientExists)
+                    throw new Exception("Patient không tồn tại");
+            }
+
+            // ================= DOCTOR =================
+            if (role.RoleName == "Doctor")
+            {
+                if (dto.DoctorId == null)
+                    throw new Exception("Doctor phải có DoctorId");
+
+                var exists = await _db.Users.AnyAsync(u => u.DoctorId == dto.DoctorId);
+                if (exists)
+                    throw new Exception("Doctor đã có tài khoản");
+
+                var doctorExists = await _db.Doctors.AnyAsync(d => d.DoctorId == dto.DoctorId);
+                if (!doctorExists)
+                    throw new Exception("Doctor không tồn tại");
+            }
 
             var user = new User
             {
                 Username = dto.Username,
                 Password = CreatePasswordHash(dto.Password),
                 RoleId = dto.RoleId,
+
+                PatientId = role.RoleName == "Patient" ? dto.PatientId : null,
+                DoctorId = role.RoleName == "Doctor" ? dto.DoctorId : null,
+
                 RefreshToken = null,
                 ExpriredTime = null
             };
@@ -75,6 +119,59 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
 
             var existing = await _db.Users.FindAsync(dto.UserId);
             if (existing is null) return false;
+
+            var role = await _db.Roles.FindAsync(dto.RoleId);
+
+            // ===== PATIENT =====
+            var patientIdProp = dto.GetType().GetProperty("PatientId");
+            if (patientIdProp != null)
+            {
+                var patientId = (int?)patientIdProp.GetValue(dto);
+
+                if (role?.RoleName == "Patient")
+                {
+                    if (patientId == null)
+                        throw new Exception("Patient phải có PatientId");
+
+                    var exists = await _db.Users
+                        .AnyAsync(u => u.PatientId == patientId && u.UserId != existing.UserId);
+
+                    if (exists)
+                        throw new Exception("Patient đã có tài khoản khác");
+
+                    existing.PatientId = patientId;
+                    existing.DoctorId = null; // clear
+                }
+            }
+
+            // ===== DOCTOR =====
+            var doctorIdProp = dto.GetType().GetProperty("DoctorId");
+            if (doctorIdProp != null)
+            {
+                var doctorId = (int?)doctorIdProp.GetValue(dto);
+
+                if (role?.RoleName == "Doctor")
+                {
+                    if (doctorId == null)
+                        throw new Exception("Doctor phải có DoctorId");
+
+                    var exists = await _db.Users
+                        .AnyAsync(u => u.DoctorId == doctorId && u.UserId != existing.UserId);
+
+                    if (exists)
+                        throw new Exception("Doctor đã có tài khoản khác");
+
+                    existing.DoctorId = doctorId;
+                    existing.PatientId = null; // clear
+                }
+            }
+
+            // nếu role khác → clear hết
+            if (role?.RoleName != "Patient" && role?.RoleName != "Doctor")
+            {
+                existing.PatientId = null;
+                existing.DoctorId = null;
+            }
 
             // Update username if provided in DTO (some DTO variants may include it)
             var usernameProp = dto.GetType().GetProperty("Username");
@@ -185,6 +282,11 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
 
             // Fallback plain-text comparison (for backward compatibility). Migrate existing accounts to hashed format.
             return storedPassword == password;
+        }
+        public async Task UpdateEntity(User user)
+        {
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
         }
     }
 }

@@ -88,14 +88,21 @@
                                 <!-- ACTION -->
                                 <td class="text-end">
 
+                                    <form asp-action="ResetPassword" method="post" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@u.UserId" />
+
+                                        <button type="submit"
+                                                class="btn-action text-warning"
+                                                onclick="return confirm('Reset mật khẩu về 123456?')"
+                                                title="Reset mật khẩu">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                    </form>
+
                                     <a asp-action="Edit" asp-route-id="@u.UserId"
                                        class="btn-action text-warning" title="Sửa">
                                         <i class="fas fa-edit"></i>
-                                    </a>
-
-                                    <a asp-action="ChangePassword" asp-route-id="@u.UserId"
-                                       class="btn-action text-primary" title="Đổi mật khẩu">
-                                        <i class="fas fa-key"></i>
                                     </a>
 
                                     <button class="btn-action text-danger"
@@ -235,4 +242,12 @@
         font-weight: 600;
         color: #64748b;
     }
+
+    .btn-action.text-warning {
+        color: #f59e0b;
+    }
+
+        .btn-action.text-warning:hover {
+            color: #d97706;
+        }
 </style>

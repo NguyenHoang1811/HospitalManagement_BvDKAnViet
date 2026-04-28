@@ -16,5 +16,7 @@ namespace HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO
 
         [Required]
         public int RoleId { get; set; }
+        public int? PatientId { get; set; }
+        public int? DoctorId { get; set; }
     }
 }

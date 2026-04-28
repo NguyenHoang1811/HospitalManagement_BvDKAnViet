@@ -21,4 +21,6 @@ public class CreateUserDto
     [Required(ErrorMessage = "Vui lòng chọn vai trò")]
     [Display(Name = "Vai trò")]
     public int RoleId { get; set; }
+    public int? PatientId { get; set; }
+    public int? DoctorId { get; set; }
 }
