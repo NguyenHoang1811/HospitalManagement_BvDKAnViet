@@ -43,6 +43,18 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
                 claims.Add(new Claim(ClaimTypes.Role, user.Role.RoleName));
             }
 
+            // ✅ Thêm DoctorId nếu là bác sĩ
+            if (user.DoctorId != null)
+            {
+                claims.Add(new Claim("DoctorId", user.DoctorId.ToString()!));
+            }
+
+            // ✅ Thêm PatientId nếu là bệnh nhân
+            if (user.PatientId != null)
+            {
+                claims.Add(new Claim("PatientId", user.PatientId.ToString()!));
+            }
+
             var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,

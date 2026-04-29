@@ -5,6 +5,8 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO
     public class UpdateAppointmentDto
     {
         [Required]
+        public int AppointmentId { get; set; }
+        [Required]
         public int PatientId { get; set; }
 
         [Required]
@@ -16,7 +18,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO
         [Required]
         public string AppointmentTime { get; set; }
 
-        public string? Status { get; set; }
+        public int Status { get; set; }
         
     }
 }

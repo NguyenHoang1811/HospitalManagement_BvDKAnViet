@@ -1,0 +1,325 @@
+﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO.AppointmentDto>
+
+@{
+	ViewData["Title"] = "Danh sách lịch hẹn";
+
+	ViewData["Breadcrumb"] = new List<(string, string)>
+	{
+		("Lịch hẹn", "/Appointment"),
+		("Danh sách lịch hẹn", null)
+	};
+
+
+
+	var patientNames = ViewBag.PatientNames as Dictionary<int, string>;
+	var doctorNames = ViewBag.DoctorNames as Dictionary<int, string>;
+}
+
+<div class="page-wrapper">
+
+	<!-- HEADER -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div>
+			<h2 class="fw-bold text-dark mb-1">@ViewData["Title"]</h2>
+			<div class="text-muted small">Quản lý lịch hẹn khám bệnh</div>
+		</div>
+
+		@if (!User.IsInRole("Doctor"))
+		{
+			<a asp-action="Create" class="btn btn-accent">
+				<i class="fas fa-plus"></i> Đặt lịch
+			</a>
+		}
+	</div>
+
+	<!-- ALERT -->
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<div class="alert alert-success shadow-sm">
+			<i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+		</div>
+	}
+
+	@if (TempData["ErrorMessage"] != null)
+	{
+		<div class="alert alert-danger shadow-sm">
+			<i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+		</div>
+	}
+
+	<!-- TABLE -->
+	<div class="card-custom">
+
+		@if (Model.Any())
+		{
+			<div class="table-responsive">
+				<table class="table table-modern align-middle">
+
+					<thead>
+						<tr>
+							<th>STT</th>
+							<th>Mã lịch</th>
+							<th>Bệnh nhân</th>
+							<th>Bác sĩ</th>
+							<th>Ngày khám</th>
+							<th>Giờ</th>
+							<th>Trạng thái</th>
+							<th class="text-end">Thao tác</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						@{
+							int stt = 1;
+						}
+
+						@foreach (var item in Model)
+						{
+							var patientName = (patientNames != null && patientNames.ContainsKey(item.PatientId))
+							? patientNames[item.PatientId]
+							: "—";
+
+							var doctorName = (doctorNames != null && doctorNames.ContainsKey(item.DoctorId))
+							? doctorNames[item.DoctorId]
+							: "—";
+
+							<tr>
+								<!-- STT -->
+								<td><span class="stt">@stt</span></td>
+
+								<!-- ID -->
+								<td>
+									<span class="id-badge">
+										LH-@item.AppointmentId
+									</span>
+								</td>
+
+								<!-- PATIENT -->
+								<td>
+									<div class="d-flex align-items-center gap-2">
+										<div class="avatar">
+											@(patientName.Length > 0 ? patientName.Substring(0, 1) : "?")
+										</div>
+										<div>
+											<div class="fw-semibold">@patientName</div>
+											<div class="text-muted small">Patient</div>
+										</div>
+									</div>
+								</td>
+
+								<!-- DOCTOR -->
+								<td>
+									<div class="fw-semibold text-navy">@doctorName</div>
+								</td>
+
+								<!-- DATE -->
+								<td>
+									@item.AppointmentDate.ToString("dd/MM/yyyy")
+								</td>
+
+								<!-- TIME -->
+								<td>
+									<span class="badge-soft blue">
+										@item.AppointmentTime
+									</span>
+								</td>
+
+								<!-- STATUS -->
+								<td>
+									@{
+										string statusText = ModelStatusToText(item.Status);
+										string css = ModelStatusToCss(item.Status);
+									}
+							<span class="badge-soft @css">@statusText</span>
+						</td>
+						@functions {
+							string ModelStatusToText(int status)
+							{
+								return status switch
+								{
+									0 => "Chờ xác nhận",
+									1 => "Đã xác nhận",
+									2 => "Hoàn thành",
+									3 => "Đã hủy",
+									_ => "Không xác định"
+								};
+							}
+
+							string ModelStatusToCss(int status)
+							{
+								return status switch
+								{
+									0 => "yellow",
+									1 => "blue",
+									2 => "green",
+									3 => "red",
+									_ => "gray"
+								};
+							}
+						}
+
+						<!-- ACTION -->
+						<td class="text-end">
+							<a asp-action="Details" asp-route-id="@item.AppointmentId"
+							   class="btn-action text-info" title="Xem">
+								<i class="fas fa-eye"></i>
+							</a>
+
+							@if (!User.IsInRole("Doctor"))
+							{
+								<a asp-action="Edit" asp-route-id="@item.AppointmentId"
+								   class="btn-action text-warning" title="Sửa">
+									<i class="fas fa-edit"></i>
+								</a>
+
+								<button type="button"
+										class="btn-action text-danger"
+										data-bs-toggle="modal"
+										data-bs-target="#deleteModal"
+										data-id="@item.AppointmentId">
+									<i class="fas fa-trash"></i>
+								</button>
+							}
+						</td>
+					</tr>
+
+					stt++;
+										}
+				</tbody>
+
+			</table>
+		</div>
+				}
+				else
+		{
+			<div class="text-center p-5 text-muted">
+				<i class="fas fa-calendar-times fa-2x mb-3"></i>
+				<div>Không có lịch hẹn nào</div>
+				<a asp-action="Create" class="btn btn-accent mt-3">Đặt lịch ngay</a>
+			</div>
+		}
+	</div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content modern-modal">
+
+			<div class="modal-body text-center p-4">
+				<div class="mb-3 text-danger fs-2">
+					<i class="fas fa-trash"></i>
+				</div>
+				<h5 class="fw-semibold">Xác nhận xóa</h5>
+				<p class="text-muted">Bạn có chắc muốn xóa lịch hẹn này?</p>
+
+				<form id="deleteForm" method="post">
+					@Html.AntiForgeryToken()
+
+					<button type="submit" class="btn btn-danger px-4">Xóa</button>
+					<button type="button" class="btn btn-light px-4 ms-2" data-bs-dismiss="modal">
+						Hủy
+					</button>
+				</form>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<script>
+	var deleteModal = document.getElementById('deleteModal');
+
+	deleteModal.addEventListener('show.bs.modal', function (event) {
+		var button = event.relatedTarget;
+		var id = button.getAttribute('data-id');
+
+		var form = document.getElementById('deleteForm');
+		form.action = '/Appointment/Delete/' + id;
+	});
+</script>
+
+<style>
+	.page-wrapper {
+		padding: 10px;
+	}
+
+	.card-custom {
+		background: #fff;
+		border-radius: 14px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+		padding: 10px 0;
+	}
+
+	.table-modern thead th {
+		font-size: 12px;
+		color: #64748b;
+		text-transform: uppercase;
+		border-bottom: 1px solid #e2e8f0;
+	}
+
+	.table-modern tbody tr:hover {
+		background: #f8fafc;
+	}
+
+	.avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: #60a5fa;
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+	}
+
+	.id-badge {
+		background: #f1f5f9;
+		padding: 4px 8px;
+		border-radius: 6px;
+		font-size: 12px;
+	}
+
+	.badge-soft {
+		padding: 5px 10px;
+		border-radius: 20px;
+		font-size: 12px;
+	}
+
+		.badge-soft.blue {
+			background: #dbeafe;
+			color: #2563eb;
+		}
+
+		.badge-soft.green {
+			background: #dcfce7;
+			color: #15803d;
+		}
+
+		.badge-soft.yellow {
+			background: #fef9c3;
+			color: #ca8a04;
+		}
+
+		.badge-soft.gray {
+			background: #e5e7eb;
+			color: #374151;
+		}
+
+	.btn-accent {
+		background: #2dd4bf;
+		color: white;
+		border-radius: 8px;
+	}
+
+	.btn-action {
+		margin-left: 6px;
+		font-size: 14px;
+	}
+
+	.stt {
+		font-weight: 600;
+		color: #64748b;
+	}
+</style>

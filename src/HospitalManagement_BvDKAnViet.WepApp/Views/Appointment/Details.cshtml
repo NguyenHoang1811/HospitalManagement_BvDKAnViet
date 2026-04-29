@@ -1,0 +1,402 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO.AppointmentDto
+
+@{
+    ViewData["Title"] = "Chi tiết lịch hẹn";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Lịch hẹn", "/Appointment"),
+        ("Chi tiết lịch hẹn", null)
+    };
+    string patientName = ViewBag.PatientName as string ?? "Bệnh nhân";
+    string doctorName = ViewBag.DoctorName as string ?? "Bác sĩ";
+}
+
+<!-- TOP ACTION BAR -->
+<div class="page-action-bar mt-2 mb-4">
+    <div class="page-action-bar-left">
+        Chi tiết lịch hẹn
+        <span>Thông tin đặt khám của bệnh nhân</span>
+    </div>
+    <div class="page-action-bar-right">
+        <a asp-action="Index" class="btn-top btn-top-outline">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<div class="appointment-layout mb-5">
+
+    <!-- LEFT: PATIENT SUMMARY -->
+    <div class="custom-card sidebar-card">
+        <div class="sidebar-header">
+            <div class="avatar shadow-sm">
+                @patientName.Substring(0, 1).ToUpper()
+            </div>
+            <div class="mt-3 fw-bold text-white fs-6">@patientName</div>
+            <div class="patient-id">Mã BN: BN-@Model.PatientId</div>
+        </div>
+
+        <div class="sidebar-body">
+            <div class="info-section-label">Tóm tắt lịch hẹn</div>
+
+            <div class="summary-item">
+                <div class="summary-icon bg-light-teal text-teal">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-label">Ngày hẹn</div>
+                    <div class="summary-value">@Model.AppointmentDate.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+
+            <div class="summary-item mt-3">
+                <div class="summary-icon bg-light-orange text-orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-label">Giờ hẹn</div>
+                    <div class="summary-value">@Model.AppointmentTime</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CENTER: MAIN INFO -->
+    <div class="custom-card main-info-card">
+        <div class="card-header-custom">
+            <i class="fas fa-notes-medical text-teal me-2"></i> Thông tin chi tiết
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label>Bệnh nhân</label>
+                        <div class="field-val">
+                            <i class="fas fa-user text-muted me-2"></i> @patientName
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label>Bác sĩ phụ trách</label>
+                        <div class="field-val">
+                            <i class="fas fa-user-md text-teal me-2"></i> @doctorName
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label>Ngày khám chỉ định</label>
+                        <div class="field-val">
+                            <i class="fas fa-calendar-alt text-muted me-2"></i> @Model.AppointmentDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-field">
+                        <label>Giờ khám (Dự kiến)</label>
+                        <div class="field-val fw-bold text-navy">
+                            <i class="far fa-clock text-orange me-2"></i> @Model.AppointmentTime
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: STATUS -->
+    <div class="status-panel">
+        <div class="custom-card">
+            <div class="card-header-custom border-bottom text-center">
+                Trạng thái lịch hẹn
+            </div>
+            <div class="p-4">
+                @{
+                    string statusText = "Không xác định";
+                    string css = "status-pending";
+                    string icon = "fa-question-circle";
+
+                    switch ((int)Model.Status)
+                    {
+                        case 0:
+                            statusText = "Chờ xác nhận";
+                            css = "status-pending";
+                            icon = "fa-hourglass-half";
+                            break;
+                        case 1:
+                            statusText = "Đã xác nhận";
+                            css = "status-confirm";
+                            icon = "fa-check-circle";
+                            break;
+                        case 2:
+                            statusText = "Hoàn thành";
+                            css = "status-done";
+                            icon = "fa-flag-checkered";
+                            break;
+                        case 3:
+                            statusText = "Đã hủy";
+                            css = "status-cancel";
+                            icon = "fa-times-circle";
+                            break;
+                    }
+                }
+
+                <div class="status-box @css shadow-sm">
+                    <i class="fas @icon mb-2" style="font-size: 24px;"></i><br />
+                    @statusText
+                </div>
+
+                <div class="mt-4 text-center small text-muted">
+                    <i class="fas fa-sync-alt me-1"></i> Cập nhật lần cuối:<br />
+                    <strong class="text-dark">@DateTime.Now.ToString("dd/MM/yyyy - HH:mm")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= STYLE ================= -->
+<style>
+    /* ── MÀU SẮC CHUNG ── */
+    :root {
+        --navy: #0f2744;
+        --teal: #0d9488;
+        --orange: #f97316;
+    }
+
+    .text-navy {
+        color: var(--navy) !important;
+    }
+
+    .text-teal {
+        color: var(--teal) !important;
+    }
+
+    .text-orange {
+        color: var(--orange) !important;
+    }
+
+    .bg-light-teal {
+        background: #ccfbf1;
+    }
+
+    .bg-light-orange {
+        background: #ffedd5;
+    }
+
+    /* ── ACTION BAR (TIÊU ĐỀ TRANG) ── */
+    .page-action-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .page-action-bar-left {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--navy);
+    }
+
+        .page-action-bar-left span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--teal);
+            margin-left: 10px;
+            background: #ccfbf1;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+    .btn-top {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-top-outline {
+        background: #fff;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+        .btn-top-outline:hover {
+            background: #f8fafc;
+            color: var(--navy);
+        }
+
+    /* ── LAYOUT 3 CỘT ── */
+    .appointment-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr 260px;
+        gap: 20px;
+        align-items: start;
+    }
+
+    /* ── COMPONENT THẺ (CARD) CHUNG ── */
+    .custom-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e9eef5;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--navy);
+        background: #f8fafc;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* ── CỘT TRÁI (SIDEBAR BỆNH NHÂN) ── */
+    .sidebar-header {
+        background: linear-gradient(135deg, #0f2744 0%, #1a3a5c 100%);
+        padding: 30px 20px;
+        text-align: center;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2dd4bf, #0d9488);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 28px;
+        color: #fff;
+        margin: 0 auto;
+        border: 4px solid rgba(255,255,255,0.2);
+    }
+
+    .patient-id {
+        color: rgba(255,255,255,0.6);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .sidebar-body {
+        padding: 20px;
+    }
+
+    .info-section-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+    }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .summary-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .summary-label {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .summary-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--navy);
+    }
+
+    /* ── CỘT GIỮA (THÔNG TIN CHÍNH) ── */
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+        .form-field label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+    .field-val {
+        background: #f8fafc;
+        border: 1px solid #e9eef5;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: #1e293b;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* ── CỘT PHẢI (TRẠNG THÁI) ── */
+    .status-box {
+        padding: 20px 15px;
+        border-radius: 12px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.3px;
+        border: 1px solid transparent;
+    }
+
+    .status-pending {
+        background: #fffbeb;
+        color: #b45309;
+        border-color: #fef08a;
+    }
+    /* Chờ xác nhận (Vàng) */
+    .status-confirm {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+    }
+    /* Đã xác nhận (Xanh dương) */
+    .status-done {
+        background: #f0fdf4;
+        color: #15803d;
+        border-color: #bbf7d0;
+    }
+    /* Hoàn thành (Xanh lá) */
+    .status-cancel {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fecaca;
+    }
+    /* Đã hủy (Đỏ) */
+
+    /* ── RESPONSIVE ── */
+    @@media (max-width: 992px) {
+        .appointment-layout {
+            grid-template-columns: 1fr; /* Chuyển thành 1 cột trên màn hình nhỏ */
+        }
+    }
+</style>

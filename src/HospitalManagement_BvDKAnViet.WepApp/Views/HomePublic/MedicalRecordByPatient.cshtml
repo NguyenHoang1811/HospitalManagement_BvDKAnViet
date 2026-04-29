@@ -1,0 +1,225 @@
+﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.MedicalRecordDto>
+@{
+    ViewData["Title"] = "Lịch sử khám bệnh";
+}
+
+<!-- TOP ACTION BAR -->
+<div class="page-action-bar">
+    <div class="page-action-bar-left">
+        Lịch sử khám bệnh
+        <span>Danh sách các bệnh án của bạn</span>
+    </div>
+</div>
+
+<!-- LIST LAYOUT -->
+<div class="list-container">
+    <div class="status-card">
+        <div class="status-card-header d-flex justify-content-between align-items-center">
+            <span>Danh sách bệnh án</span>
+            <span class="badge bg-light text-dark border">Tổng: @Model.Count() hồ sơ</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Mã HS</th>
+                        <th>Ngày khám</th>
+                        <th>Bác sĩ</th>
+                        <th>Chẩn đoán sơ bộ</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="record-id-badge">
+                                        <i class="fas fa-file-medical"></i> HS-@item.RecordId.ToString("D3")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-dark">@item.CreatedDate.ToString("dd/MM/yyyy")</div>
+                                    <div class="small text-muted">@item.CreatedDate.ToString("HH:mm")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-dark">@(string.IsNullOrEmpty(item.DoctorName) ? "—" : item.DoctorName)</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" title="@item.Diagnosis">
+                                        @(string.IsNullOrEmpty(item.Diagnosis) ? "—" : item.Diagnosis)
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="pt-badge">@(item.MedicalRecordStatus ?? "Hoàn thành")</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="action-buttons">
+                                        <a asp-controller="HomePublic" asp-action="MedicalRecordDetail" asp-route-id="@item.RecordId" class="btn-action btn-view" title="Xem bệnh án">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open mb-2" style="font-size: 32px; color: #cbd5e1;"></i>
+                                    <p class="text-muted mb-0">Bạn chưa có lịch sử khám bệnh nào.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Kế thừa các style từ file mẫu */
+    .page-action-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .page-action-bar-left {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f2744;
+    }
+
+        .page-action-bar-left span {
+            font-size: 13px;
+            font-weight: 400;
+            color: #94a3b8;
+            margin-left: 8px;
+        }
+
+    .status-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e9eef5;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+
+    .status-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f2744;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        background: #f8fafc;
+    }
+
+    .record-id-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        border-radius: 5px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .pt-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #e0f2fe;
+        color: #0369a1;
+        border: 1px solid #bae6fd;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    /* BẢNG DỮ LIỆU */
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .custom-table th {
+            padding: 12px 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e9eef5;
+            background: #fff;
+            white-space: nowrap;
+        }
+
+        .custom-table td {
+            padding: 16px 20px;
+            font-size: 13px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .custom-table tbody tr:hover {
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+
+        .custom-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+    /* NÚT THAO TÁC */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-view {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+        .btn-view:hover {
+            background: #e2e8f0;
+            color: #0f2744;
+        }
+
+    .btn-pill {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+
+        .btn-pill:hover {
+            background: #bbf7d0;
+            color: #14532d;
+        }
+</style>

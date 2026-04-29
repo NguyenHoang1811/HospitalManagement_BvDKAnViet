@@ -1,0 +1,324 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.DoctorDTO.DoctorDto
+
+@{
+	ViewData["Title"] = "Hồ sơ Bác sĩ";
+}
+
+<div class="page-wrapper container mt-4 mb-5">
+
+	<!-- HEADER -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div>
+			<h4 class="fw-bold mb-1" style="color: #0f2744;">@ViewData["Title"]</h4>
+			<div class="text-muted small">Thông tin chi tiết và quá trình công tác</div>
+		</div>
+
+		<a asp-action="Index" class="btn-view-all">
+			<i class="fas fa-arrow-left me-1"></i> Quay lại
+		</a>
+	</div>
+
+	<!-- CARD TỔNG QUAN -->
+	<div class="card-custom p-4 mb-4">
+		<div class="row align-items-center">
+			<!-- IMAGE -->
+			<div class="col-md-4 mb-3 mb-md-0">
+				<div class="img-box">
+					<img src="@(Model.DoctorImage ?? "/img/doctor/default-doctor.png")" alt="@Model.Name" onerror="this.onerror=null;this.src='/img/doctor/default-doctor.png';" />
+				</div>
+			</div>
+
+			<!-- INFO -->
+			<div class="col-md-8">
+				<h3 class="fw-bold text-navy mb-3">@Model.Name</h3>
+
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="info-group">
+							<div class="info-label"><i class="fas fa-stethoscope me-1"></i> Chuyên khoa</div>
+							<div class="info-value">@Model.Specialty</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="info-group">
+							<div class="info-label"><i class="fas fa-hospital me-1"></i> Khoa công tác</div>
+							<div class="info-value">
+								<span class="badge-soft blue">@ViewBag.DepartmentName</span>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="info-group">
+							<div class="info-label"><i class="fas fa-phone-alt me-1"></i> Điện thoại</div>
+							<div class="info-value">@Model.Phone</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="info-group">
+							<div class="info-label"><i class="fas fa-envelope me-1"></i> Email</div>
+							<div class="info-value">@Model.Email</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- ACTION BUTTONS -->
+				<div class="mt-4 pt-2 border-top">
+					<a asp-controller="Appointment" asp-action="Create" asp-route-doctorId="@Model.DoctorId" class="btn btn-outline-navy">
+						<i class="fas fa-calendar-plus me-1"></i> Đặt lịch hẹn
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- KHỐI HỌC VẤN & THÀNH TÍCH (FAKE DATA) -->
+	<div class="row g-4">
+		<!-- TRÌNH ĐỘ HỌC VẤN -->
+		<div class="col-md-6">
+			<div class="card-custom p-4 h-100">
+				<h5 class="fw-bold text-navy mb-4 border-bottom pb-2">
+					<i class="fas fa-graduation-cap text-teal me-2"></i> Trình độ học vấn
+				</h5>
+
+				<div class="timeline-container">
+					<div class="timeline-item">
+						<div class="timeline-dot"></div>
+						<div class="timeline-date">2005 - 2011</div>
+						<div class="timeline-content">
+							<h6 class="fw-bold mb-1">Tốt nghiệp Bác sĩ Đa khoa</h6>
+							<p class="text-muted small mb-0">Đại học Y Hà Nội (Loại Giỏi)</p>
+						</div>
+					</div>
+
+					<div class="timeline-item">
+						<div class="timeline-dot"></div>
+						<div class="timeline-date">2012 - 2014</div>
+						<div class="timeline-content">
+							<h6 class="fw-bold mb-1">Thạc sĩ Y khoa chuyên ngành @Model.Specialty</h6>
+							<p class="text-muted small mb-0">Đại học Y Dược TP.HCM</p>
+						</div>
+					</div>
+
+					<div class="timeline-item">
+						<div class="timeline-dot"></div>
+						<div class="timeline-date">2016 - 2017</div>
+						<div class="timeline-content">
+							<h6 class="fw-bold mb-1">Tu nghiệp chuyên sâu tại Pháp</h6>
+							<p class="text-muted small mb-0">Bệnh viện Đại học Pierre et Marie Curie (Paris)</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- KINH NGHIỆM & THÀNH TÍCH -->
+		<div class="col-md-6">
+			<div class="card-custom p-4 h-100">
+				<h5 class="fw-bold text-navy mb-4 border-bottom pb-2">
+					<i class="fas fa-award text-warning me-2"></i> Kinh nghiệm & Thành tích
+				</h5>
+
+				<ul class="achievement-list list-unstyled">
+					<li class="mb-3 d-flex align-items-start">
+						<i class="fas fa-check-circle text-teal mt-1 me-3 fs-5"></i>
+						<div>
+							<h6 class="fw-bold mb-1">Hơn 15 năm kinh nghiệm lâm sàng</h6>
+							<p class="text-muted small mb-0">Chẩn đoán và điều trị thành công hàng ngàn ca bệnh khó thuộc chuyên khoa @Model.Specialty.</p>
+						</div>
+					</li>
+
+					<li class="mb-3 d-flex align-items-start">
+						<i class="fas fa-check-circle text-teal mt-1 me-3 fs-5"></i>
+						<div>
+							<h6 class="fw-bold mb-1">Nguyên Trưởng khoa - Bệnh viện tuyến Trung ương</h6>
+							<p class="text-muted small mb-0">Từng đảm nhiệm các vị trí quan trọng tại các bệnh viện lớn trước khi công tác tại An Việt.</p>
+						</div>
+					</li>
+
+					<li class="d-flex align-items-start">
+						<i class="fas fa-check-circle text-teal mt-1 me-3 fs-5"></i>
+						<div>
+							<h6 class="fw-bold mb-1">Nghiên cứu khoa học</h6>
+							<p class="text-muted small mb-0">Sở hữu 5 bài báo khoa học được công bố trên các tạp chí y khoa uy tín trong và ngoài nước.</p>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<!-- ================= STYLE ================= -->
+<style>
+	:root {
+		--navy: #0f2744;
+		--teal: #0d9488;
+	}
+
+	.text-navy {
+		color: var(--navy) !important;
+	}
+
+	.text-teal {
+		color: var(--teal) !important;
+	}
+
+	/* ===== HEADER ===== */
+	.btn-view-all {
+		background: #f1f5f9;
+		border-radius: 8px;
+		padding: 8px 16px;
+		text-decoration: none;
+		color: #334155;
+		font-weight: 500;
+		transition: 0.3s;
+	}
+
+		.btn-view-all:hover {
+			background: #e2e8f0;
+			color: var(--navy);
+		}
+
+	/* ===== CARD ===== */
+	.card-custom {
+		background: #ffffff;
+		border-radius: 16px;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+		border: 1px solid rgba(0,0,0,0.04);
+	}
+
+	/* ===== IMAGE FIX CHUẨN ===== */
+	.img-box {
+		width: 100%;
+		max-width: 280px;
+		height: 320px;
+		margin: auto;
+		border-radius: 12px;
+		overflow: hidden;
+		background: #f8fafc;
+		box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+	}
+
+		.img-box img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: top center; /* Giúp ảnh chân dung không bị mất đầu */
+			display: block;
+			transition: transform 0.3s ease;
+		}
+
+		.img-box:hover img {
+			transform: scale(1.03);
+		}
+
+	/* ===== INFO ===== */
+	.info-group {
+		margin-bottom: 16px;
+	}
+
+	.info-label {
+		font-size: 13px;
+		color: #64748b;
+		margin-bottom: 4px;
+		font-weight: 500;
+	}
+
+	.info-value {
+		font-weight: 600;
+		color: #1e293b;
+		font-size: 15px;
+	}
+
+	/* ===== BADGE ===== */
+	.badge-soft {
+		padding: 6px 12px;
+		border-radius: 20px;
+		font-size: 12px;
+		font-weight: 600;
+		display: inline-block;
+	}
+
+		.badge-soft.blue {
+			background: #eff6ff;
+			color: #2563eb;
+			border: 1px solid #bfdbfe;
+		}
+
+	/* ===== TIMELINE (HỌC VẤN) ===== */
+	.timeline-container {
+		position: relative;
+		padding-left: 20px;
+	}
+
+	.timeline-item {
+		position: relative;
+		padding-bottom: 20px;
+		padding-left: 20px;
+		border-left: 2px solid #e2e8f0;
+	}
+
+		.timeline-item:last-child {
+			border-left: 2px solid transparent;
+			padding-bottom: 0;
+		}
+
+	.timeline-dot {
+		position: absolute;
+		left: -6px;
+		top: 0;
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background-color: var(--teal);
+		box-shadow: 0 0 0 3px #ccfbf1;
+	}
+
+	.timeline-date {
+		font-size: 13px;
+		color: var(--teal);
+		font-weight: 600;
+		margin-bottom: 4px;
+	}
+
+	/* ===== BUTTONS ===== */
+	.btn-accent {
+		background: var(--teal);
+		color: white;
+		border-radius: 8px;
+		padding: 8px 18px;
+		font-weight: 500;
+		border: none;
+		transition: 0.3s;
+	}
+
+		.btn-accent:hover {
+			background: #0f766e;
+			color: white;
+			transform: translateY(-2px);
+		}
+
+	.btn-outline-navy {
+		background: transparent;
+		color: var(--navy);
+		border: 1px solid var(--navy);
+		border-radius: 8px;
+		padding: 8px 18px;
+		font-weight: 500;
+		transition: 0.3s;
+	}
+
+		.btn-outline-navy:hover {
+			background: var(--navy);
+			color: white;
+		}
+
+	/* ===== RESPONSIVE ===== */
+	@@media (max-width: 768px) {
+		.img-box {
+			max-width: 200px;
+			height: 240px;
+		}
+	}
+</style>

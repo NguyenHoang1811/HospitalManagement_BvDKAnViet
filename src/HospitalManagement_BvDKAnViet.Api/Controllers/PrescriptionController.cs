@@ -100,5 +100,16 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+        // GET: api/Prescription/record/5
+        [HttpGet("record/{recordId:int}")]
+        public async Task<IActionResult> GetByRecord(int recordId)
+        {
+            var items = await _prescriptionRepository.GetByRecordIdAsync(recordId);
+
+            var result = _mapper.Map<IEnumerable<PrescriptionDto>>(items);
+
+            return Ok(result);
+        }
     }
 }

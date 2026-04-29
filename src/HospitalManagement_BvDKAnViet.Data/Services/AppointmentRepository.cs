@@ -1,7 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using HospitalManagement_BvDKAnViet.Core.Entities;
+using HospitalManagement_BvDKAnViet.Core.Enums;
 using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace HospitalManagement_BvDKAnViet.Data.Repositories
 {
@@ -94,6 +95,39 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
 
             var conflictExists = await query.AnyAsync();
             return !conflictExists;
+        }
+
+        public async Task<IEnumerable<Appointment>> GetPendingExpiredAsync(DateTime beforeTime)
+        {
+            return await _db.Appointments
+                .Where(a => a.Status == (int)AppointmentStatus.PENDING
+                         && a.AppointmentDate.ToDateTime(a.AppointmentTime) < beforeTime)
+                .ToListAsync();
+        }
+
+        public async Task<bool> BulkUpdateStatusAsync(IEnumerable<int> ids, int status, string statusName)
+        {
+            var appointments = await _db.Appointments
+                .Where(a => ids.Contains(a.AppointmentId))
+                .ToListAsync();
+
+            if (!appointments.Any()) return false;
+
+            foreach (var a in appointments)
+            {
+                a.Status = status;
+                a.StatusName = statusName;
+            }
+
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<Appointment>> GetByDoctorIdAndDateAsync(int doctorId, DateOnly date)
+        {
+            return await _db.Appointments
+                .Where(a => a.DoctorId == doctorId && a.AppointmentDate == date)
+                .ToListAsync();
         }
     }
 }

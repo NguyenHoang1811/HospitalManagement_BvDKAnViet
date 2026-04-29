@@ -61,5 +61,11 @@ namespace HospitalManagement_BvDKAnViet.Data.Services
             await _db.SaveChangesAsync();
             return true;
         }
+        public async Task<IEnumerable<Prescription>> GetByRecordIdAsync(int recordId)
+        {
+            return await _db.Prescriptions
+                .Where(x => x.RecordId == recordId)
+                .ToListAsync();
+        }
     }
 }

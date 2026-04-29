@@ -11,5 +11,7 @@ namespace HospitalManagement_BvDKAnViet.Core.IServices
         Task<bool> DeleteAsync(int id);
         Task<MedicalRecord?> GetActiveByPatientIdAsync(int patientId);
         Task<bool> HasAnyByPatientIdAsync(int patientId);
+        Task<IEnumerable<MedicalRecord>> GetByDoctorIdAsync(int doctorId);
+        Task<IEnumerable<MedicalRecord>> GetByPatientIdAsync(int patientId);
     }
 }

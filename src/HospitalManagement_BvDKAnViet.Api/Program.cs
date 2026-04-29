@@ -1,4 +1,5 @@
-﻿using HospitalManagement_BvDKAnViet.Core.IServices;
+﻿using HospitalManagement_BvDKAnViet.Api.BackgroundServices;
+using HospitalManagement_BvDKAnViet.Core.IServices;
 using HospitalManagement_BvDKAnViet.Data.Context;
 using HospitalManagement_BvDKAnViet.Data.Repositories;
 using HospitalManagement_BvDKAnViet.Data.Services;
@@ -104,6 +105,8 @@ internal class Program
 
         // Authorization
         builder.Services.AddAuthorization();
+        // Thêm vào trước builder.Build()
+        builder.Services.AddHostedService<AppointmentCancelService > ();
 
         var app = builder.Build();
 

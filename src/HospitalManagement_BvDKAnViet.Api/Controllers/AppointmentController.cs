@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace HospitalManagement_BvDKAnViet.Api.Controllers
 {
-    [Authorize] // require authentication for all actions; individual methods further restrict by role
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AppointmentController : ControllerBase
@@ -87,7 +87,6 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         // POST: api/Appointment
         // Only Staff can create appointments
         [HttpPost]
-        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -99,8 +98,48 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (!patientExists || !doctorExists)
                 return BadRequest("Patient or Doctor not found");
 
+            // Parse time
             if (!TimeOnly.TryParse(dto.AppointmentTime, out var time))
-                return BadRequest("Invalid AppointmentTime format. Expected e.g. '14:30'.");
+                return BadRequest("Sai định dạng giờ. Ví dụ: 14:30");
+
+            // Gộp Date + Time
+            var appointmentDateTime = dto.AppointmentDate.ToDateTime(time);
+            var now = DateTime.Now;
+
+            // Không quá khứ
+            if (appointmentDateTime < now)
+                return BadRequest("Không được đặt lịch trong quá khứ");
+
+            // Không cuối tuần
+            if (dto.AppointmentDate.DayOfWeek == DayOfWeek.Saturday ||
+                dto.AppointmentDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return BadRequest("Chỉ đặt lịch từ thứ 2 đến thứ 6");
+            }
+
+            // Giờ hành chính (08:00 - 17:00)
+            var start = new TimeOnly(8, 0);
+            var end = new TimeOnly(17, 0);
+
+            if (time < start || time > end)
+            {
+                return BadRequest("Chỉ đặt lịch trong giờ hành chính (08:00 - 17:00)");
+            }
+
+            // Nghỉ trưa (12:00 - 13:00)
+            var lunchStart = new TimeOnly(12, 0);
+            var lunchEnd = new TimeOnly(13, 0);
+
+            if (time >= lunchStart && time < lunchEnd)
+            {
+                return BadRequest("Không thể đặt lịch trong giờ nghỉ trưa (12:00 - 13:00)");
+            }
+
+            // Slot 15 phút 
+            if (time.Minute % 15 != 0)
+            {
+                return BadRequest("Chỉ được đặt lịch theo mỗi 15 phút (08:00, 08:15, 80:30...)");
+            }
 
             // kiem tra xem bac si va benh nhan co trung lich khong
             var doctorAvailable = await _appointmentRepository.IsDoctorAvailableAsync(dto.DoctorId, dto.AppointmentDate, time);
@@ -140,8 +179,48 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (!patientExists || !doctorExists)
                 return BadRequest("Patient or Doctor not found");
 
+            // Parse time
             if (!TimeOnly.TryParse(dto.AppointmentTime, out var time))
-                return BadRequest("Invalid AppointmentTime format. Expected e.g. '14:30'.");
+                return BadRequest("Sai định dạng giờ. Ví dụ: 14:30");
+
+            // Gộp Date + Time
+            var appointmentDateTime = dto.AppointmentDate.ToDateTime(time);
+            var now = DateTime.Now;
+
+            // Không quá khứ
+            if (appointmentDateTime < now)
+                return BadRequest("Không được đặt lịch trong quá khứ");
+
+            // Không cuối tuần
+            if (dto.AppointmentDate.DayOfWeek == DayOfWeek.Saturday ||
+                dto.AppointmentDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return BadRequest("Chỉ đặt lịch từ thứ 2 đến thứ 6");
+            }
+
+            // Giờ hành chính (08:00 - 17:00)
+            var start = new TimeOnly(8, 0);
+            var end = new TimeOnly(17, 0);
+
+            if (time < start || time > end)
+            {
+                return BadRequest("Chỉ đặt lịch trong giờ hành chính (08:00 - 17:00)");
+            }
+
+            // Nghỉ trưa (12:00 - 13:00)
+            var lunchStart = new TimeOnly(12, 0);
+            var lunchEnd = new TimeOnly(13, 0);
+
+            if (time >= lunchStart && time < lunchEnd)
+            {
+                return BadRequest("Không thể đặt lịch trong giờ nghỉ trưa (12:00 - 13:00)");
+            }
+
+            // Slot 15 phút 
+            if (time.Minute % 15 != 0)
+            {
+                return BadRequest("Chỉ được đặt lịch theo mỗi 15 phút (08:00, 08:15, 80:30...)");
+            }
 
             // check availability excluding this appointment
             var doctorAvailable = await _appointmentRepository.IsDoctorAvailableAsync(dto.DoctorId, dto.AppointmentDate, time, excludeAppointmentId: id);
@@ -170,6 +249,92 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (!deleted) return NotFound();
 
             return NoContent();
+        }
+
+
+        [HttpGet("doctor/{doctorId:int}")]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> GetByDoctorId(int doctorId)
+        {
+            // 🔒 Lấy doctorId từ token (KHÔNG tin doctorId từ URL)
+            var doctorIdClaim = User.FindFirst("DoctorId")?.Value;
+
+            if (!int.TryParse(doctorIdClaim, out var loggedDoctorId))
+                return Forbid();
+
+            // ❗ Nếu cố tình gọi doctor khác → chặn
+            if (doctorId != loggedDoctorId)
+                return Forbid();
+
+            var appointments = await _appointmentRepository.GetAllAsync();
+
+            var doctorAppointments = appointments
+                .Where(a => a.DoctorId == doctorId);
+
+            var result = _mapper.Map<IEnumerable<AppointmentDto>>(doctorAppointments);
+
+            return Ok(result);
+        }
+
+        [HttpGet("doctor/{doctorId:int}/available-slots")]
+        public async Task<IActionResult> GetAvailableSlots(int doctorId, [FromQuery] DateOnly date)
+        {
+            // 🔒 bảo mật nếu là Doctor
+            if (User.IsInRole("Doctor"))
+            {
+                var claim = User.FindFirst("DoctorId")?.Value;
+                if (!int.TryParse(claim, out var loggedDoctorId) || loggedDoctorId != doctorId)
+                    return Forbid();
+            }
+
+            // rule hệ thống
+            var start = new TimeOnly(8, 0);
+            var end = new TimeOnly(17, 0);
+            var lunchStart = new TimeOnly(12, 0);
+            var lunchEnd = new TimeOnly(13, 0);
+
+            var allSlots = new List<TimeOnly>();
+
+            for (var t = start; t <= end; t = t.AddMinutes(15))
+            {
+                if (t >= lunchStart && t < lunchEnd) continue;
+                allSlots.Add(t);
+            }
+
+            // lấy lịch đã đặt
+            var booked = await _appointmentRepository
+                .GetByDoctorIdAndDateAsync(doctorId, date);
+
+            var bookedTimes = booked.Select(a => a.AppointmentTime).ToHashSet();
+
+            // slot trống
+            var available = allSlots
+                .Where(t => !bookedTimes.Contains(t))
+                .Select(t => t.ToString("HH:mm"));
+
+            return Ok(available);
+        }
+
+        // GET: api/Appointment/patient/{patientId}
+        [HttpGet("patient/{patientId:int}")]
+        public async Task<IActionResult> GetByPatientId(int patientId)
+        {
+            // Nếu là Patient → chỉ được xem lịch của chính mình
+            if (User.IsInRole("Patient"))
+            {
+                var claim = User.FindFirst("PatientId")?.Value;
+                if (!int.TryParse(claim, out var loggedPatientId) || loggedPatientId != patientId)
+                    return Forbid();
+            }
+
+            var appointments = await _appointmentRepository.GetAllAsync();
+
+            var result = appointments
+                .Where(a => a.PatientId == patientId)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime);
+
+            return Ok(_mapper.Map<IEnumerable<AppointmentDto>>(result));
         }
     }
 }

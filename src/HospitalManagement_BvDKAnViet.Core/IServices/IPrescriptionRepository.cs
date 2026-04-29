@@ -9,5 +9,6 @@ namespace HospitalManagement_BvDKAnViet.Core.IServices
         Task<Prescription> AddAsync(Prescription prescription);
         Task<bool> UpdateAsync(Prescription prescription);
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<Prescription>> GetByRecordIdAsync(int recordId);
     }
 }

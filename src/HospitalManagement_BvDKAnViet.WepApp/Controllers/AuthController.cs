@@ -25,9 +25,12 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         public IActionResult Login()
         {
             var token = _tokenProvider.GetToken();
-            if (!string.IsNullOrWhiteSpace(token))
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Home");
+                if (User.IsInRole("Admin") || User.IsInRole("Doctor") || User.IsInRole("Staff"))
+                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "HomePublic");
             }
 
             return View();
@@ -85,12 +88,39 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                         claims.Add(new Claim(ClaimTypes.Role, roleClaim.Value));
                     }
 
+                    var doctorIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "DoctorId");
+
+                    if (doctorIdClaim != null)
+                    {
+                        claims.Add(new Claim("DoctorId", doctorIdClaim.Value));
+                    }
+
+                    var pattientIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "PatientId");
+
+                    if (pattientIdClaim != null)
+                    {
+                        claims.Add(new Claim("PatientId", pattientIdClaim.Value));
+                    }
+
                     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     var principal = new ClaimsPrincipal(identity);
 
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                    return RedirectToAction("Index", "Home");
+                    var role = roleClaim?.Value;
+
+                    if (role == "Admin")
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else if (role == "Doctor")
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index", "HomePublic");
+                    }
                 }
 
                 ModelState.AddModelError(string.Empty, response?.ResponseMessage ?? "Đăng nhập thất bại");
@@ -118,7 +148,7 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             // Sign out cookie authentication
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            return RedirectToAction("Login");
+            return RedirectToAction("Index", "HomePublic");
         }
 
         [HttpGet]

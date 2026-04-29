@@ -9,5 +9,6 @@ namespace HospitalManagement_BvDKAnViet.Core.IServices
         Task<Patient> AddAsync(Patient patient);
         Task<bool> UpdateAsync(Patient patient);
         Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<Patient>> GetByDoctorIdAsync(int doctorId);
     }
 }

@@ -1,0 +1,316 @@
+﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.DoctorDTO.DoctorDto>
+
+@{
+    ViewData["Title"] = "Danh sách bác sĩ";
+}
+
+<div class="container mt-4 pt-3 mb-5">
+
+    <!-- 🏷️ HEADER -->
+    <div class="text-center mb-5">
+        <h2 class="section-title">Danh sách Bác sĩ</h2>
+        <p class="text-muted mt-2">Tìm kiếm và đặt lịch với đội ngũ chuyên gia y tế hàng đầu</p>
+    </div>
+
+    <!-- 🔍 SEARCH BAR -->
+    <div class="row mb-5 justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="search-wrapper position-relative shadow-sm">
+                <i class="fas fa-search search-icon text-muted"></i>
+                <input type="text" id="searchBox" class="form-control search-input"
+                       placeholder="Tìm bác sĩ theo tên..." autocomplete="off" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 👨‍⚕️ LIST -->
+    <div class="row g-4" id="doctorList">
+
+        @if (Model != null && Model.Any())
+        {
+            foreach (var doc in Model)
+            {
+                <div class="col-lg-4 col-md-6 doctor-item">
+
+                    <div class="card doctor-card shadow-sm h-100">
+
+                        <div class="doctor-img-wrapper">
+                            <img src="@Url.Content(!string.IsNullOrEmpty(doc.DoctorImage) ? doc.DoctorImage : "~/img/doctor/default-doctor.png")"
+                                 class="card-img-top doctor-img"
+                                 alt="@doc.Name"
+                                 onerror="this.onerror=null;this.src='/img/doctor/default-doctor.png';" />
+                        </div>
+
+                        <div class="card-body text-center d-flex flex-column doctor-info">
+                            <h5 class="fw-bold doctor-name mb-2">@doc.Name</h5>
+                            <div class="mb-3">
+                                <span class="badge doctor-specialty">@doc.Specialty</span>
+                            </div>
+
+                            <!-- Buttons đẩy xuống đáy card -->
+                            <div class="mt-auto d-flex justify-content-center gap-2">
+                                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                                {
+                                    <!-- Nếu đã đăng nhập: Chuyển hướng bình thường -->
+                                    <a class="btn btn-book btn-action flex-grow-1"
+                                       asp-controller="HomePublic"
+                                       asp-action="BookAppointment"
+                                       asp-route-doctorId="@doc.DoctorId">
+                                        <i class="fas fa-calendar-plus me-1"></i> Đặt lịch
+                                    </a>
+                                }
+                                else
+                                {
+                                    <!-- Nếu CHƯA đăng nhập: Mở pop-up thông báo -->
+                                    <button type="button" class="btn btn-book btn-action flex-grow-1" data-bs-toggle="modal" data-bs-target="#loginRequireModal">
+                                        <i class="fas fa-calendar-plus me-1"></i> Đặt lịch
+                                    </button>
+                                }
+
+                                <a class="btn btn-outline-secondary btn-action flex-grow-1"
+                                   asp-controller="HomePublic"
+                                   asp-action="DoctorDetail"
+                                   asp-route-id="@doc.DoctorId">
+                                    Chi tiết
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <img src="~/img/no-data.png" alt="Không có dữ liệu" style="width: 120px; opacity: 0.4;" class="mb-3" onerror="this.style.display='none'">
+                <p class="text-muted fs-5">Hiện không có dữ liệu bác sĩ.</p>
+            </div>
+        }
+
+    </div>
+
+</div>
+<!-- ================= MODAL YÊU CẦU ĐĂNG NHẬP ================= -->
+<div class="modal fade" id="loginRequireModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg" style="border-radius: 20px; border: none;">
+
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body text-center px-4 pb-5 pt-0">
+                <div class="mb-3">
+                    <!-- Icon ổ khóa -->
+                    <div class="mx-auto bg-teal-light text-teal d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 50%;">
+                        <i class="fas fa-user-lock fs-1"></i>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-navy mb-3">Yêu cầu đăng nhập</h5>
+                <p class="text-muted mb-4" style="font-size: 14.5px;">
+                    Bạn cần đăng nhập vào hệ thống để có thể tự đặt lịch khám trực tuyến. Hoặc gọi ngay cho tổng đài để được hỗ trợ đặt lịch nhanh nhất!
+                </p>
+
+                <div class="d-flex flex-column gap-3 px-3">
+                    <a href="/Auth/Login" class="btn btn-teal py-2 rounded-pill fw-medium">
+                        <i class="fas fa-sign-in-alt me-2"></i> Chuyển đến Đăng nhập
+                    </a>
+                    <a href="tel:19001234" class="btn btn-outline-orange py-2 rounded-pill fw-medium">
+                        <i class="fas fa-phone-alt me-2"></i> Gọi tổng đài 1900 1234
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Thêm một chút CSS nhỏ cho nút Gọi tổng đài -->
+<style>
+    .bg-teal-light {
+        background-color: #ccfbf1 !important;
+    }
+
+    .btn-outline-orange {
+        color: #f97316;
+        border: 2px solid #f97316;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-orange:hover {
+            background: #f97316;
+            color: white;
+        }
+</style>
+<!-- ================= STYLE ================= -->
+<style>
+    /* TIÊU ĐỀ */
+    .section-title {
+        color: #0f2744;
+        font-weight: 700;
+        font-size: 28px;
+        position: relative;
+        padding-bottom: 12px;
+        display: inline-block;
+    }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background-color: #0d9488;
+            border-radius: 2px;
+        }
+
+    /* THANH TÌM KIẾM */
+    .search-wrapper {
+        border-radius: 50px;
+        background: #fff;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        transform: translateY(-50%);
+        font-size: 16px;
+        z-index: 10;
+    }
+
+    .search-input {
+        border: none;
+        padding: 14px 20px 14px 45px;
+        border-radius: 50px;
+        font-size: 15px;
+        box-shadow: none !important;
+        background: transparent;
+    }
+
+        .search-input:focus {
+            background-color: #f8fafc;
+        }
+
+    /* CARD BÁC SĨ */
+    .doctor-card {
+        border: 1px solid rgba(0,0,0,0.03);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #ffffff;
+    }
+
+        .doctor-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
+        }
+
+    .doctor-img-wrapper {
+        background-color: #f8fafc;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .doctor-img {
+        height: 280px;
+        width: 100%;
+        object-fit: cover;
+        /* SỬA LỖI LỆCH ẢNH (CẮT ĐẦU): Ưu tiên hiển thị từ phần Top */
+        object-position: top center;
+    }
+
+    .doctor-info {
+        padding: 24px 20px;
+    }
+
+    .doctor-name {
+        color: #1e293b;
+        font-size: 18px;
+    }
+
+    .doctor-specialty {
+        background-color: #ccfbf1;
+        color: #0d9488;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 6px 14px;
+        border-radius: 20px;
+    }
+
+    /* NÚT BẤM */
+    .btn-action {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 8px 12px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-book {
+        background-color: #0d9488;
+        border-color: #0d9488;
+        color: white;
+    }
+
+        .btn-book:hover {
+            background-color: #0f766e;
+            border-color: #0f766e;
+            color: white;
+        }
+
+    .btn-outline-secondary {
+        color: #64748b;
+        border-color: #cbd5e1;
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #f1f5f9;
+            color: #334155;
+            border-color: #94a3b8;
+        }
+</style>
+
+<!-- ================= SEARCH SCRIPT ================= -->
+<script>
+    // 🔥 Hàm bỏ dấu tiếng Việt
+    function removeVietnameseTones(str) {
+        return str
+            .normalize("NFD") // tách dấu
+            .replace(/[\u0300-\u036f]/g, "") // xóa dấu
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D")
+            .toLowerCase();
+    }
+
+    document.getElementById("searchBox").addEventListener("keyup", function () {
+
+        var keyword = removeVietnameseTones(this.value.trim());
+        var items = document.querySelectorAll(".doctor-item");
+
+        items.forEach(function (item) {
+
+            var name = removeVietnameseTones(
+                item.querySelector(".doctor-name").innerText
+            );
+
+            var specialty = removeVietnameseTones(
+                item.querySelector(".doctor-specialty").innerText
+            );
+
+            if (name.includes(keyword) || specialty.includes(keyword)) {
+                item.style.display = "";
+            } else {
+                item.style.display = "none";
+            }
+
+        });
+
+    });
+</script>

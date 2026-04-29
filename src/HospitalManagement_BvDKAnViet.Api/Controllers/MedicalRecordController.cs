@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.PatientDTO;
 using HospitalManagement_BvDKAnViet.Core.Entities;
 using HospitalManagement_BvDKAnViet.Core.IServices;
 
@@ -124,5 +125,27 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
 
             return NoContent();
         }
+
+      
+        // GET: api/MedicalRecord/doctor/5
+        [HttpGet("doctor/{doctorId:int}")]
+        public async Task<IActionResult> GetByDoctor(int doctorId)
+        {
+            var records = await _medicalRecordRepository.GetByDoctorIdAsync(doctorId);
+            var result = _mapper.Map<IEnumerable<MedicalRecordDto>>(records);
+            return Ok(result);
+        }
+
+
+        // GET: api/MedicalRecord/patient/5
+        [HttpGet("patient/{patientId:int}")]
+        public async Task<IActionResult> GetByPatient(int patientId)
+        {
+            var records = await _medicalRecordRepository.GetByPatientIdAsync(patientId);
+            var result = _mapper.Map<IEnumerable<MedicalRecordDto>>(records);
+            return Ok(result);
+        }
+
+
     }
 }

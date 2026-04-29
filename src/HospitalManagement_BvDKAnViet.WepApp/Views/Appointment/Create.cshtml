@@ -1,0 +1,352 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO.CreateAppointmentDto
+
+@{
+    ViewData["Title"] = "Đặt lịch hẹn";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Lịch hẹn", "/Appointment"),
+        ("Đặt lịch hẹn", null)
+    };
+    var isPatient = ViewBag.IsPatient ?? false;
+}
+
+<!-- TOP ACTION BAR -->
+<div class="page-action-bar mt-3 mb-4">
+    <div class="page-action-bar-left">
+        Đặt lịch khám mới
+        <span>Vui lòng điền thông tin để đặt lịch</span>
+    </div>
+    <div class="page-action-bar-right">
+        <a asp-action="Index" class="btn-top btn-top-outline">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center mb-5">
+    <div class="col-lg-8">
+        <div class="card-custom">
+
+            <div class="card-header-custom text-center">
+                <i class="fas fa-calendar-check text-teal fs-4 mb-2"></i>
+                <h5 class="fw-bold mb-0">Hồ sơ đặt lịch khám</h5>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form asp-action="Create" method="post" id="appointmentForm">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="alert alert-danger d-none" id="validationSummary"></div>
+
+                    <!-- KHỐI 1: THÔNG TIN CƠ BẢN -->
+                    <div class="form-section mb-4">
+                        <h6 class="form-section-title"><i class="fas fa-user-circle me-2"></i> 1. Thông tin chung</h6>
+
+                        <div class="row g-3">
+                            <!-- PATIENT -->
+                            @if (!(bool)isPatient)
+                            {
+                                <div class="col-md-12">
+                                    <label class="form-label fw-semibold text-muted small">Chọn Bệnh nhân <span class="text-danger">*</span></label>
+                                    <select asp-for="PatientId" asp-items="ViewBag.Patients" class="form-select form-control-custom">
+                                        <option value="">-- Chọn bệnh nhân --</option>
+                                    </select>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" asp-for="PatientId" />
+                            }
+
+                            <!-- DOCTOR -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-muted small">Chọn Bác sĩ chuyên khoa <span class="text-danger">*</span></label>
+                                <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-select form-control-custom" id="doctorId">
+                                    <option value="">-- Chọn bác sĩ --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KHỐI 2: THỜI GIAN KHÁM -->
+                    <div class="form-section mb-4 border-top pt-4">
+                        <h6 class="form-section-title"><i class="fas fa-clock me-2"></i> 2. Thời gian khám bệnh</h6>
+
+                        <div class="row g-3">
+                            <!-- DATE -->
+                            <div class="col-md-5">
+                                <label class="form-label fw-semibold text-muted small">Chọn Ngày khám <span class="text-danger">*</span></label>
+                                <input asp-for="AppointmentDate" type="date" class="form-control form-control-custom" id="appointmentDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                <div class="small text-muted mt-2 fst-italic">Làm việc từ Thứ 2 - Thứ 6</div>
+                            </div>
+
+                            <!-- SLOT -->
+                            <div class="col-md-7">
+                                <label class="form-label fw-semibold text-muted small">Chọn Giờ khám <span class="text-danger">*</span></label>
+
+                                <div id="slotContainer" class="d-flex flex-wrap gap-2 mt-1">
+                                    <div class="text-muted small fst-italic py-2"><i class="fas fa-info-circle me-1"></i> Vui lòng chọn bác sĩ và ngày khám để xem giờ trống.</div>
+                                </div>
+
+                                <input type="hidden" asp-for="AppointmentTime" id="selectedTime" />
+                            </div>
+
+                            <!-- Box thông báo (Đưa xuống full-width col-12 để không bị lệch) -->
+                            <div class="col-12">
+                                <div id="noSlot" class="alert py-2 px-3 mb-0 d-none shadow-sm" style="font-size: 13.5px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BUTTON SUBMIT -->
+                    <div class="text-center mt-5 pt-3 border-top">
+                        <button type="submit" class="btn btn-submit btn-lg px-5 shadow-sm">
+                            <i class="fas fa-check-circle me-2"></i> Xác nhận Đặt lịch
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ✅ Razor tự sinh đúng URL
+        const availableSlotsUrl = '@Url.Action("AvailableSlots", "Appointment")';
+
+        async function loadSlots() {
+            const doctorId = document.getElementById("doctorId").value;
+            const dateInput = document.getElementById("appointmentDate");
+            const date = dateInput.value;
+            const container = document.getElementById("slotContainer");
+            const noSlot = document.getElementById("noSlot");
+
+            // Reset giờ đã chọn
+            document.getElementById("selectedTime").value = "";
+
+            if (!doctorId || !date) {
+                container.innerHTML = '<div class="text-muted small fst-italic py-2"><i class="fas fa-info-circle me-1"></i> Vui lòng chọn bác sĩ và ngày khám để xem giờ trống.</div>';
+                noSlot.classList.add("d-none");
+                return;
+            }
+
+                    // 🛑 KIỂM TRA THỨ 7, CHỦ NHẬT
+        const selectedDateObj = new Date(date);
+        const dayOfWeek = selectedDateObj.getDay(); // 0 là Chủ nhật, 6 là Thứ 7
+
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            container.innerHTML = "";
+            // Xóa mt-3 để không bị hở lề quá rộng
+            noSlot.className = "alert alert-danger py-2 px-3 mb-0 shadow-sm";
+            noSlot.innerHTML = '<i class="fas fa-calendar-times me-1"></i> Hệ thống chỉ nhận đặt lịch từ <strong>Thứ 2 đến Thứ 6</strong>. Vui lòng chọn ngày khác!';
+            noSlot.classList.remove("d-none");
+
+            // Xóa value bị sai đi
+            dateInput.value = "";
+            return;
+        }
+
+        // Reset box thông báo về trạng thái cảnh báo hết lịch (màu vàng) nếu ngày hợp lệ
+        noSlot.className = "alert alert-warning py-2 px-3 mb-0 shadow-sm d-none";
+        noSlot.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Bác sĩ không có lịch trống trong ngày này. Vui lòng chọn ngày khác!';
+
+            // Reset box thông báo về trạng thái cảnh báo hết lịch (màu vàng) nếu ngày hợp lệ
+            noSlot.className = "alert alert-warning mt-3 py-2 px-3 d-none";
+            noSlot.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Bác sĩ không có lịch trống trong ngày này. Vui lòng chọn ngày khác!';
+
+            const url = `${availableSlotsUrl}?doctorId=${doctorId}&date=${date}`;
+
+            try {
+                container.innerHTML = '<div class="spinner-border spinner-border-sm text-teal ms-2" role="status"></div><span class="ms-2 small text-muted">Đang tải lịch trống...</span>';
+
+                const res = await fetch(url);
+                if (!res.ok) {
+                    console.error("HTTP Error:", res.status);
+                    container.innerHTML = '<div class="text-danger small"><i class="fas fa-times-circle me-1"></i> Lỗi kết nối. Vui lòng thử lại.</div>';
+                    return;
+                }
+
+                const data = await res.json();
+
+                container.innerHTML = "";
+                noSlot.classList.add("d-none");
+
+                if (!data || data.length === 0) {
+                    noSlot.classList.remove("d-none");
+                    return;
+                }
+
+                data.forEach(t => {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "btn slot-btn";
+                    btn.innerHTML = `<i class="far fa-clock me-1"></i> ${t}`;
+                    btn.onclick = () => {
+                        document.getElementById("selectedTime").value = t;
+                        document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("active"));
+                        btn.classList.add("active");
+                    };
+                    container.appendChild(btn);
+                });
+
+            } catch (err) {
+                console.error("Fetch error:", err);
+                container.innerHTML = '<div class="text-danger small"><i class="fas fa-times-circle me-1"></i> Không thể tải dữ liệu.</div>';
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadSlots);
+        document.getElementById("doctorId").addEventListener("change", loadSlots);
+        document.getElementById("appointmentDate").addEventListener("change", loadSlots);
+
+        document.getElementById("appointmentForm").addEventListener("submit", function (e) {
+            var selectedTime = document.getElementById("selectedTime").value;
+            var summary = document.getElementById("validationSummary");
+
+            if (!selectedTime) {
+                e.preventDefault();
+                summary.classList.remove("d-none");
+                summary.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> Vui lòng chọn ngày hợp lệ và giờ khám cụ thể!';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+}
+
+<style>
+    /* ── MÀU SẮC CHUNG ── */
+    :root {
+        --navy: #0f2744;
+        --teal: #0d9488;
+        --bg-light: #f8fafc;
+    }
+
+    .text-teal {
+        color: var(--teal) !important;
+    }
+
+    /* ── ACTION BAR (TIÊU ĐỀ TRANG) ── */
+    .page-action-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .page-action-bar-left {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--navy);
+    }
+
+        .page-action-bar-left span {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            margin-left: 10px;
+            font-style: italic;
+        }
+
+    .btn-top {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-top-outline {
+        background: #fff;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+        .btn-top-outline:hover {
+            background: var(--bg-light);
+            color: var(--navy);
+        }
+
+    /* ── CUSTOM CARD ── */
+    .card-custom {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.03);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+        padding: 30px 20px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--navy);
+    }
+
+    /* ── FORM ELEMENTS ── */
+    .form-section-title {
+        color: var(--navy);
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .form-control-custom {
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        padding: 12px 15px;
+        font-size: 14.5px;
+        background-color: var(--bg-light);
+        transition: all 0.3s;
+    }
+
+        .form-control-custom:focus {
+            background-color: #fff;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.15);
+        }
+
+    /* ── NÚT CHỌN GIỜ (SLOTS) ── */
+    .slot-btn {
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        border-radius: 50px;
+        padding: 8px 16px;
+        font-size: 13.5px;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .slot-btn:hover {
+            background: var(--bg-light);
+            border-color: #94a3b8;
+            transform: translateY(-2px);
+        }
+
+        .slot-btn.active {
+            background: var(--teal);
+            border-color: var(--teal);
+            color: white;
+            box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+        }
+
+    /* ── NÚT SUBMIT ── */
+    .btn-submit {
+        background: var(--navy);
+        color: white;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-submit:hover {
+            background: #1e3a8a;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(15, 39, 68, 0.3) !important;
+        }
+</style>

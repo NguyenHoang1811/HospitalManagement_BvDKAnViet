@@ -63,5 +63,18 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
             await _db.SaveChangesAsync();
             return true;
         }
+        // Thêm vào PatientRepository.cs
+        public async Task<IEnumerable<Patient>> GetByDoctorIdAsync(int doctorId)
+        {
+            return await _db.MedicalRecords
+                .AsNoTracking()
+                .Where(m => m.DoctorId == doctorId)
+                .Include(m => m.Patient)
+                .Select(m => m.Patient!)
+                .Where(p => p != null)
+                .GroupBy(p => p.PatientId)
+                .Select(g => g.First())
+                .ToListAsync();
+        }
     }
 }

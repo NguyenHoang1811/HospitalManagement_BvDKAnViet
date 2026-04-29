@@ -1,0 +1,338 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO.CreateAppointmentDto
+
+@{
+	ViewData["Title"] = "Đặt lịch khám bệnh";
+}
+
+<!-- BANNER / HERO SECTION -->
+<div class="patient-hero-banner mb-5">
+	<div class="container position-relative z-2">
+		<h2 class="fw-bold text-white mb-2">Đặt lịch khám trực tuyến</h2>
+		<p class="text-white-50 mb-0">Nhanh chóng - Tiện lợi - Không chờ đợi</p>
+	</div>
+</div>
+
+<div class="container mb-5">
+	<div class="row justify-content-center g-4">
+
+		<!-- CỘT TRÁI: FORM ĐẶT LỊCH -->
+		<div class="col-lg-8">
+			<div class="card-custom">
+				<div class="card-header-custom d-flex align-items-center">
+					<div class="icon-circle bg-teal text-white me-3">
+						<i class="fas fa-calendar-alt"></i>
+					</div>
+					<div>
+						<h5 class="fw-bold mb-0 text-navy">Thông tin đặt khám</h5>
+						<p class="text-muted small mb-0">Vui lòng chọn bác sĩ và thời gian phù hợp</p>
+					</div>
+				</div>
+
+				<div class="card-body p-4 p-md-5">
+					<form asp-action="BookAppointment" method="post" id="bookAppointmentForm">
+						@Html.AntiForgeryToken()
+
+						<!-- Vì bệnh nhân tự đặt lịch, PatientId sẽ được lấy từ session/claim ở backend. Không cần hiện ra. -->
+						<input type="hidden" asp-for="PatientId" />
+
+						<div asp-validation-summary="All" class="alert alert-danger d-none shadow-sm" id="validationSummary"></div>
+
+						<!-- BÁC SĨ -->
+						<!-- ✅ Thêm id rõ ràng -->
+						<input type="hidden" asp-for="DoctorId" id="doctorId" />
+
+						<div class="mb-4 pb-4 border-bottom">
+							<label class="form-label fw-bold text-navy mb-2">
+								<i class="fas fa-user-md text-teal me-2"></i>Bác sĩ đã chọn
+							</label>
+
+							<div class="form-control form-control-custom bg-light">
+								@ViewBag.DoctorName
+							</div>
+						</div>
+
+						<!-- 2. CHỌN NGÀY VÀ GIỜ -->
+						<div class="mb-4 pb-2">
+							<label class="form-label fw-bold text-navy mb-3"><i class="fas fa-clock text-teal me-2"></i>2. Chọn thời gian khám</label>
+
+							<div class="row g-4">
+								<!-- Chọn Ngày -->
+								<div class="col-md-5">
+									<label class="form-label text-muted small fw-medium">Ngày mong muốn</label>
+									<input asp-for="AppointmentDate" type="date" class="form-control form-control-custom" id="appointmentDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+									<div class="form-text text-muted mt-2"><i class="fas fa-info-circle me-1 text-teal"></i> Chỉ đặt lịch từ Thứ 2 - Thứ 6.</div>
+								</div>
+
+								<!-- Chọn Giờ (Render bằng Ajax) -->
+								<div class="col-md-7">
+									<label class="form-label text-muted small fw-medium">Giờ khám hiện có</label>
+
+									<div class="slot-container-wrapper p-3 bg-light rounded-3 border">
+										<div id="slotContainer" class="d-flex flex-wrap gap-2">
+											<div class="text-muted small fst-italic"><i class="fas fa-hand-pointer me-1 text-teal"></i> Hãy chọn Bác sĩ và Ngày khám trước.</div>
+										</div>
+									</div>
+
+									<input type="hidden" asp-for="AppointmentTime" id="selectedTime" />
+
+									<!-- Cảnh báo lỗi ngày/giờ -->
+									<div id="noSlot" class="alert mt-3 py-2 px-3 d-none shadow-sm" style="font-size: 13.5px;"></div>
+								</div>
+							</div>
+						</div>
+
+						<!-- SUBMIT -->
+						<div class="text-center mt-5">
+							<button type="submit" class="btn btn-submit btn-lg px-5 shadow">
+								Đặt lịch ngay <i class="fas fa-paper-plane ms-2"></i>
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- CỘT PHẢI: TÓM TẮT & HƯỚNG DẪN -->
+		<div class="col-lg-4">
+			<!-- Thẻ Hướng dẫn -->
+			<div class="card-custom mb-4 bg-teal-light border-teal-light">
+				<div class="card-body p-4">
+					<h6 class="fw-bold text-teal mb-3"><i class="fas fa-lightbulb me-2"></i> Hướng dẫn đặt lịch</h6>
+					<ul class="guide-list list-unstyled mb-0 text-navy-muted small">
+						<li><i class="fas fa-check text-teal"></i> Bước 1: Chọn bác sĩ chuyên khoa phù hợp.</li>
+						<li><i class="fas fa-check text-teal"></i> Bước 2: Chọn ngày khám trong tuần (Thứ 2 - Thứ 6).</li>
+						<li><i class="fas fa-check text-teal"></i> Bước 3: Chọn khung giờ khám hiện đang còn trống.</li>
+						<li><i class="fas fa-check text-teal"></i> Bước 4: Nhấn "Đặt lịch ngay" để hoàn tất.</li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- Thẻ Quy định -->
+			<div class="card-custom">
+				<div class="card-body p-4">
+					<h6 class="fw-bold text-navy mb-3"><i class="fas fa-exclamation-triangle text-orange me-2"></i> Lưu ý quan trọng</h6>
+					<ul class="guide-list list-unstyled mb-0 text-muted small">
+						<li><i class="fas fa-angle-right text-orange"></i> Quý khách vui lòng đến trước giờ hẹn <strong>15 phút</strong> để làm thủ tục.</li>
+						<li><i class="fas fa-angle-right text-orange"></i> Nếu đến trễ quá 30 phút, lịch hẹn có thể bị hủy tự động.</li>
+						<li><i class="fas fa-angle-right text-orange"></i> Khi cần đổi lịch, vui lòng liên hệ tổng đài <strong>1900 1234</strong>.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+				// ✅ Trỏ đúng sang HomePublicController
+		const availableSlotsUrl = '@Url.Action("AvailableSlots", "HomePublic")';
+
+		async function loadSlots() {
+			const doctorId = document.getElementById("doctorId").value;
+			const date = document.getElementById("appointmentDate").value;
+
+			if (!doctorId || !date) return;
+
+			const url = `${availableSlotsUrl}?doctorId=${doctorId}&date=${date}`;
+
+			try {
+				const res = await fetch(url);
+				if (!res.ok) { console.error("HTTP:", res.status); return; }
+
+				const data = await res.json();
+				const container = document.getElementById("slotContainer");
+				const noSlot = document.getElementById("noSlot");
+
+				container.innerHTML = "";
+				noSlot.classList.add("d-none");
+
+				if (!data || data.length === 0) {
+					noSlot.classList.remove("d-none");
+					return;
+				}
+
+				data.forEach(t => {
+					const btn = document.createElement("button");
+					btn.type = "button";
+					btn.className = "btn btn-outline-primary slot-btn";
+					btn.innerText = t;
+					btn.onclick = () => {
+						document.getElementById("selectedTime").value = t;
+						document.querySelectorAll(".slot-btn")
+							.forEach(b => b.classList.remove("active"));
+						btn.classList.add("active");
+					};
+					container.appendChild(btn);
+				});
+			} catch (err) {
+				console.error("Fetch error:", err);
+			}
+		}
+
+		document.addEventListener("DOMContentLoaded", loadSlots);
+		document.getElementById("doctorId").addEventListener("change", loadSlots);
+		document.getElementById("appointmentDate").addEventListener("change", loadSlots);
+
+		// Submit Validation
+		document.getElementById("bookAppointmentForm").addEventListener("submit", function (e) {
+			var selectedTime = document.getElementById("selectedTime").value;
+			var summary = document.getElementById("validationSummary");
+
+			if (!selectedTime) {
+				e.preventDefault();
+				summary.classList.remove("d-none");
+				summary.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> <strong>Lỗi:</strong> Vui lòng chọn cả Ngày và Giờ khám cụ thể!';
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+		});
+	</script>
+}
+
+<style>
+	/* ── VARIABLES ── */
+	:root {
+		--navy: #0f2744;
+		--teal: #0d9488;
+		--orange: #f97316;
+		--bg-light: #f8fafc;
+	}
+
+	.text-teal {
+		color: var(--teal) !important;
+	}
+
+	.text-navy {
+		color: var(--navy) !important;
+	}
+
+	.text-orange {
+		color: var(--orange) !important;
+	}
+
+	.text-navy-muted {
+		color: #334155;
+	}
+
+	.bg-teal {
+		background-color: var(--teal) !important;
+	}
+
+	.bg-teal-light {
+		background-color: #f0fdfa !important;
+	}
+
+	.border-teal-light {
+		border-color: #ccfbf1 !important;
+	}
+
+	/* ── HERO BANNER ── */
+	.patient-hero-banner {
+		background: linear-gradient(135deg, rgba(15,39,68,0.9) 0%, rgba(13,148,136,0.85) 100%), url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+		padding: 60px 0;
+		border-radius: 0 0 30px 30px;
+		box-shadow: 0 10px 30px rgba(13, 148, 136, 0.2);
+		margin-top: -30px; /* Kéo lên sát header nếu cần */
+	}
+
+	/* ── CUSTOM CARD ── */
+	.card-custom {
+		background: #fff;
+		border-radius: 20px;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+		border: 1px solid rgba(0,0,0,0.04);
+		overflow: hidden;
+	}
+
+	.card-header-custom {
+		padding: 25px 30px 20px;
+		border-bottom: 1px dashed #e2e8f0;
+		background: #fff;
+	}
+
+	.icon-circle {
+		width: 50px;
+		height: 50px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 20px;
+		box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+	}
+
+	/* ── FORM ELEMENTS ── */
+	.form-control-custom {
+		border-radius: 12px;
+		border: 1px solid #cbd5e1;
+		padding: 14px 18px;
+		font-size: 14.5px;
+		background-color: var(--bg-light);
+		transition: all 0.3s ease;
+	}
+
+		.form-control-custom:focus {
+			background-color: #fff;
+			border-color: var(--teal);
+			box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+		}
+
+	/* ── SLOT BUTTONS ── */
+	.slot-container-wrapper {
+		min-height: 80px;
+	}
+
+	.slot-btn {
+		background: #fff;
+		border: 1px solid #cbd5e1;
+		color: #334155;
+		border-radius: 10px;
+		padding: 8px 16px;
+		font-size: 13.5px;
+		font-weight: 600;
+		transition: all 0.2s ease;
+	}
+
+		.slot-btn:hover {
+			background: #e2e8f0;
+			border-color: #94a3b8;
+			transform: translateY(-2px);
+		}
+
+		.slot-btn.active {
+			background: var(--teal);
+			border-color: var(--teal);
+			color: white;
+			box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+		}
+
+	/* ── SUBMIT BUTTON ── */
+	.btn-submit {
+		background: var(--navy);
+		color: white;
+		border-radius: 50px;
+		font-weight: 600;
+		font-size: 16px;
+		transition: all 0.3s ease;
+	}
+
+		.btn-submit:hover {
+			background: #1e3a8a;
+			color: white;
+			transform: translateY(-3px);
+			box-shadow: 0 8px 25px rgba(15, 39, 68, 0.3) !important;
+		}
+
+	/* ── GUIDE LIST ── */
+	.guide-list li {
+		margin-bottom: 12px;
+		line-height: 1.6;
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+		.guide-list li i {
+			margin-top: 4px;
+		}
+</style>

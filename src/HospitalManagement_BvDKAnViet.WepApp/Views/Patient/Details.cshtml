@@ -1,263 +1,269 @@
 ﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO.PatientDto
 @{
-    ViewData["Title"] = "Chi tiết bệnh nhân";
+	ViewData["Title"] = "Chi tiết bệnh nhân";
 
-    ViewData["Breadcrumb"] = new List<(string, string)>
-    {
-        ("Bệnh nhân", "/Patient"),
-        ("Chi tiết", null)
-    };
+	ViewData["Breadcrumb"] = new List<(string, string)>
+	{
+		("Bệnh nhân", "/Patient"),
+		("Chi tiết", null)
+	};
 }
 
 <div class="page-wrapper">
+	@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+	<!-- HEADER -->
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div class="d-flex align-items-center gap-3">
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
+			<!-- AVATAR -->
+			<div class="avatar-lg">
+				@Model.Name.Substring(0, 1)
+			</div>
 
-            <!-- AVATAR -->
-            <div class="avatar-lg">
-                @Model.Name.Substring(0, 1)
-            </div>
+			<div>
+				<h2 class="fw-bold mb-1">@Model.Name</h2>
+				<div class="text-muted small">
+					Mã BN: #@Model.PatientId
+				</div>
+			</div>
+		</div>
 
-            <div>
-                <h2 class="fw-bold mb-1">@Model.Name</h2>
-                <div class="text-muted small">
-                    Mã BN: #@Model.PatientId
-                </div>
-            </div>
-        </div>
+		<div class="d-flex gap-2">
+			@if (!User.IsInRole("Doctor"))
+			{
+				<a asp-action="Edit" asp-route-id="@Model.PatientId" class="btn btn-accent">
+					<i class="fas fa-edit"></i> Chỉnh sửa
+				</a>
+			}
+			<a asp-action="Index" class="btn btn-light">
+				<i class="fas fa-arrow-left"></i> Quay lại
+			</a>
+		</div>
+	</div>
 
-        <div class="d-flex gap-2">
-            <a asp-action="Edit" asp-route-id="@Model.PatientId" class="btn btn-accent">
-                <i class="fas fa-edit"></i> Chỉnh sửa
-            </a>
-            <a asp-action="Index" class="btn btn-light">
-                <i class="fas fa-arrow-left"></i> Quay lại
-            </a>
-        </div>
-    </div>
+	<!-- GRID -->
+	<div class="row g-4">
 
-    <!-- GRID -->
-    <div class="row g-4">
+		<!-- LEFT -->
+		<div class="col-md-6">
 
-        <!-- LEFT -->
-        <div class="col-md-6">
+			<!-- PERSONAL -->
+			<div class="card-custom">
+				<div class="card-title">
+					<i class="fas fa-id-card"></i> Thông tin cá nhân
+				</div>
 
-            <!-- PERSONAL -->
-            <div class="card-custom">
-                <div class="card-title">
-                    <i class="fas fa-id-card"></i> Thông tin cá nhân
-                </div>
+				<div class="info-item">
+					<label>Ngày sinh</label>
+					<div>
+						@if (Model.DateOfBirth != default(DateOnly))
+						{
+							<div>@Model.DateOfBirth.ToString("dd/MM/yyyy")</div>
+							<small class="text-muted">
+								Tuổi:
+								@((DateTime.Today.Year - Model.DateOfBirth.Year) -
+															(DateTime.Today.DayOfYear < Model.DateOfBirth.DayOfYear ? 1 : 0))
+						</small>
+												}
+						else
+						{
+							<span class="empty">Chưa cập nhật</span>
+						}
+					</div>
+				</div>
 
-                <div class="info-item">
-                    <label>Ngày sinh</label>
-                    <div>
-                        @if (Model.DateOfBirth != default(DateOnly))
-                        {
-                            <div>@Model.DateOfBirth.ToString("dd/MM/yyyy")</div>
-                            <small class="text-muted">
-                                Tuổi:
-                                @((DateTime.Today.Year - Model.DateOfBirth.Year) -
-                                                            (DateTime.Today.DayOfYear < Model.DateOfBirth.DayOfYear ? 1 : 0))
-                        </small>
-                                                }
-                        else
-                        {
-                            <span class="empty">Chưa cập nhật</span>
-                        }
-                    </div>
-                </div>
+				<div class="info-item">
+					<label>Giới tính</label>
+					<div>
+						@{
+							var gender = Model.Gender?.ToUpper();
+						}
+						@if (gender == "M")
+						{
+							<span class="badge-soft blue"><i class="fas fa-mars"></i> Nam</span>
+						}
+						else if (gender == "F")
+						{
+							<span class="badge-soft pink"><i class="fas fa-venus"></i> Nữ</span>
+						}
+						else
+						{
+							<span class="badge-soft gray">Khác</span>
+						}
+					</div>
+				</div>
+			</div>
 
-                <div class="info-item">
-                    <label>Giới tính</label>
-                    <div>
-                        @{
-                            var gender = Model.Gender?.ToUpper();
-                        }
-                        @if (gender == "M")
-                        {
-                            <span class="badge-soft blue"><i class="fas fa-mars"></i> Nam</span>
-                        }
-                        else if (gender == "F")
-                        {
-                            <span class="badge-soft pink"><i class="fas fa-venus"></i> Nữ</span>
-                        }
-                        else
-                        {
-                            <span class="badge-soft gray">Khác</span>
-                        }
-                    </div>
-                </div>
-            </div>
+			<!-- CONTACT -->
+			<div class="card-custom mt-4">
+				<div class="card-title">
+					<i class="fas fa-address-book"></i> Liên hệ
+				</div>
 
-            <!-- CONTACT -->
-            <div class="card-custom mt-4">
-                <div class="card-title">
-                    <i class="fas fa-address-book"></i> Liên hệ
-                </div>
+				<div class="info-item">
+					<label>Số điện thoại</label>
+					<div>
+						@if (!string.IsNullOrEmpty(Model.Phone))
+						{
+							<a href="tel:@Model.Phone">@Model.Phone</a>
+						}
+						else
+						{
+							<span class="empty">Chưa cập nhật</span>
+						}
+					</div>
+				</div>
 
-                <div class="info-item">
-                    <label>Số điện thoại</label>
-                    <div>
-                        @if (!string.IsNullOrEmpty(Model.Phone))
-                        {
-                            <a href="tel:@Model.Phone">@Model.Phone</a>
-                        }
-                        else
-                        {
-                            <span class="empty">Chưa cập nhật</span>
-                        }
-                    </div>
-                </div>
+				<div class="info-item">
+					<label>Địa chỉ</label>
+					<div>
+						@if (!string.IsNullOrEmpty(Model.Address))
+						{
+							@Model.Address
+						}
+						else
+						{
+							<span class="empty">Chưa cập nhật</span>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
 
-                <div class="info-item">
-                    <label>Địa chỉ</label>
-                    <div>
-                        @if (!string.IsNullOrEmpty(Model.Address))
-                        {
-                            @Model.Address
-                        }
-                        else
-                        {
-                            <span class="empty">Chưa cập nhật</span>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
+		<!-- RIGHT -->
+		<div class="col-md-6">
 
-        <!-- RIGHT -->
-        <div class="col-md-6">
+			<!-- MEDICAL -->
+			<div class="card-custom">
+				<div class="card-title">
+					<i class="fas fa-file-medical"></i> Lịch sử y tế
+				</div>
 
-            <!-- MEDICAL -->
-            <div class="card-custom">
-                <div class="card-title">
-                    <i class="fas fa-file-medical"></i> Lịch sử y tế
-                </div>
+				@if (!string.IsNullOrEmpty(Model.MedicalHistory))
+				{
+					<div class="medical-box">
+						@Model.MedicalHistory
+					</div>
+				}
+				else
+				{
+					<span class="empty">Chưa có dữ liệu</span>
+				}
+			</div>
 
-                @if (!string.IsNullOrEmpty(Model.MedicalHistory))
-                {
-                    <div class="medical-box">
-                        @Model.MedicalHistory
-                    </div>
-                }
-                else
-                {
-                    <span class="empty">Chưa có dữ liệu</span>
-                }
-            </div>
+			<!-- ACTION -->
+			@if (!User.IsInRole("Doctor"))
+			{
+				<div class="card-custom mt-4 text-center">
+					<div class="text-muted mb-3">
+						Bạn có thể chỉnh sửa hoặc xóa bệnh nhân
+					</div>
 
-            <!-- ACTION -->
-            <div class="card-custom mt-4 text-center">
-                <div class="text-muted mb-3">
-                    Bạn có thể chỉnh sửa hoặc xóa bệnh nhân
-                </div>
+					<a asp-action="Delete"
+					   asp-route-id="@Model.PatientId"
+					   class="btn btn-danger"
+					   onclick="return confirm('Bạn có chắc muốn xóa bệnh nhân này?');">
+						<i class="fas fa-trash"></i> Xóa bệnh nhân
+					</a>
+				</div>
+			}
 
-                <a asp-action="Delete"
-                   asp-route-id="@Model.PatientId"
-                   class="btn btn-danger"
-                   onclick="return confirm('Bạn có chắc muốn xóa bệnh nhân này?');">
-                    <i class="fas fa-trash"></i> Xóa bệnh nhân
-                </a>
-            </div>
+		</div>
 
-        </div>
-
-    </div>
+	</div>
 </div>
 
 <style>
-    .page-wrapper {
-        padding: 10px;
-    }
+	.page-wrapper {
+		padding: 10px;
+	}
 
-    /* CARD */
-    .card-custom {
-        background: #fff;
-        border-radius: 14px;
-        padding: 20px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-    }
+	/* CARD */
+	.card-custom {
+		background: #fff;
+		border-radius: 14px;
+		padding: 20px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+	}
 
-    /* TITLE */
-    .card-title {
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: #1e293b;
-    }
+	/* TITLE */
+	.card-title {
+		font-weight: 600;
+		margin-bottom: 15px;
+		color: #1e293b;
+	}
 
-    /* INFO */
-    .info-item {
-        margin-bottom: 15px;
-    }
+	/* INFO */
+	.info-item {
+		margin-bottom: 15px;
+	}
 
-        .info-item label {
-            font-size: 12px;
-            color: #64748b;
-        }
+		.info-item label {
+			font-size: 12px;
+			color: #64748b;
+		}
 
-        .info-item div {
-            font-weight: 500;
-        }
+		.info-item div {
+			font-weight: 500;
+		}
 
-    /* AVATAR */
-    .avatar-lg {
-        width: 50px;
-        height: 50px;
-        background: #60a5fa;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-    }
+	/* AVATAR */
+	.avatar-lg {
+		width: 50px;
+		height: 50px;
+		background: #60a5fa;
+		color: white;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+	}
 
-    /* BADGE */
-    .badge-soft {
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-    }
+	/* BADGE */
+	.badge-soft {
+		padding: 5px 10px;
+		border-radius: 20px;
+		font-size: 12px;
+	}
 
-        .badge-soft.blue {
-            background: #dbeafe;
-            color: #2563eb;
-        }
+		.badge-soft.blue {
+			background: #dbeafe;
+			color: #2563eb;
+		}
 
-        .badge-soft.pink {
-            background: #fce7f3;
-            color: #db2777;
-        }
+		.badge-soft.pink {
+			background: #fce7f3;
+			color: #db2777;
+		}
 
-        .badge-soft.gray {
-            background: #e5e7eb;
-            color: #374151;
-        }
+		.badge-soft.gray {
+			background: #e5e7eb;
+			color: #374151;
+		}
 
-    /* EMPTY */
-    .empty {
-        color: #94a3b8;
-        font-style: italic;
-    }
+	/* EMPTY */
+	.empty {
+		color: #94a3b8;
+		font-style: italic;
+	}
 
-    /* MEDICAL */
-    .medical-box {
-        background: #f8fafc;
-        padding: 12px;
-        border-radius: 10px;
-        white-space: pre-wrap;
-    }
+	/* MEDICAL */
+	.medical-box {
+		background: #f8fafc;
+		padding: 12px;
+		border-radius: 10px;
+		white-space: pre-wrap;
+	}
 
-    /* BUTTON */
-    .btn-accent {
-        background: #2dd4bf;
-        color: white;
-        border-radius: 8px;
-    }
+	/* BUTTON */
+	.btn-accent {
+		background: #2dd4bf;
+		color: white;
+		border-radius: 8px;
+	}
 
-        .btn-accent:hover {
-            background: #26c6a8;
-        }
+		.btn-accent:hover {
+			background: #26c6a8;
+		}
 </style>

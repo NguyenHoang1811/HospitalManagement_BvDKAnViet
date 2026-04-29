@@ -14,5 +14,8 @@ namespace HospitalManagement_BvDKAnViet.Core.IServices
         Task<bool> IsDoctorAvailableAsync(int doctorId, DateOnly date, TimeOnly time, int? excludeAppointmentId = null);
 
         Task<bool> IsPatientAvailableAsync(int patientId, DateOnly date, TimeOnly time, int? excludeAppointmentId = null);
+        Task<IEnumerable<Appointment>> GetPendingExpiredAsync(DateTime beforeTime);
+        Task<bool> BulkUpdateStatusAsync(IEnumerable<int> ids, int status, string statusName);
+        Task<IEnumerable<Appointment>> GetByDoctorIdAndDateAsync(int doctorId, DateOnly date);
     }
 }

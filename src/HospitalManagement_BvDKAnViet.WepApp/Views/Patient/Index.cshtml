@@ -10,17 +10,19 @@
 }
 
 <div class="page-wrapper">
-
+	@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 	<!-- HEADER -->
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<div>
 			<h2 class="fw-bold text-dark mb-1">@ViewData["Title"]</h2>
 			<div class="text-muted small">Quản lý thông tin bệnh nhân trong hệ thống</div>
 		</div>
-
-		<a asp-controller="Patient" asp-action="Create" class="btn btn-accent">
-			<i class="fas fa-plus"></i> Thêm bệnh nhân
-		</a>
+		@if (!User.IsInRole("Doctor"))
+		{
+			<a asp-controller="Patient" asp-action="Create" class="btn btn-accent">
+				<i class="fas fa-plus"></i> Thêm bệnh nhân
+			</a>
+		}
 	</div>
 
 	<!-- ALERT -->
@@ -117,20 +119,22 @@
 
 								<!-- ACTION -->
 								<td class="text-end">
-
-									<a asp-controller="Account"
-									   asp-action="Create"
-									   asp-route-patientId="@patient.PatientId"
-									   class="btn-action text-success"
-									   title="Tạo tài khoản">
-										<i class="fas fa-user-plus"></i>
-									</a>
-
+									@if (!User.IsInRole("Doctor"))
+									{
+										<a asp-controller="Account"
+										asp-action="Create"
+										asp-route-patientId="@patient.PatientId"
+										class="btn-action text-success"
+										title="Tạo tài khoản">
+											<i class="fas fa-user-plus"></i>
+										</a>
+									}
 									<a asp-action="Details" asp-route-id="@patient.PatientId"
 									   class="btn-action text-info" title="Xem">
 										<i class="fas fa-eye"></i>
 									</a>
-
+									@if (!User.IsInRole("Doctor"))
+									{
 									<a asp-action="Edit" asp-route-id="@patient.PatientId"
 									   class="btn-action text-warning" title="Sửa">
 										<i class="fas fa-edit"></i>
@@ -143,6 +147,7 @@
 											data-id="@patient.PatientId">
 										<i class="fas fa-trash"></i>
 									</button>
+									}
 								</td>
 							</tr>
 							stt++;

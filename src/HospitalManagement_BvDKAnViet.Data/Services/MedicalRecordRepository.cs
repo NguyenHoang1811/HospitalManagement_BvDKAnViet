@@ -84,5 +84,24 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
             return await _db.MedicalRecords
                 .AnyAsync(r => r.PatientId == patientId);
         }
+        
+        public async Task<IEnumerable<MedicalRecord>> GetByDoctorIdAsync(int doctorId)
+        {
+            return await _db.MedicalRecords
+                .AsNoTracking()
+                .Where(m => m.DoctorId == doctorId)
+                .Include(m => m.Patient)
+                .Include(m => m.Doctor)
+                .Include(m => m.Prescriptions)
+                    .ThenInclude(p => p.Medicine)
+                .OrderByDescending(m => m.CreatedDate)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<MedicalRecord>> GetByPatientIdAsync(int patientId)
+        {
+            return await _db.MedicalRecords
+                .Where(x => x.PatientId == patientId)
+                .ToListAsync();
+        }
     }
 }

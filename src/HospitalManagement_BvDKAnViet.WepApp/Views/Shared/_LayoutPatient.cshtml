@@ -1,0 +1,401 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="utf-8" />
+	<title>@ViewData["Title"] - Patient</title>
+
+	<!-- Thêm Font Inter -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+	<style>
+		:root {
+			--navy: #0f2744;
+			--teal: #0d9488; /* Chỉnh teal tối hơn một chút để tương phản tốt trên nền trắng */
+			--teal-light: #ccfbf1;
+			--bg: #f8fafc;
+			--card: #ffffff;
+			--text-main: #334155;
+			--text-muted: #64748b;
+		}
+
+		body {
+			background: var(--bg);
+			font-family: 'Inter', sans-serif;
+			color: var(--text-main);
+			display: flex;
+			flex-direction: column;
+			min-height: 100vh;
+		}
+
+		/* ================= HEADER HIỆN ĐẠI ================= */
+		.topbar {
+			background: rgba(255, 255, 255, 0.95);
+			backdrop-filter: blur(10px); /* Hiệu ứng kính mờ */
+			padding: 15px 0;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+			position: sticky;
+			top: 0;
+			z-index: 1000;
+		}
+
+		.logo {
+			color: var(--navy);
+			font-weight: 700;
+			font-size: 22px;
+			letter-spacing: -0.5px;
+		}
+
+		.nav-link {
+			color: var(--text-muted) !important;
+			font-weight: 500;
+			padding: 8px 16px !important;
+			border-radius: 8px;
+			transition: all 0.3s ease;
+		}
+
+			.nav-link:hover, .nav-link.active-link {
+				background: var(--teal-light);
+				color: var(--teal) !important;
+			}
+
+		/* ================= NÚT BẤM CỦA USER ================= */
+		.user-box {
+			font-size: 14px;
+			color: var(--text-main);
+			font-weight: 500;
+		}
+
+		.btn-custom {
+			border-radius: 8px;
+			font-weight: 500;
+			padding: 8px 20px;
+			transition: all 0.3s ease;
+		}
+
+		.btn-login {
+			background-color: var(--teal);
+			color: white;
+			border: none;
+		}
+
+			.btn-login:hover {
+				background-color: #0f766e;
+				color: white;
+				transform: translateY(-1px);
+				box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+			}
+
+		/* ================= CONTENT & CARD ================= */
+		.main-content {
+			padding: 40px 15px;
+			flex-grow: 1;
+		}
+
+		.card-custom {
+			background: var(--card);
+			border-radius: 16px; /* Bo góc mềm hơn */
+			padding: 30px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); /* Bóng đổ lan tỏa */
+			border: 1px solid rgba(0,0,0,0.03);
+		}
+
+		/* ================= FOOTER ================= */
+		.footer {
+			background: linear-gradient(135deg, #0f2744 0%, #1a365d 100%); /* Nền Gradient sang trọng */
+			color: white;
+			padding: 60px 0 20px;
+			margin-top: 40px;
+		}
+
+		.footer-title {
+			color: white;
+			font-weight: 600;
+			margin-bottom: 25px;
+			font-size: 16px;
+			letter-spacing: 0.5px;
+			position: relative;
+			padding-bottom: 10px;
+		}
+
+			/* Dòng gạch dưới title footer */
+			.footer-title::after {
+				content: '';
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				width: 40px;
+				height: 3px;
+				background: #2dd4bf; /* Dùng màu sáng cho nổi bật trên nền tối */
+				border-radius: 2px;
+			}
+
+		.footer p {
+			color: #cbd5e1;
+		}
+
+		.footer-links a, .social-links a {
+			color: #cbd5e1;
+			text-decoration: none;
+			transition: all 0.3s ease;
+			display: inline-block;
+			margin-bottom: 12px;
+			font-size: 14.5px;
+		}
+
+			.footer-links a:hover, .social-links a:hover {
+				color: #2dd4bf;
+				transform: translateX(5px); /* Hiệu ứng đẩy mượt mà */
+			}
+
+		.social-links a {
+			font-size: 18px;
+			margin-right: 15px;
+			background: rgba(255,255,255,0.05);
+			width: 36px;
+			height: 36px;
+			text-align: center;
+			line-height: 36px;
+			border-radius: 50%;
+		}
+
+			.social-links a:hover {
+				background: #2dd4bf;
+				color: var(--navy);
+				transform: translateY(-3px);
+			}
+
+		.footer-contact li {
+			color: #cbd5e1;
+			font-size: 14.5px;
+			margin-bottom: 15px;
+			display: flex;
+			align-items: flex-start;
+			gap: 10px;
+		}
+
+		.footer-contact i {
+			margin-top: 4px;
+		}
+
+		.text-teal {
+			color: #2dd4bf !important;
+		}
+
+		/* Form đăng ký nhận tin */
+		.subscribe-form .input-group {
+			background: rgba(255,255,255,0.1);
+			border-radius: 8px;
+			overflow: hidden;
+			border: 1px solid rgba(255,255,255,0.1);
+		}
+
+		.subscribe-form input {
+			background: transparent;
+			border: none;
+			color: white;
+			box-shadow: none !important;
+		}
+
+			.subscribe-form input::placeholder {
+				color: rgba(255,255,255,0.5);
+			}
+
+		.subscribe-form button {
+			background: #2dd4bf;
+			color: var(--navy);
+			border: none;
+			font-weight: 600;
+		}
+
+			.subscribe-form button:hover {
+				background: white;
+			}
+
+		.footer-bottom {
+			border-top: 1px solid rgba(255, 255, 255, 0.1);
+			padding-top: 25px;
+			margin-top: 40px;
+			text-align: center;
+			font-size: 14px;
+			color: #94a3b8;
+		}
+	</style>
+</head>
+
+<body>
+
+	<!-- HEADER -->
+	<header class="topbar">
+		<div class="container d-flex justify-content-between align-items-center">
+
+			<div class="logo">
+				<i class="fas fa-hospital text-teal"></i> An Việt
+			</div>
+
+			<!-- MENU NGANG -->
+			<nav class="d-flex gap-1">
+				<a class="nav-link" asp-controller="HomePublic" asp-action="Index">
+					<i class="fas fa-home me-1"></i> Trang chủ
+				</a>
+
+				<a class="nav-link" asp-controller="HomePublic" asp-action="Doctor">
+					<i class="fas fa-user-md me-1"></i> Bác sĩ
+				</a>
+
+				<a class="nav-link" asp-controller="HomePublic" asp-action="About">
+					<i class="fas fa-user-md me-1"></i> Về chúng tôi
+				</a>
+
+				@if (User.Identity.IsAuthenticated)
+				{
+					<a class="nav-link" asp-controller="HomePublic" asp-action="MyAppointments">
+						<i class="fas fa-calendar-check me-1"></i> Đặt lịch
+					</a>
+					<a class="nav-link" asp-controller="HomePublic" asp-action="MedicalRecordByPatient">
+						<i class="fas fa-file-medical me-1"></i> Bệnh án
+					</a>
+				}
+			</nav>
+
+			<!-- USER -->
+			<div class="user-box d-flex align-items-center">
+				@if (User.Identity.IsAuthenticated)
+				{
+					<div class="d-flex align-items-center gap-3">
+						<span>
+							<img src="https://ui-avatars.com/api/?name=@User.Identity.Name&background=0d9488&color=fff&rounded=true&size=32" alt="Avatar" class="me-2 rounded-circle" style="width: 32px; height: 32px;">
+							@User.Identity.Name
+						</span>
+						<a class="btn btn-outline-danger btn-custom btn-sm" href="/Auth/Logout">Đăng xuất</a>
+					</div>
+				}
+				else
+				{
+					<a class="btn btn-login btn-custom btn-sm" href="/Auth/Login">
+						<i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+					</a>
+				}
+			</div>
+
+		</div>
+	</header>
+
+	<!-- CONTENT -->
+	<div class="main-content container">
+		<div class="card-custom">
+			@RenderBody()
+		</div>
+	</div>
+
+	<!-- FOOTER -->
+	<footer class="footer">
+		<div class="container">
+			<div class="row">
+				<!-- Cột 1: Thông tin chung -->
+				<div class="col-lg-4 col-md-6 mb-4 pe-lg-4">
+					<div class="logo mb-3 text-white">
+						<i class="fas fa-hospital text-teal"></i> An Việt
+					</div>
+					<p style="font-size: 14.5px; line-height: 1.7;">
+						Bệnh viện Đa khoa An Việt tự hào mang đến dịch vụ chăm sóc sức khỏe chất lượng cao, tận tâm và chuyên nghiệp. Cơ sở vật chất hiện đại cùng đội ngũ y bác sĩ đầu ngành luôn sẵn sàng vì sức khỏe của bạn.
+					</p>
+
+					<!-- Form đăng ký nhận bản tin -->
+					<form class="subscribe-form mt-4">
+						<div class="input-group">
+							<input type="email" class="form-control" placeholder="Nhập email của bạn...">
+							<button class="btn px-3" type="button"><i class="fas fa-paper-plane"></i></button>
+						</div>
+					</form>
+
+					<div class="social-links mt-4">
+						<a href="#"><i class="fab fa-facebook-f"></i></a>
+						<a href="#"><i class="fab fa-youtube"></i></a>
+						<a href="#"><i class="fab fa-tiktok"></i></a>
+					</div>
+				</div>
+
+				<!-- Cột 2: Liên kết nhanh -->
+				<div class="col-lg-2 col-md-6 mb-4">
+					<h5 class="footer-title">Khám Phá</h5>
+					<ul class="list-unstyled footer-links">
+						<li><a href="#"><i class="fas fa-angle-right me-2 text-teal"></i> Về chúng tôi</a></li>
+						<li><a href="#"><i class="fas fa-angle-right me-2 text-teal"></i> Đội ngũ bác sĩ</a></li>
+						<li><a href="#"><i class="fas fa-angle-right me-2 text-teal"></i> Bảng giá dịch vụ</a></li>
+						<li><a href="#"><i class="fas fa-angle-right me-2 text-teal"></i> Cẩm nang y tế</a></li>
+						<li><a href="#"><i class="fas fa-angle-right me-2 text-teal"></i> Tuyển dụng</a></li>
+					</ul>
+				</div>
+
+				<!-- Cột 3: Liên hệ -->
+				<div class="col-lg-3 col-md-6 mb-4">
+					<h5 class="footer-title">Liên Hệ</h5>
+					<ul class="list-unstyled footer-contact">
+						<li>
+							<i class="fas fa-map-marker-alt text-teal"></i>
+							<span>123 Đường Y Tế, Quận Trung Tâm, TP. Hà Nội</span>
+						</li>
+						<li>
+							<i class="fas fa-phone-alt text-teal"></i>
+							<span>Tổng đài CSKH:<br><strong>1900 1234</strong></span>
+						</li>
+						<li>
+							<i class="fas fa-ambulance text-danger"></i>
+							<span>Cấp cứu 24/7:<br><strong class="text-danger">0988 999 888</strong></span>
+						</li>
+						<li>
+							<i class="fas fa-envelope text-teal"></i>
+							<span>contact@anviet.vn</span>
+						</li>
+					</ul>
+				</div>
+
+				<!-- Cột 4: Giờ làm việc -->
+				<div class="col-lg-3 col-md-6 mb-4">
+					<h5 class="footer-title">Giờ Làm Việc</h5>
+					<ul class="list-unstyled" style="color: #cbd5e1; font-size: 14.5px;">
+						<li class="d-flex justify-content-between border-bottom border-secondary pb-3 mb-3">
+							<span><i class="far fa-clock me-2 text-teal"></i> Thứ 2 - Thứ 6</span>
+							<span class="fw-medium text-white">07:00 - 17:00</span>
+						</li>
+						<li class="d-flex justify-content-between border-bottom border-secondary pb-3 mb-3">
+							<span><i class="far fa-clock me-2 text-teal"></i> Thứ 7</span>
+							<span class="fw-medium text-white">07:00 - 12:00</span>
+						</li>
+						<li class="d-flex justify-content-between">
+							<span><i class="far fa-calendar-times me-2 text-danger"></i> Chủ nhật</span>
+							<span class="text-danger fw-bold">Nghỉ (Trực cấp cứu)</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="footer-bottom">
+				<p class="mb-1">© 2026 - Hệ thống Bệnh viện An Việt. Đã đăng ký bản quyền.</p>
+				<p class="mb-0" style="font-size: 12px; color: #64748b;">Thiết kế và vận hành bởi Trung tâm IT An Việt.</p>
+			</div>
+		</div>
+	</footer>
+
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		// Cập nhật script active link để nhận diện class mới (active-link)
+		var path = window.location.pathname;
+		document.querySelectorAll(".nav-link").forEach(link => {
+			var href = link.getAttribute("href");
+			// Tránh việc trang chủ (/) luôn sáng ở mọi page
+			if (href && href !== "/" && path.includes(href)) {
+				link.classList.add("active-link");
+			} else if (path === "/" && href === "/") {
+				link.classList.add("active-link");
+			}
+		});
+	</script>
+	@RenderSection("Scripts", required: false)
+</body>
+</html>

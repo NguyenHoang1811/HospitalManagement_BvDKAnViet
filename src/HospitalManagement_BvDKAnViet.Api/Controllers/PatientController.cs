@@ -91,5 +91,13 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+        // GET: api/Patient/doctor/5
+        [HttpGet("doctor/{doctorId:int}")]
+        public async Task<IActionResult> GetByDoctor(int doctorId)
+        {
+            var patients = await _patientRepository.GetByDoctorIdAsync(doctorId);
+            var result = _mapper.Map<IEnumerable<PatientDto>>(patients);
+            return Ok(result);
+        }
     }
 }

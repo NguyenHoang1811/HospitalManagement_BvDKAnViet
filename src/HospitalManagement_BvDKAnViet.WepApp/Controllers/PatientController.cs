@@ -1,6 +1,7 @@
 ﻿using HospitalManagement_BvDKAnViet.WepApp.Models.PatientDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 {
@@ -19,7 +20,18 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         {
             try
             {
-                var patients = await _apiService.GetAsync<IEnumerable<PatientDto>>("api/Patient");
+                string url;
+                if (User.IsInRole("Doctor"))
+                {
+                    var doctorId = User.FindFirstValue("DoctorId") ?? "0";
+                    url = $"api/Patient/doctor/{doctorId}";
+                }
+                else
+                {
+                    url = "api/Patient";
+                }
+
+                var patients = await _apiService.GetAsync<IEnumerable<PatientDto>>(url);
                 return View(patients ?? Enumerable.Empty<PatientDto>());
             }
             catch (HttpRequestException)

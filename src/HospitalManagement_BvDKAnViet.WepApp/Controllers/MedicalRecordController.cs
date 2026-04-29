@@ -5,6 +5,7 @@ using HospitalManagement_BvDKAnViet.WepApp.Models.PrescriptionDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 {
@@ -22,7 +23,18 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         {
             try
             {
-                var records = await _apiService.GetAsync<IEnumerable<MedicalRecordDto>>("api/MedicalRecord");
+                string url;
+                if (User.IsInRole("Doctor"))
+                {
+                    var doctorId = User.FindFirstValue("DoctorId") ?? "0";
+                    url = $"api/MedicalRecord/doctor/{doctorId}";
+                }
+                else
+                {
+                    url = "api/MedicalRecord";
+                }
+
+                var records = await _apiService.GetAsync<IEnumerable<MedicalRecordDto>>(url);
                 return View(records ?? Enumerable.Empty<MedicalRecordDto>());
             }
             catch (HttpRequestException)
