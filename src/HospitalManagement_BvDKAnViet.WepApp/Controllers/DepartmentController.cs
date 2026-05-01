@@ -16,12 +16,36 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         }
 
         // GET: /Department
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int page = 1, int pageSize = 10)
         {
             try
             {
-                var departments = await _apiService.GetAsync<IEnumerable<DepartmentDto>>("api/Department");
-                return View(departments ?? Enumerable.Empty<DepartmentDto>());
+                // 1. Lấy toàn bộ danh sách phòng ban
+                var allDepartments = await _apiService.GetAsync<IEnumerable<DepartmentDto>>("api/Department")
+                                     ?? Enumerable.Empty<DepartmentDto>();
+
+                // 2. Logic Tìm kiếm (theo Tên phòng ban)
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    allDepartments = allDepartments.Where(d =>
+                        !string.IsNullOrEmpty(d.DepartmentName) &&
+                        d.DepartmentName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // 3. Logic Phân trang
+                int totalItems = allDepartments.Count();
+                var pagedData = allDepartments
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 4. Truyền trạng thái ra View
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+                return View(pagedData);
             }
             catch (HttpRequestException)
             {

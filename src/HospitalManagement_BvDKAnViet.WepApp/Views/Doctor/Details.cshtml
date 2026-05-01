@@ -9,188 +9,244 @@
 	};
 }
 
-<div class="page-wrapper">
+<div class="page-wrapper container mt-4 mb-5">
 
-	<!-- HEADER -->
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<div>
-			<h4 class="fw-bold mb-1">@ViewData["Title"]</h4>
-			<div class="text-muted small">Thông tin chi tiết bác sĩ</div>
+			<h3 class="fw-bold text-navy mb-1">@ViewData["Title"]</h3>
+			<div class="text-muted small">Hồ sơ thông tin chuyên gia y tế</div>
 		</div>
 
-		<a asp-action="Index" class="btn-view-all">
-			<i class="fas fa-arrow-left"></i> Quay lại
+		<a asp-action="Index" class="btn-view-all shadow-sm">
+			<i class="fas fa-arrow-left me-1"></i> Quay lại
 		</a>
 	</div>
 
-	<!-- CARD -->
-	<div class="card-custom p-4">
+	<div class="card-custom p-4 p-md-5">
 
-        <div class="row align-items-center">
+		<div class="row align-items-center">
 
-			<!-- IMAGE -->
-            <div class="col-md-4 mb-3">
-                <div class="img-box">
-                    <img src="@(Model.DoctorImage ?? "/img/no-image.png")" />
-                </div>
-            </div>
+			<div class="col-lg-4 mb-4 mb-lg-0 text-center">
+				<div class="img-box position-relative shadow">
+					<img src="@(Model.DoctorImage ?? "/img/no-image.png")" alt="@Model.Name" onerror="this.onerror=null;this.src='/img/default-doctor.png';" />
+				</div>
+			</div>
 
-			<!-- INFO -->
-            <div class="col-md-8">
+			<div class="col-lg-8 ps-lg-4">
 
-                <div class="info-group">
-                    <div class="info-label">Tên bác sĩ</div>
-                    <div class="info-value">@Model.Name</div>
-                </div>
+				<div class="profile-header mb-4 pb-4 border-bottom">
+					<h2 class="fw-bold text-navy mb-3">@Model.Name</h2>
+					<span class="badge bg-teal-light text-teal px-3 py-2 fs-6 rounded-pill">
+						<i class="fas fa-stethoscope me-1"></i> @Model.Specialty
+					</span>
+				</div>
 
-                <div class="info-group">
-                    <div class="info-label">Chuyên khoa</div>
-                    <div class="info-value">@Model.Specialty</div>
-                </div>
+				<div class="row g-4 mb-5">
 
-                <div class="info-group">
-                    <div class="info-label">Điện thoại</div>
-                    <div class="info-value">@Model.Phone</div>
-                </div>
+					<div class="col-md-6">
+						<div class="info-item d-flex align-items-center p-3 rounded-4 bg-light border border-light">
+							<div class="icon-wrapper text-teal bg-white shadow-sm rounded-circle me-3 d-flex align-items-center justify-content-center">
+								<i class="fas fa-phone-alt fs-5"></i>
+							</div>
+							<div>
+								<div class="text-muted small fw-semibold text-uppercase mb-1" style="letter-spacing: 0.5px;">Điện thoại</div>
+								<div class="fw-bold text-dark" style="font-size: 15px;">@Model.Phone</div>
+							</div>
+						</div>
+					</div>
 
-                <div class="info-group">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">@Model.Email</div>
-                </div>
+					<div class="col-md-6">
+						<div class="info-item d-flex align-items-center p-3 rounded-4 bg-light border border-light">
+							<div class="icon-wrapper text-teal bg-white shadow-sm rounded-circle me-3 d-flex align-items-center justify-content-center">
+								<i class="fas fa-envelope fs-5"></i>
+							</div>
+							<div>
+								<div class="text-muted small fw-semibold text-uppercase mb-1" style="letter-spacing: 0.5px;">Email</div>
+								<div class="fw-bold text-dark" style="font-size: 15px; word-break: break-all;">@Model.Email</div>
+							</div>
+						</div>
+					</div>
 
-                <div class="info-group">
-                    <div class="info-label">Khoa</div>
-                    <div class="info-value badge-soft blue">
-                        @ViewBag.DepartmentName
-                    </div>
-                </div>
+					<div class="col-md-6">
+						<div class="info-item d-flex align-items-center p-3 rounded-4 bg-light border border-light">
+							<div class="icon-wrapper text-primary bg-white shadow-sm rounded-circle me-3 d-flex align-items-center justify-content-center">
+								<i class="fas fa-hospital fs-5"></i>
+							</div>
+							<div>
+								<div class="text-muted small fw-semibold text-uppercase mb-1" style="letter-spacing: 0.5px;">Khoa công tác</div>
+								<div class="badge-soft blue mt-1">
+									@ViewBag.DepartmentName
+								</div>
+							</div>
+						</div>
+					</div>
 
-            </div>
+				</div>
 
-		</div>
+				<div class="d-flex justify-content-end gap-2 mt-2">
+					<a asp-action="Index" class="btn btn-light btn-lg px-4 fs-6">
+						Hủy
+					</a>
+					<a asp-action="Edit" asp-route-id="@Model.DoctorId" class="btn btn-accent btn-lg px-4 fs-6 shadow-sm">
+						<i class="fas fa-edit me-1"></i> Cập nhật hồ sơ
+					</a>
+				</div>
 
-		<!-- ACTION -->
-		<div class="mt-3">
-			<a asp-action="Edit" asp-route-id="@Model.DoctorId"
-			   class="btn btn-accent">
-				<i class="fas fa-edit"></i> Sửa
-			</a>
-
-			<a asp-action="Index" class="btn btn-light">Quay lại</a>
+			</div>
 		</div>
 
 	</div>
 </div>
 
 <style>
-    /* ===== PAGE ===== */
-    .page-wrapper {
-        padding: 16px;
-    }
+	/* ===== COLORS ===== */
+	:root {
+		--navy: #0f2744;
+		--teal: #0d9488;
+	}
 
-    /* ===== HEADER ===== */
-    .btn-view-all {
-        background: #f1f5f9;
-        border-radius: 8px;
-        padding: 6px 12px;
-        text-decoration: none;
-        color: #334155;
-        transition: 0.2s;
-    }
+	.text-navy {
+		color: var(--navy) !important;
+	}
 
-        .btn-view-all:hover {
-            background: #e2e8f0;
-        }
+	.text-teal {
+		color: var(--teal) !important;
+	}
 
-    /* ===== CARD ===== */
-    .card-custom {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    }
+	.bg-teal-light {
+		background-color: #ccfbf1 !important;
+	}
 
-    /* ===== IMAGE FIX CHUẨN ===== */
-    .img-box {
-        width: 100%;
-        max-width: 280px;
-        height: 280px;
-        margin: auto;
-        border-radius: 16px;
-        overflow: hidden;
-        background: #f1f5f9;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-    }
+	/* ===== PAGE ===== */
+	.page-wrapper {
+		padding: 10px;
+	}
 
-        .img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* nếu muốn không crop → đổi thành contain */
-            display: block;
-            transition: 0.3s;
-        }
+	/* ===== HEADER ===== */
+	.btn-view-all {
+		background: #ffffff;
+		border-radius: 8px;
+		padding: 8px 16px;
+		text-decoration: none;
+		color: #475569;
+		font-weight: 600;
+		border: 1px solid #e2e8f0;
+		transition: all 0.2s;
+	}
 
-        .img-box:hover img {
-            transform: scale(1.05);
-        }
+		.btn-view-all:hover {
+			background: #f8fafc;
+			color: var(--navy);
+		}
 
-    /* ===== INFO ===== */
-    .info-group {
-        margin-bottom: 14px;
-        padding-bottom: 10px;
-        border-bottom: 1px dashed #e2e8f0;
-    }
+	/* ===== CARD ===== */
+	.card-custom {
+		background: #ffffff;
+		border-radius: 20px;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+		border: 1px solid rgba(0,0,0,0.03);
+	}
 
-        .info-group:last-child {
-            border-bottom: none;
-        }
+	/* ===== IMAGE FRAME ===== */
+	.img-box {
+		width: 100%;
+		max-width: 300px;
+		height: 380px; /* Tỉ lệ chân dung hoàn hảo */
+		margin: auto;
+		border-radius: 16px;
+		overflow: hidden;
+		background: #f8fafc;
+		border: 6px solid #ffffff; /* Viền trắng kiểu polaroid */
+	}
 
-    .info-label {
-        font-size: 13px;
-        color: #64748b;
-        margin-bottom: 4px;
-    }
+		.img-box img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: top center; /* Giữ phần đầu không bị cắt */
+			display: block;
+			transition: transform 0.4s ease;
+		}
 
-    .info-value {
-        font-weight: 500;
-        color: #0f172a;
-        font-size: 15px;
-    }
+		.img-box:hover img {
+			transform: scale(1.05);
+		}
 
-    /* ===== BADGE ===== */
-    .badge-soft {
-        padding: 6px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-    }
+	/* ===== INFO GRID ===== */
+	.icon-wrapper {
+		width: 48px;
+		height: 48px;
+		flex-shrink: 0;
+	}
 
-        .badge-soft.blue {
-            background: #dbeafe;
-            color: #2563eb;
-        }
+	.info-item {
+		transition: all 0.2s ease;
+	}
 
-    /* ===== BUTTON ===== */
-    .btn-accent {
-        background: #2dd4bf;
-        color: white;
-        border-radius: 8px;
-        padding: 6px 14px;
-        border: none;
-    }
+		.info-item:hover {
+			background-color: #ffffff !important;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+			border-color: #e2e8f0 !important;
+		}
 
-        .btn-accent:hover {
-            background: #26c6a8;
-        }
+	/* ===== BADGE ===== */
+	.badge-soft {
+		padding: 6px 14px;
+		border-radius: 20px;
+		font-size: 13px;
+		font-weight: 600;
+		display: inline-block;
+	}
 
-    .btn-light {
-        border-radius: 8px;
-    }
+		.badge-soft.blue {
+			background: #eff6ff;
+			color: #2563eb;
+			border: 1px solid #bfdbfe;
+		}
 
-    /* ===== RESPONSIVE ===== */
-    @@media (max-width: 768px) {
-        .img-box {
-            max-width: 200px;
-            height: 200px;
-        }
-    }
+	/* ===== BUTTON ===== */
+	.btn-accent {
+		background: var(--teal);
+		color: white;
+		border-radius: 10px;
+		font-weight: 600;
+		border: none;
+		transition: all 0.3s ease;
+	}
+
+		.btn-accent:hover {
+			background: #0f766e;
+			color: white;
+			transform: translateY(-2px);
+			box-shadow: 0 6px 15px rgba(13, 148, 136, 0.3) !important;
+		}
+
+	.btn-light {
+		border-radius: 10px;
+		font-weight: 600;
+		color: #475569;
+		border: 1px solid #e2e8f0;
+		transition: all 0.3s ease;
+	}
+
+		.btn-light:hover {
+			background: #f1f5f9;
+			color: var(--navy);
+		}
+
+	/* ===== RESPONSIVE ===== */
+	@@media (max-width: 992px) {
+		.img-box {
+			max-width: 240px;
+			height: 300px;
+		}
+
+		.profile-header {
+			text-align: center;
+		}
+
+		.d-flex.justify-content-end {
+			justify-content: center !important;
+		}
+	}
 </style>

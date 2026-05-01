@@ -16,11 +16,12 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         }
 
         // GET: /Patient
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int page = 1, int pageSize = 10)
         {
             try
             {
                 string url;
+                // Kiểm tra quyền: Bác sĩ chỉ xem bệnh nhân của mình
                 if (User.IsInRole("Doctor"))
                 {
                     var doctorId = User.FindFirstValue("DoctorId") ?? "0";
@@ -31,8 +32,33 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                     url = "api/Patient";
                 }
 
-                var patients = await _apiService.GetAsync<IEnumerable<PatientDto>>(url);
-                return View(patients ?? Enumerable.Empty<PatientDto>());
+                // Lấy danh sách bệnh nhân
+                var patients = await _apiService.GetAsync<IEnumerable<PatientDto>>(url)
+                               ?? Enumerable.Empty<PatientDto>();
+
+                // 1. Logic Tìm kiếm (Theo tên hoặc số điện thoại)
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    patients = patients.Where(p =>
+                        (!string.IsNullOrEmpty(p.Name) && p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(p.Phone) && p.Phone.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    );
+                }
+
+                // 2. Logic Phân trang
+                int totalItems = patients.Count();
+                var pagedData = patients
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 3. Truyền dữ liệu phân trang ra View
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+                return View(pagedData);
             }
             catch (HttpRequestException)
             {

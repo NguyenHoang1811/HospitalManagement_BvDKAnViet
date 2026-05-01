@@ -31,7 +31,24 @@
                 <i class="fas fa-calendar-check text-teal fs-4 mb-2"></i>
                 <h5 class="fw-bold mb-0">Hồ sơ đặt lịch khám</h5>
             </div>
+           
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show mb-3" style="border-radius:12px;">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Thành công!</strong> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
 
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mb-3" style="border-radius:12px;">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Lỗi!</strong> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
             <div class="card-body p-4 p-md-5">
                 <form asp-action="Create" method="post" id="appointmentForm">
                     @Html.AntiForgeryToken()
@@ -199,16 +216,19 @@
         document.getElementById("doctorId").addEventListener("change", loadSlots);
         document.getElementById("appointmentDate").addEventListener("change", loadSlots);
 
-        document.getElementById("appointmentForm").addEventListener("submit", function (e) {
+                document.getElementById("appointmentForm").addEventListener("submit", function (e) {
             var selectedTime = document.getElementById("selectedTime").value;
-            var summary = document.getElementById("validationSummary");
 
+            
             if (!selectedTime) {
                 e.preventDefault();
+
+                var summary = document.getElementById("validationSummary");
                 summary.classList.remove("d-none");
                 summary.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> Vui lòng chọn ngày hợp lệ và giờ khám cụ thể!';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
+            
         });
     </script>
 }

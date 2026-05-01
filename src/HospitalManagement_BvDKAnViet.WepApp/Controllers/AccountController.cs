@@ -19,12 +19,34 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
         // GET: /Account
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int page = 1, int pageSize = 10)
         {
             try
             {
-                var users = await _apiService.GetAsync<IEnumerable<UserDto>>("api/Account");
-                return View(users ?? Enumerable.Empty<UserDto>());
+                // 1. Lấy toàn bộ danh sách từ API
+                var allUsers = await _apiService.GetAsync<IEnumerable<UserDto>>("api/Account")
+                               ?? Enumerable.Empty<UserDto>();
+
+                // 2. Logic Tìm kiếm (theo Username)
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    allUsers = allUsers.Where(u => u.Username.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // 3. Logic Phân trang
+                int totalItems = allUsers.Count();
+                var pagedData = allUsers
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 4. Gửi dữ liệu bổ sung ra View qua ViewBag
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+                return View(pagedData);
             }
             catch (HttpRequestException)
             {

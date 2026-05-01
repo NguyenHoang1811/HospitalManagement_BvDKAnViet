@@ -4,61 +4,101 @@
     ViewData["Title"] = "Trang chủ";
 }
 
-<!-- ================= BANNER / SLIDER ================= -->
-<div class="container mt-4 mb-5">
-    <div id="homeSlider" class="carousel slide shadow-lg hero-slider" data-bs-ride="carousel" data-bs-interval="4000">
+<!-- ================= HERO BANNER / SLIDER ================= -->
+<div class="container mt-3 mb-5">
+    <div id="homeSlider" class="carousel slide shadow-lg hero-slider" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="hover">
         <!-- Indicators -->
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#homeSlider" data-bs-slide-to="0" class="active"></button>
+        <div class="carousel-indicators custom-indicators">
+            <button type="button" data-bs-target="#homeSlider" data-bs-slide-to="0" class="active" aria-current="true"></button>
             <button type="button" data-bs-target="#homeSlider" data-bs-slide-to="1"></button>
             <button type="button" data-bs-target="#homeSlider" data-bs-slide-to="2"></button>
         </div>
 
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="d-block w-100 slider-img" alt="Banner 1">
-                <div class="carousel-caption d-none d-md-block bg-glass">
-                    <h3 class="fw-bold text-navy">Đặt lịch dễ dàng, tiện lợi</h3>
-                    <p class="mb-0 text-dark">Hệ thống đặt lịch trực tuyến 24/7, tối ưu thời gian chờ đợi.</p>
+        <div class="carousel-inner h-100">
+            <!-- Slide 1 -->
+            <div class="carousel-item active h-100">
+                <div class="img-overlay"></div>
+                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="d-block w-100 h-100 object-fit-cover" alt="Banner 1">
+                <div class="carousel-caption hero-caption text-start">
+                    <div class="badge bg-teal-light text-teal mb-3 px-3 py-2 rounded-pill fw-bold" style="font-size: 14px;">
+                        <i class="fas fa-hospital me-1"></i> Bệnh viện Đa khoa An Việt
+                    </div>
+                    <h1 class="fw-extrabold text-white mb-3 display-4 lh-sm">
+                        Chăm sóc sức khỏe<br><span class="text-highlight">Toàn diện & Tận tâm</span>
+                    </h1>
+                    <p class="mb-4 text-white-50 fs-5 pe-md-5">Hệ thống y tế chuẩn quốc tế với đội ngũ chuyên gia đầu ngành. Đặt lịch trực tuyến 24/7 nhanh chóng, không chờ đợi.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a asp-controller="HomePublic" asp-action="Doctor" class="btn btn-teal btn-lg px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                            Đặt lịch ngay <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <a asp-controller="HomePublic" asp-action="About" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-semibold">
+                            Tìm hiểu thêm
+                        </a>
+                    </div>
                 </div>
             </div>
-            <div class="carousel-item">
-                <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="d-block w-100 slider-img" alt="Banner 2">
-                <div class="carousel-caption d-none d-md-block bg-glass">
-                    <h3 class="fw-bold text-navy">Cơ sở vật chất hiện đại</h3>
-                    <p class="mb-0 text-dark">Trang thiết bị y tế tân tiến, không gian khám chữa bệnh chuẩn 5 sao.</p>
+
+            <!-- Slide 2 -->
+            <div class="carousel-item h-100">
+                <div class="img-overlay"></div>
+                <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="d-block w-100 h-100 object-fit-cover" alt="Banner 2">
+                <div class="carousel-caption hero-caption text-start">
+                    <div class="badge bg-teal-light text-teal mb-3 px-3 py-2 rounded-pill fw-bold" style="font-size: 14px;">
+                        <i class="fas fa-microscope me-1"></i> Công nghệ hiện đại
+                    </div>
+                    <h1 class="fw-extrabold text-white mb-3 display-4 lh-sm">
+                        Cơ sở vật chất<br><span class="text-highlight">Chuẩn Quốc Tế</span>
+                    </h1>
+                    <p class="mb-4 text-white-50 fs-5 pe-md-5">Trang thiết bị y tế tân tiến được nhập khẩu trực tiếp, mang đến không gian khám chữa bệnh chuẩn 5 sao an toàn và tiện nghi.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a asp-controller="HomePublic" asp-action="About" class="btn btn-teal btn-lg px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                            Xem cơ sở vật chất <i class="fas fa-building ms-2"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
-            <div class="carousel-item">
-                <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="d-block w-100 slider-img" alt="Banner 3">
-                <div class="carousel-caption d-none d-md-block bg-glass">
-                    
-                    <h3 class="fw-bold text-navy">Chăm sóc sức khỏe toàn diện</h3>
-                    <p class="mb-0 text-dark">Đội ngũ y bác sĩ đầu ngành luôn sẵn sàng vì sức khỏe của bạn.</p>
+
+            <!-- Slide 3 -->
+            <div class="carousel-item h-100">
+                <div class="img-overlay"></div>
+                <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="d-block w-100 h-100 object-fit-cover" alt="Banner 3">
+                <div class="carousel-caption hero-caption text-start">
+                    <div class="badge bg-teal-light text-teal mb-3 px-3 py-2 rounded-pill fw-bold" style="font-size: 14px;">
+                        <i class="fas fa-user-md me-1"></i> Đội ngũ y bác sĩ
+                    </div>
+                    <h1 class="fw-extrabold text-white mb-3 display-4 lh-sm">
+                        Chuyên gia y tế<br><span class="text-highlight">Giàu Kinh Nghiệm</span>
+                    </h1>
+                    <p class="mb-4 text-white-50 fs-5 pe-md-5">Quy tụ các Giáo sư, Tiến sĩ, Bác sĩ đầu ngành từ các bệnh viện trung ương, luôn sẵn sàng đồng hành cùng sức khỏe của bạn.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a asp-controller="HomePublic" asp-action="Doctor" class="btn btn-teal btn-lg px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                            Xem danh sách bác sĩ <i class="fas fa-users ms-2"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <button class="carousel-control-prev" type="button" data-bs-target="#homeSlider" data-bs-slide="prev">
             <div class="nav-btn"><i class="fas fa-chevron-left"></i></div>
+            <span class="visually-hidden">Previous</span>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#homeSlider" data-bs-slide="next">
             <div class="nav-btn"><i class="fas fa-chevron-right"></i></div>
+            <span class="visually-hidden">Next</span>
         </button>
     </div>
 </div>
 
 <!-- ================= DỊCH VỤ NỔI BẬT ================= -->
-<div class="bg-light py-5 mb-5">
-    <div class="container">
+<div class="bg-light py-5 mb-5" style="border-radius: 40px; margin: 0 15px;">
+    <div class="container py-3">
         <div class="text-center mb-5">
-            <h6 class="text-teal text-uppercase fw-bold mb-2">Dịch vụ của chúng tôi</h6>
+            <h6 class="text-teal text-uppercase fw-bold mb-2" style="letter-spacing: 1px;">Dịch vụ của chúng tôi</h6>
             <h2 class="section-title">Chuyên khoa nổi bật</h2>
         </div>
 
         <div class="row g-4">
-
-            <!-- 1. Thận (Được thay thế và đưa lên đầu) -->
             <div class="col-lg-3 col-md-6">
                 <div class="service-card card p-4 h-100 text-center shadow-sm">
                     <div class="icon-box mb-3 mx-auto text-danger bg-danger-light">
@@ -68,8 +108,6 @@
                     <p class="text-muted small mb-0">Chẩn đoán và điều trị chuyên sâu các bệnh lý về thận và đường tiết niệu.</p>
                 </div>
             </div>
-
-            <!-- 2. Tim mạch -->
             <div class="col-lg-3 col-md-6">
                 <div class="service-card card p-4 h-100 text-center shadow-sm">
                     <div class="icon-box mb-3 mx-auto text-teal bg-teal-light">
@@ -79,8 +117,6 @@
                     <p class="text-muted small mb-0">Chẩn đoán và điều trị các bệnh lý tim mạch bằng công nghệ cao.</p>
                 </div>
             </div>
-
-            <!-- 3. Thần kinh -->
             <div class="col-lg-3 col-md-6">
                 <div class="service-card card p-4 h-100 text-center shadow-sm">
                     <div class="icon-box mb-3 mx-auto text-primary bg-primary-light">
@@ -90,8 +126,6 @@
                     <p class="text-muted small mb-0">Khám và điều trị chuyên sâu các bệnh lý nội thần kinh.</p>
                 </div>
             </div>
-
-            <!-- 4. Nhi khoa -->
             <div class="col-lg-3 col-md-6">
                 <div class="service-card card p-4 h-100 text-center shadow-sm">
                     <div class="icon-box mb-3 mx-auto text-warning bg-warning-light">
@@ -101,7 +135,6 @@
                     <p class="text-muted small mb-0">Chăm sóc sức khỏe toàn diện cho trẻ sơ sinh và trẻ nhỏ.</p>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -109,7 +142,7 @@
 <!-- ================= DOCTOR LIST ================= -->
 <div class="container mb-5 pb-3">
     <div class="text-center mb-5">
-        <h6 class="text-teal text-uppercase fw-bold mb-2">Đội ngũ của chúng tôi</h6>
+        <h6 class="text-teal text-uppercase fw-bold mb-2" style="letter-spacing: 1px;">Đội ngũ của chúng tôi</h6>
         <h2 class="section-title">Bác sĩ chuyên gia</h2>
     </div>
 
@@ -129,13 +162,14 @@
                         <div class="card-body text-center doctor-info d-flex flex-column">
                             <h5 class="doctor-name">@doc.Name</h5>
                             <div class="mb-3">
-                                <span class="badge doctor-specialty">@doc.Specialty</span>
+                                <span class="badge doctor-specialty">
+                                    <i class="fas fa-stethoscope me-1"></i> @doc.Specialty
+                                </span>
                             </div>
 
                             <div class="mt-auto d-flex justify-content-center gap-2">
                                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                                 {
-                                    <!-- Nếu đã đăng nhập: Chuyển hướng bình thường -->
                                     <a class="btn btn-book btn-action flex-grow-1"
                                        asp-controller="HomePublic"
                                        asp-action="BookAppointment"
@@ -145,7 +179,6 @@
                                 }
                                 else
                                 {
-                                    <!-- Nếu CHƯA đăng nhập: Mở pop-up thông báo -->
                                     <button type="button" class="btn btn-book btn-action flex-grow-1" data-bs-toggle="modal" data-bs-target="#loginRequireModal">
                                         <i class="fas fa-calendar-plus me-1"></i> Đặt lịch
                                     </button>
@@ -173,17 +206,17 @@
     </div>
 
     <div class="text-center mt-5">
-        <a asp-controller="HomePublic" asp-action="Doctor" class="btn btn-outline-teal px-4 py-2 rounded-pill fw-medium">
+        <a asp-controller="HomePublic" asp-action="Doctor" class="btn btn-outline-teal px-5 py-2 rounded-pill fw-medium fs-6">
             Xem tất cả bác sĩ <i class="fas fa-arrow-right ms-2"></i>
         </a>
     </div>
 </div>
 
 <!-- ================= QUY TRÌNH KHÁM BỆNH ================= -->
-<div class="bg-navy text-white py-5 mb-5 process-section">
+<div class="bg-navy text-white py-5 mb-5 process-section shadow-lg">
     <div class="container py-4">
         <div class="text-center mb-5">
-            <h6 class="text-teal text-uppercase fw-bold mb-2">Đơn giản - Nhanh chóng</h6>
+            <h6 class="text-teal text-uppercase fw-bold mb-2" style="letter-spacing: 1px;">Đơn giản - Nhanh chóng</h6>
             <h2 class="section-title text-white">Quy trình đặt khám</h2>
         </div>
 
@@ -233,30 +266,25 @@
             <p>Hỗ trợ liên tục</p>
         </div>
     </div>
-
 </div>
+
 <!-- ================= MODAL YÊU CẦU ĐĂNG NHẬP ================= -->
 <div class="modal fade" id="loginRequireModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg" style="border-radius: 20px; border: none;">
-
             <div class="modal-header border-0 pb-0 justify-content-end">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
-
             <div class="modal-body text-center px-4 pb-5 pt-0">
                 <div class="mb-3">
-                    <!-- Icon ổ khóa -->
                     <div class="mx-auto bg-teal-light text-teal d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 50%;">
                         <i class="fas fa-user-lock fs-1"></i>
                     </div>
                 </div>
-
                 <h5 class="fw-bold text-navy mb-3">Yêu cầu đăng nhập</h5>
                 <p class="text-muted mb-4" style="font-size: 14.5px;">
                     Bạn cần đăng nhập vào hệ thống để có thể tự đặt lịch khám trực tuyến. Hoặc gọi ngay cho tổng đài để được hỗ trợ đặt lịch nhanh nhất!
                 </p>
-
                 <div class="d-flex flex-column gap-3 px-3">
                     <a href="/Auth/Login" class="btn btn-teal py-2 rounded-pill fw-medium">
                         <i class="fas fa-sign-in-alt me-2"></i> Chuyển đến Đăng nhập
@@ -266,32 +294,12 @@
                     </a>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
-<!-- Thêm một chút CSS nhỏ cho nút Gọi tổng đài -->
-<style>
-    .bg-teal-light {
-        background-color: #ccfbf1 !important;
-    }
-
-    .btn-outline-orange {
-        color: #f97316;
-        border: 2px solid #f97316;
-        background: transparent;
-        transition: all 0.3s ease;
-    }
-
-        .btn-outline-orange:hover {
-            background: #f97316;
-            color: white;
-        }
-</style>
 <!-- ================= STYLE ================= -->
 <style>
-    /* VARIABLES (Dùng chung nếu chưa có) */
     :root {
         --navy: #0f2744;
         --teal: #0d9488;
@@ -310,62 +318,115 @@
         color: var(--teal) !important;
     }
 
-    /* SLIDER BO GÓC CAO CẤP */
+    /* CLASS TEXT HIGHLIGHT CHUYÊN DỤNG CHO BANNER (Tăng tương phản) */
+    .text-highlight {
+        color: #2dd4bf !important; /* Xanh ngọc sáng cực nổi bật trên nền đen/xanh navy đậm */
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5); /* Thêm bóng chữ đổ sâu để tách lớp khỏi ảnh nền */
+    }
+
+    .btn-teal {
+        background-color: var(--teal);
+        color: white;
+        border: none;
+    }
+
+        .btn-teal:hover {
+            background-color: #0f766e;
+            color: white;
+        }
+
+    /* SLIDER HERO HIỆN ĐẠI */
     .hero-slider {
-        border-radius: 24px;
+        border-radius: 30px;
         overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+        height: 550px;
     }
 
-    .slider-img {
+    /* Đã làm tối hơn lớp gradient overlay để chữ bật lên hoàn toàn */
+    .img-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
-        height: clamp(350px, 45vw, 600px);
+        height: 100%;
+        background: linear-gradient(90deg, rgba(15,39,68,0.96) 0%, rgba(15,39,68,0.65) 45%, rgba(0,0,0,0) 100%);
+        z-index: 1;
+    }
+
+    .object-fit-cover {
         object-fit: cover;
-        object-position: center;
-        image-rendering: auto;
+        object-position: center 30%;
     }
 
-    /* Khung text nổi trên banner */
-    .bg-glass {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(10px);
-        padding: 20px 40px;
-        border-radius: 16px;
-        bottom: 40px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        display: inline-block;
-        max-width: 600px;
-        margin: 0 auto;
+    .hero-caption {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        bottom: auto;
+        left: 8%;
+        right: auto;
+        z-index: 2;
+        max-width: 650px;
     }
 
-    /* Nút Next/Prev của Slider */
+    .fw-extrabold {
+        font-weight: 800;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    /* Viền chữ nhẹ cho text trắng */
+    .lh-sm {
+        line-height: 1.2;
+    }
+
+    /* Custom Navigation Buttons */
     .nav-btn {
-        background: rgba(255,255,255,0.9);
-        color: var(--navy);
-        width: 45px;
-        height: 45px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(5px);
+        color: white;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         transition: 0.3s;
+        border: 1px solid rgba(255,255,255,0.4);
     }
 
     .carousel-control-prev:hover .nav-btn,
     .carousel-control-next:hover .nav-btn {
         background: var(--teal);
+        border-color: var(--teal);
         color: white;
+        transform: scale(1.1);
     }
 
-    .carousel-control-prev, .carousel-control-next {
-        opacity: 1;
+    /* Chấm tròn dưới đáy banner */
+    .custom-indicators {
+        bottom: 20px;
     }
+
+        .custom-indicators button {
+            width: 10px !important;
+            height: 10px !important;
+            border-radius: 50%;
+            margin: 0 6px !important;
+            background-color: rgba(255,255,255,0.5) !important;
+            border: none !important;
+            transition: all 0.3s ease;
+        }
+
+            .custom-indicators button.active {
+                background-color: #2dd4bf !important; /* Đổi màu dot active sang cyan cho rực rỡ */
+                width: 30px !important;
+                border-radius: 10px;
+                box-shadow: 0 0 8px rgba(45, 212, 191, 0.6);
+            }
 
     /* TIÊU ĐỀ SECTION */
     .section-title {
         color: #0f2744;
-        font-weight: 700;
+        font-weight: 800;
         font-size: 32px;
         position: relative;
         padding-bottom: 15px;
@@ -421,11 +482,11 @@
     /* DOCTOR CARD */
     .doctor-card {
         border: 1px solid rgba(0,0,0,0.05);
-        border-radius: 16px;
+        border-radius: 20px;
         overflow: hidden;
         transition: all 0.3s ease;
         background: #ffffff;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     }
 
         .doctor-card:hover {
@@ -459,16 +520,17 @@
     .doctor-specialty {
         background-color: var(--teal-light);
         color: var(--teal);
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
         padding: 6px 14px;
         border-radius: 20px;
     }
 
+    /* BUTTONS TẠI DOCTOR CARD */
     .btn-action {
-        border-radius: 8px;
-        font-weight: 500;
-        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 10px 12px;
         transition: all 0.2s ease;
     }
 
@@ -543,7 +605,7 @@
     /* STATISTICS SECTION */
     .stats-wrapper {
         background: linear-gradient(135deg, #0f2744 0%, #1a365d 100%);
-        border-radius: 24px;
+        border-radius: 30px;
         padding: 40px 20px;
         box-shadow: 0 10px 30px rgba(15, 39, 68, 0.15);
         margin: 0;
@@ -561,5 +623,39 @@
         font-size: 16px;
         margin-bottom: 0;
         font-weight: 500;
+    }
+
+    /* ĐĂNG NHẬP MODAL */
+    .btn-outline-orange {
+        color: #f97316;
+        border: 2px solid #f97316;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-orange:hover {
+            background: #f97316;
+            color: white;
+        }
+
+    /* RESPONSIVE HERO BANNER */
+    @@media (max-width: 768px) {
+        .hero-slider {
+            height: 450px;
+        }
+
+        .hero-caption {
+            left: 5%;
+            right: 5%;
+            text-align: center !important;
+        }
+
+        .img-overlay {
+            background: linear-gradient(180deg, rgba(15,39,68,0.3) 0%, rgba(15,39,68,0.9) 100%);
+        }
+
+        .hero-caption .d-flex {
+            justify-content: center;
+        }
     }
 </style>

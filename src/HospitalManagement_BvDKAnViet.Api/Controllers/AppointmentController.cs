@@ -336,5 +336,109 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
 
             return Ok(_mapper.Map<IEnumerable<AppointmentDto>>(result));
         }
+
+
+        [HttpGet("pending")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetPendingAppointments()
+        {
+            var data = await _appointmentRepository.GetAllAsync();
+
+            // ✅ Lấy thêm patient để có tên
+            var patients = await _patientRepository.GetAllAsync();
+            var doctors = await _doctorRepository.GetAllAsync();
+
+            var pending = data
+                .Where(x => x.Status == (int)AppointmentStatus.PENDING)
+                .Select(x => new
+                {
+                    x.AppointmentId,
+                    x.PatientId,
+                    PatientName = patients.FirstOrDefault(p => p.PatientId == x.PatientId)?.Name ?? $"BN #{x.PatientId}",
+                    x.DoctorId,
+                    DoctorName = doctors.FirstOrDefault(d => d.DoctorId == x.DoctorId)?.Name ?? $"BS #{x.DoctorId}",
+                    AppointmentDate = x.AppointmentDate.ToString("dd/MM/yyyy"),
+                    AppointmentTime = x.AppointmentTime.ToString("HH:mm"),
+                    Status = AppointmentStatus.PENDING.ToString()
+                });
+
+            return Ok(pending);
+        }
+
+        // PATCH: api/Appointment/5/cancel
+        [HttpPatch("{id:int}/cancel")]
+        [Authorize(Roles = "Patient,Doctor,Admin,Staff")]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var appointment = await _appointmentRepository.GetByIdAsync(id);
+            if (appointment is null) return NotFound();
+
+            if (User.IsInRole("Patient"))
+            {
+                var claim = User.FindFirst("PatientId")?.Value;
+                if (!int.TryParse(claim, out var pid) || appointment.PatientId != pid)
+                    return Forbid();
+            }
+
+            if (User.IsInRole("Doctor"))
+            {
+                var claim = User.FindFirst("DoctorId")?.Value;
+                if (!int.TryParse(claim, out var did) || appointment.DoctorId != did)
+                    return Forbid();
+            }
+
+            appointment.Status = (int)AppointmentStatus.CANCELLED;
+            appointment.StatusName = AppointmentStatus.CANCELLED.ToString();
+
+            await _appointmentRepository.UpdateAsync(appointment);
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}/confirm")]
+        
+        public async Task<IActionResult> Confirm(int id)
+        {
+            var appointment = await _appointmentRepository.GetByIdAsync(id);
+            if (appointment == null) return NotFound();
+
+            appointment.Status = (int)AppointmentStatus.CONFIRMED;
+            appointment.StatusName = AppointmentStatus.CONFIRMED.ToString();
+
+            await _appointmentRepository.UpdateAsync(appointment);
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}/complete")]
+        [Authorize(Roles = "Doctor,Admin,Staff")]
+        public async Task<IActionResult> Complete(int id)
+        {
+            var appointment = await _appointmentRepository.GetByIdAsync(id);
+            if (appointment == null) return NotFound();
+
+            // 🔒 Doctor chỉ xử lý lịch của mình
+            if (User.IsInRole("Doctor"))
+            {
+                var doctorIdClaim = User.FindFirst("DoctorId")?.Value;
+                if (!int.TryParse(doctorIdClaim, out var doctorId) || appointment.DoctorId != doctorId)
+                    return Forbid();
+            }
+
+            // ❌ Không cho complete nếu đã huỷ
+            if (appointment.Status == (int)AppointmentStatus.CANCELLED)
+                return BadRequest("Lịch đã bị huỷ, không thể hoàn thành");
+
+            // ⚠️ Khuyến nghị: chỉ complete khi đã confirm
+            if (appointment.Status != (int)AppointmentStatus.CONFIRMED)
+                return BadRequest("Chỉ có thể hoàn thành lịch đã được xác nhận");
+
+            appointment.Status = (int)AppointmentStatus.COMPLETED;
+            appointment.StatusName = AppointmentStatus.COMPLETED.ToString();
+
+            await _appointmentRepository.UpdateAsync(appointment);
+
+            return NoContent();
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces
+﻿using HospitalManagement_BvDKAnViet.WepApp.Models.ViewModels;
+
+namespace HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces
 {
     public interface IApiService
     {
@@ -45,6 +47,8 @@
         /// <returns>A completed task.</returns>
         Task DeleteAsync(string url);
 
+        Task PatchAsync(string url);
+
         /// <summary>
         /// Sets the authorization token for subsequent requests.
         /// </summary>
@@ -55,5 +59,21 @@
         /// Removes the authorization token.
         /// </summary>
         void RemoveToken();
+
+        // Thêm vào IApiService interface
+        /// <summary>
+        /// Gửi request dự đoán
+        /// </summary>
+        Task<KidneyPredictionResultViewModel?> PredictKidneyAsync(object requestDto);
+
+        /// <summary>
+        /// Lịch sử theo bệnh nhân
+        /// </summary>
+        Task<List<KidneyPredictionResultViewModel>?> GetKidneyHistoryAsync(int patientId);
+
+        /// <summary>
+        /// Danh sách dự đoán của bác sĩ hiện tại
+        /// </summary>
+        Task<List<KidneyPredictionResultViewModel>?> GetMyPredictionsAsync();
     }
 }

@@ -19,11 +19,12 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         }
 
         // GET: /MedicalRecord
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int page = 1, int pageSize = 10)
         {
             try
             {
                 string url;
+                // Kiểm tra role để gọi API tương ứng
                 if (User.IsInRole("Doctor"))
                 {
                     var doctorId = User.FindFirstValue("DoctorId") ?? "0";
@@ -34,8 +35,34 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                     url = "api/MedicalRecord";
                 }
 
-                var records = await _apiService.GetAsync<IEnumerable<MedicalRecordDto>>(url);
-                return View(records ?? Enumerable.Empty<MedicalRecordDto>());
+                // Lấy danh sách hồ sơ
+                var records = await _apiService.GetAsync<IEnumerable<MedicalRecordDto>>(url)
+                              ?? Enumerable.Empty<MedicalRecordDto>();
+
+                // 1. Logic Tìm kiếm (Theo tên Bệnh nhân, Bác sĩ, hoặc Chẩn đoán)
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    records = records.Where(r =>
+                        (!string.IsNullOrEmpty(r.PatientName) && r.PatientName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(r.DoctorName) && r.DoctorName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(r.Diagnosis) && r.Diagnosis.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    );
+                }
+
+                // 2. Logic Phân trang
+                int totalItems = records.Count();
+                var pagedData = records
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 3. Truyền dữ liệu ra View
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+                return View(pagedData);
             }
             catch (HttpRequestException)
             {

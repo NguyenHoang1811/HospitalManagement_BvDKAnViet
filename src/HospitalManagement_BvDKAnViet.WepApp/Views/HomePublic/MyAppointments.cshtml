@@ -44,7 +44,7 @@
             <i class="fas fa-calendar-times fa-4x text-muted mb-3 opacity-50"></i>
             <h5 class="text-muted fw-bold">Bạn chưa có lịch hẹn nào</h5>
             <p class="text-muted small mb-4">Hãy đặt lịch khám trực tuyến để không phải chờ đợi tại bệnh viện.</p>
-            <a asp-controller="Appointment" asp-action="BookAppointment" class="btn btn-teal px-4 py-2">
+            <a asp-controller="HomePublic" asp-action="Doctor" class="btn btn-teal px-4 py-2">
                 <i class="fas fa-calendar-plus me-2"></i> Đặt lịch khám ngay
             </a>
         </div>
@@ -54,32 +54,33 @@
         <div class="row g-4">
             @foreach (var item in Model)
             {
+                var statusName = item.StatusName?.Trim().ToUpper() ?? "";
                 <!-- Xác định màu badge theo trạng thái -->
-                var badgeClass = item.StatusName switch
+                var badgeClass = item.Status switch
                 {
-                    "PENDING" => "badge-pending",
-                    "CONFIRMED" => "badge-confirmed",
-                    "CANCELLED" => "badge-cancelled",
-                    "COMPLETED" => "badge-completed",
+                    0 => "badge-pending",
+                    1 => "badge-confirmed",
+                    2 => "badge-completed",  
+                    3 => "badge-cancelled",  
                     _ => "badge-pending"
                 };
 
-                var badgeIcon = item.StatusName switch
+                var badgeIcon = item.Status switch
                 {
-                    "PENDING" => "fas fa-clock",
-                    "CONFIRMED" => "fas fa-check-circle",
-                    "CANCELLED" => "fas fa-times-circle",
-                    "COMPLETED" => "fas fa-check-double",
+                    0 => "fas fa-clock",
+                    1 => "fas fa-check-circle",
+                    2 => "fas fa-check-double",
+                    3 => "fas fa-times-circle",
                     _ => "fas fa-clock"
                 };
 
-                var badgeLabel = item.StatusName switch
+                var badgeLabel = item.Status switch
                 {
-                    "PENDING" => "Chờ xác nhận",
-                    "CONFIRMED" => "Đã xác nhận",
-                    "CANCELLED" => "Đã hủy",
-                    "COMPLETED" => "Hoàn thành",
-                    _ => item.StatusName
+                    0 => "Chờ xác nhận",
+                    1 => "Đã xác nhận",
+                    2 => "Hoàn thành",       
+                    3 => "Đã hủy",          
+                    _ => "Không xác định"
                 };
 
                 <div class="col-md-6 col-lg-4">
@@ -100,6 +101,8 @@
                             </span>
                         </div>
 
+
+                        
                         <!-- Body card -->
                         <div class="appt-card-body">
                             <div class="appt-info-row">
@@ -116,9 +119,27 @@
                             <div class="appt-info-row">
                                 <i class="fas fa-hashtag text-teal"></i>
                                 <span class="text-muted" style="font-size:13px;">
-                                    Mã lịch hẹn: <strong>#HS-@item.AppointmentId.ToString("D3")</strong>
+                                    Mã lịch hẹn: <strong>#LH-@item.AppointmentId.ToString("D3")</strong>
                                 </span>
                             </div>
+
+                            @* Nút huỷ — chỉ hiện khi chưa huỷ / chưa hoàn thành *@
+                            @if (item.Status == 0 || item.Status == 1 ||
+                                                string.Equals(item.StatusName, "PENDING", StringComparison.OrdinalIgnoreCase) ||
+                                                string.Equals(item.StatusName, "CONFIRMED", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <div class="mt-2 pt-2 border-top">
+                                    <button type="button"
+                                            class="btn btn-cancel-appt w-100"
+                                            data-id="@item.AppointmentId"
+                                            data-doctor="@(doctorNames.GetValueOrDefault(item.DoctorId, $"Bác sĩ #{item.DoctorId}"))"
+                                            data-date="@item.AppointmentDate.ToString("dd/MM/yyyy")"
+                                            data-time="@item.AppointmentTime"
+                                            onclick="openCancelModal(this)">
+                                        <i class="fas fa-times-circle me-1"></i> Huỷ lịch hẹn
+                                    </button>
+                                </div>
+                            }
                         </div>
 
                     </div>
@@ -127,7 +148,100 @@
         </div>
     }
 </div>
+<!-- ================= MODAL XÁC NHẬN HUỶ ================= -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 18px; overflow: hidden; border: none;">
 
+            <div class="modal-header border-0 pb-0" style="background: #fef2f2;">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:40px;height:40px;background:#fecaca;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-exclamation-triangle" style="color:#b91c1c;font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title fw-bold" style="color:#0f2744;">Xác nhận huỷ lịch hẹn</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body pt-3 px-4">
+                <p class="text-muted mb-3" style="font-size:14px;">
+                    Bạn có chắc chắn muốn huỷ lịch khám sau không?
+                </p>
+                <div class="cancel-info-box p-3 rounded-3 mb-2">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fas fa-user-md text-teal"></i>
+                        <span id="modal-doctor" class="fw-semibold" style="font-size:14px;"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fas fa-calendar-day text-teal"></i>
+                        <span id="modal-date" style="font-size:14px;"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="far fa-clock text-teal"></i>
+                        <span id="modal-time" class="fw-bold" style="font-size:14px;"></span>
+                    </div>
+                </div>
+                <p class="text-muted mt-3" style="font-size:12.5px;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Sau khi huỷ, lịch hẹn sẽ không thể khôi phục. Vui lòng đặt lại nếu cần.
+                </p>
+            </div>
+
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal"
+                        style="border-radius:10px;">
+                    Giữ lịch hẹn
+                </button>
+                <form id="cancelForm" method="post" asp-action="CancelAppointment" asp-controller="HomePublic">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="cancelAppointmentId" />
+                    <button type="submit" class="btn px-4"
+                            style="background:#b91c1c;color:white;border-radius:10px;font-weight:600;">
+                        <i class="fas fa-times-circle me-1"></i> Xác nhận huỷ
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openCancelModal(btn) {
+            document.getElementById("modal-doctor").textContent = btn.dataset.doctor;
+            document.getElementById("modal-date").textContent   = btn.dataset.date;
+            document.getElementById("modal-time").textContent   = btn.dataset.time;
+            document.getElementById("cancelAppointmentId").value = btn.dataset.id;
+            new bootstrap.Modal(document.getElementById("cancelModal")).show();
+        }
+    </script>
+}
+
+<!-- Thêm vào phần <style> đã có -->
+<style>
+    .btn-cancel-appt {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        padding: 8px 0;
+        transition: all 0.2s ease;
+    }
+
+        .btn-cancel-appt:hover {
+            background: #b91c1c;
+            color: white;
+            border-color: #b91c1c;
+        }
+
+    .cancel-info-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+</style>
 @functions {
     string GetDayOfWeek(DayOfWeek dow) => dow switch
     {

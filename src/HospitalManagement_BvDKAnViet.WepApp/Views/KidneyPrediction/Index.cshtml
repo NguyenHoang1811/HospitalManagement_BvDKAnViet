@@ -1,0 +1,569 @@
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.ViewModels.KidneyPredictionViewModel
+
+@{
+	ViewData["Title"] = "Dự đoán bệnh thận mạn";
+	var result = ViewBag.Result as HospitalManagement_BvDKAnViet.WepApp.Models.ViewModels.KidneyPredictionResultViewModel;
+
+	ViewData["Breadcrumb"] = new List<(string, string)>
+	{
+		("Lâm sàng", "#"),
+		("Dự đoán AI", null)
+	};
+}
+
+<div class="page-wrapper container mt-4 mb-5">
+
+	<!-- HEADER -->
+	<div class="page-action-bar mb-4 d-flex justify-content-between align-items-center">
+		<div>
+			<h2 class="fw-bold text-navy mb-1" style="font-size: 24px;">@ViewData["Title"]</h2>
+			<div class="text-muted small">Hệ thống phân tích chỉ số y tế hỗ trợ chẩn đoán (AI)</div>
+		</div>
+
+		<div class="d-flex gap-2">
+			<a href="@Url.Action("MyPredictions")" class="btn btn-outline-primary shadow-sm">
+				<i class="fas fa-list me-1"></i> Dự đoán của tôi
+			</a>
+		</div>
+	</div>
+
+	<!-- ALERT -->
+	@if (TempData["Error"] != null)
+	{
+		<div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+			<i class="fas fa-exclamation-triangle me-2 fs-5 align-middle"></i>
+			<strong>Lỗi!</strong> @TempData["Error"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+	}
+
+	<!-- FORM DỰ ĐOÁN -->
+	<form asp-action="Predict" method="post" id="predictForm">
+		@Html.AntiForgeryToken()
+
+		<!-- Tổng hợp lỗi chung (Nếu có) -->
+		<div asp-validation-summary="ModelOnly" class="text-danger mb-3 fw-medium"></div>
+
+		<div class="row g-4">
+			<!-- CỘT TRÁI: NHẬP LIỆU -->
+			<div class="col-lg-8">
+
+				<!-- 1. CHỌN BỆNH NHÂN -->
+				<div class="card-custom p-4 mb-4">
+					<h5 class="fw-bold text-navy mb-3"><i class="fas fa-id-card text-teal me-2"></i>Thông tin bệnh nhân</h5>
+					<div class="row">
+						<div class="col-md-12">
+							<label class="form-label text-muted fw-medium small">Chọn bệnh nhân <span class="text-danger">*</span></label>
+							<select asp-for="PatientId" class="form-select form-control-custom cursor-pointer">
+								<option value="">-- Click để chọn bệnh nhân --</option>
+								@if (ViewBag.Patients != null)
+								{
+									foreach (var p in ViewBag.Patients)
+									{
+										<option value="@p.PatientId" selected="@(Model?.PatientId == p.PatientId)">
+											@p.Name (Mã: BN-@p.PatientId)
+										</option>
+									}
+								}
+							</select>
+							<span asp-validation-for="PatientId" class="text-danger small d-block mt-1"></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- 2. CHỈ SỐ LÂM SÀNG & XÉT NGHIỆM MÁU -->
+				<div class="card-custom p-4 mb-4">
+					<h5 class="fw-bold text-navy mb-4"><i class="fas fa-file-medical-alt text-teal me-2"></i>Chỉ số lâm sàng & Máu</h5>
+					<div class="row g-3">
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Tuổi (age) <span class="text-danger">*</span></label>
+							<input asp-for="Age" type="number" step="any" class="form-control form-control-custom" placeholder="Ví dụ: 45" />
+							<span asp-validation-for="Age" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Huyết áp (bp) <span class="text-danger">*</span></label>
+							<input asp-for="BloodPressure" type="number" step="any" class="form-control form-control-custom" placeholder="Ví dụ: 80" />
+							<span asp-validation-for="BloodPressure" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Tỷ trọng (sg)</label>
+							<input asp-for="SpecificGravity" type="number" step="any" class="form-control form-control-custom" placeholder="Ví dụ: 1.020" />
+							<span asp-validation-for="SpecificGravity" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Albumin (al)</label>
+							<input asp-for="Albumin" type="number" step="any" class="form-control form-control-custom" placeholder="0 - 5" />
+							<span asp-validation-for="Albumin" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Đường niệu (su)</label>
+							<input asp-for="Sugar" type="number" step="any" class="form-control form-control-custom" placeholder="0 - 5" />
+							<span asp-validation-for="Sugar" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Glucose máu (bgr)</label>
+							<input asp-for="BloodGlucoseRandom" type="number" step="any" class="form-control form-control-custom" placeholder="mgs/dl" />
+							<span asp-validation-for="BloodGlucoseRandom" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Ure máu (bu)</label>
+							<input asp-for="BloodUrea" type="number" step="any" class="form-control form-control-custom" placeholder="mgs/dl" />
+							<span asp-validation-for="BloodUrea" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Creatinine (sc)</label>
+							<input asp-for="SerumCreatinine" type="number" step="any" class="form-control form-control-custom" placeholder="mgs/dl" />
+							<span asp-validation-for="SerumCreatinine" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Natri (sod)</label>
+							<input asp-for="Sodium" type="number" step="any" class="form-control form-control-custom" placeholder="mEq/L" />
+							<span asp-validation-for="Sodium" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Kali (pot)</label>
+							<input asp-for="Potassium" type="number" step="any" class="form-control form-control-custom" placeholder="mEq/L" />
+							<span asp-validation-for="Potassium" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Hemoglobin (hemo)</label>
+							<input asp-for="Haemoglobin" type="number" step="any" class="form-control form-control-custom" placeholder="gms" />
+							<span asp-validation-for="Haemoglobin" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small">Thể tích HC (pcv)</label>
+							<input asp-for="PackedCellVolume" type="number" step="any" class="form-control form-control-custom" placeholder="%" />
+							<span asp-validation-for="PackedCellVolume" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-6">
+							<label class="form-label text-muted fw-medium small">SL Bạch cầu (wc)</label>
+							<input asp-for="WhiteBloodCellCount" type="number" step="any" class="form-control form-control-custom" placeholder="cells/cumm" />
+							<span asp-validation-for="WhiteBloodCellCount" class="text-danger small d-block mt-1"></span>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label text-muted fw-medium small">SL Hồng cầu (rc)</label>
+							<input asp-for="RedBloodCellCount" type="number" step="any" class="form-control form-control-custom" placeholder="millions/cmm" />
+							<span asp-validation-for="RedBloodCellCount" class="text-danger small d-block mt-1"></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- 3. XÉT NGHIỆM NƯỚC TIỂU -->
+				<div class="card-custom p-4 mb-4">
+					<h5 class="fw-bold text-navy mb-3"><i class="fas fa-flask text-teal me-2"></i>Xét nghiệm nước tiểu</h5>
+					<div class="row g-3">
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small d-block">Hồng cầu (rbc)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="RedBloodCells" value="normal" id="rbc_normal" />
+								<label class="form-check-label" for="rbc_normal">Bình thường</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="RedBloodCells" value="abnormal" id="rbc_abnormal" />
+								<label class="form-check-label text-danger" for="rbc_abnormal">Bất thường</label>
+							</div>
+							<span asp-validation-for="RedBloodCells" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small d-block">Bạch cầu (pc)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="PusCell" value="normal" id="pc_normal" />
+								<label class="form-check-label" for="pc_normal">Bình thường</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="PusCell" value="abnormal" id="pc_abnormal" />
+								<label class="form-check-label text-danger" for="pc_abnormal">Bất thường</label>
+							</div>
+							<span asp-validation-for="PusCell" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small d-block">Cặn bạch cầu (pcc)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="PusCellClumps" value="present" id="pcc_present" />
+								<label class="form-check-label text-danger" for="pcc_present">Có</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="PusCellClumps" value="notpresent" id="pcc_notpresent" />
+								<label class="form-check-label" for="pcc_notpresent">Không</label>
+							</div>
+							<span asp-validation-for="PusCellClumps" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-3">
+							<label class="form-label text-muted fw-medium small d-block">Vi khuẩn (ba)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Bacteria" value="present" id="ba_present" />
+								<label class="form-check-label text-danger" for="ba_present">Có</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Bacteria" value="notpresent" id="ba_notpresent" />
+								<label class="form-check-label" for="ba_notpresent">Không</label>
+							</div>
+							<span asp-validation-for="Bacteria" class="text-danger small d-block mt-1"></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- 4. BỆNH NỀN & TRIỆU CHỨNG -->
+				<div class="card-custom p-4 mb-4">
+					<h5 class="fw-bold text-navy mb-3"><i class="fas fa-heartbeat text-teal me-2"></i>Bệnh nền & Triệu chứng</h5>
+					<div class="row g-3">
+						<div class="col-md-4">
+							<label class="form-label text-muted fw-medium small d-block">Tăng huyết áp (htn)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Hypertension" value="yes" id="htn_yes" />
+								<label class="form-check-label text-danger" for="htn_yes">Có</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Hypertension" value="no" id="htn_no" />
+								<label class="form-check-label" for="htn_no">Không</label>
+							</div>
+							<span asp-validation-for="Hypertension" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-4">
+							<label class="form-label text-muted fw-medium small d-block">Tiểu đường (dm)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="DiabetesMellitus" value="yes" id="dm_yes" />
+								<label class="form-check-label text-danger" for="dm_yes">Có</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="DiabetesMellitus" value="no" id="dm_no" />
+								<label class="form-check-label" for="dm_no">Không</label>
+							</div>
+							<span asp-validation-for="DiabetesMellitus" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-4">
+							<label class="form-label text-muted fw-medium small d-block">Bệnh mạch vành (cad)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="CoronaryArteryDisease" value="yes" id="cad_yes" />
+								<label class="form-check-label text-danger" for="cad_yes">Có</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="CoronaryArteryDisease" value="no" id="cad_no" />
+								<label class="form-check-label" for="cad_no">Không</label>
+							</div>
+							<span asp-validation-for="CoronaryArteryDisease" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-4">
+							<label class="form-label text-muted fw-medium small d-block">Phù chân (pe)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="PedalEdema" value="yes" id="pe_yes" />
+								<label class="form-check-label text-danger" for="pe_yes">Có</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="PedalEdema" value="no" id="pe_no" />
+								<label class="form-check-label" for="pe_no">Không</label>
+							</div>
+							<span asp-validation-for="PedalEdema" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-4">
+							<label class="form-label text-muted fw-medium small d-block">Thiếu máu (ane)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Anemia" value="yes" id="ane_yes" />
+								<label class="form-check-label text-danger" for="ane_yes">Có</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Anemia" value="no" id="ane_no" />
+								<label class="form-check-label" for="ane_no">Không</label>
+							</div>
+							<span asp-validation-for="Anemia" class="text-danger small d-block mt-1"></span>
+						</div>
+
+						<div class="col-md-4">
+							<label class="form-label text-muted fw-medium small d-block">Sự thèm ăn (appet)</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Appetite" value="good" id="app_good" />
+								<label class="form-check-label" for="app_good">Tốt</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" asp-for="Appetite" value="poor" id="app_poor" />
+								<label class="form-check-label text-danger" for="app_poor">Kém</label>
+							</div>
+							<span asp-validation-for="Appetite" class="text-danger small d-block mt-1"></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- SUBMIT BUTTON & TEST DATA -->
+				<div class="d-flex flex-wrap gap-2 mt-4">
+					<button type="button" class="btn btn-outline-danger shadow-sm flex-grow-1" onclick="fillSampleData('ckd')">
+						<i class="fas fa-vial"></i> Mẫu CKD
+					</button>
+					<button type="button" class="btn btn-outline-success shadow-sm flex-grow-1" onclick="fillSampleData('notckd')">
+						<i class="fas fa-heartbeat"></i> Mẫu Khỏe mạnh
+					</button>
+					<button type="submit" class="btn btn-accent px-5 py-2 shadow-sm flex-grow-1" style="font-size: 16px;">
+						<i class="fas fa-robot me-2"></i> Phân tích AI
+					</button>
+				</div>
+
+			</div>
+
+			<!-- CỘT PHẢI: KẾT QUẢ DỰ ĐOÁN -->
+			<div class="col-lg-4">
+				@if (result != null)
+				{
+					bool isDanger = result.PredictionResult?.ToLower() == "ckd";
+					string cardClass = isDanger ? "border-danger bg-danger-light" : "border-success bg-success-light";
+					string textClass = isDanger ? "text-danger" : "text-success";
+					string iconClass = isDanger ? "fa-exclamation-triangle" : "fa-check-circle";
+
+					<div class="card-custom p-4 border @cardClass h-100 d-flex flex-column" style="position: sticky; top: 80px;">
+						<div class="text-center mb-4">
+							<div class="result-icon-wrapper mb-3 @textClass">
+								<i class="fas @iconClass fa-3x"></i>
+							</div>
+							<h5 class="fw-bold @textClass">Báo Cáo Phân Tích AI</h5>
+							<div class="text-muted small">@(result.CreatedAt.HasValue? result.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "Vừa xong")</div>
+						</div>
+
+						<div class="mb-3">
+							<span class="text-muted small d-block">Bệnh nhân</span>
+							<strong class="text-navy fs-6">@result.PatientName</strong>
+						</div>
+
+						<div class="mb-4">
+							<span class="text-muted small d-block mb-1">Kết luận chẩn đoán</span>
+							<div class="p-2 rounded text-center text-white fw-bold @(isDanger ? "bg-danger" : "bg-success")">
+								@(isDanger ? "CÓ NGUY CƠ BỆNH THẬN MẠN (CKD)" : "BÌNH THƯỜNG (KHÔNG MẮC BỆNH)")
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<div class="d-flex justify-content-between mb-1">
+								<span class="text-muted small">Xác suất CKD:</span>
+								<span class="fw-bold text-danger">@(((result.ProbabilityCkd ?? 0) * 100).ToString("0.00"))%</span>
+							</div>
+							<div class="progress" style="height: 8px;">
+								<div class="progress-bar bg-danger" role="progressbar" style="width: @(((result.ProbabilityCkd ?? 0) * 100).ToString("0", System.Globalization.CultureInfo.InvariantCulture))%;" aria-valuenow="@((result.ProbabilityCkd ?? 0) * 100)" aria-valuemin="0" aria-valuemax="100"></div>
+							</div>
+						</div>
+
+						<div class="mb-4">
+							<div class="d-flex justify-content-between mb-1">
+								<span class="text-muted small">Xác suất Khỏe mạnh:</span>
+								<span class="fw-bold text-success">@(((result.ProbabilityNotCkd ?? 0) * 100).ToString("0.00"))%</span>
+							</div>
+							<div class="progress" style="height: 8px;">
+								<div class="progress-bar bg-success" role="progressbar" style="width: @(((result.ProbabilityNotCkd ?? 0) * 100).ToString("0", System.Globalization.CultureInfo.InvariantCulture))%;" aria-valuenow="@((result.ProbabilityNotCkd ?? 0) * 100)" aria-valuemin="0" aria-valuemax="100"></div>
+							</div>
+						</div>
+
+						<div class="mt-auto p-3 bg-white rounded border">
+							<span class="text-muted small d-block">Đánh giá mức độ rủi ro:</span>
+							<span class="fw-bold @(isDanger ? "text-danger" : "text-success") fs-5">@result.RiskLevel</span>
+						</div>
+					</div>
+				}
+				else
+				{
+					<div class="card-custom p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center bg-light border-0 opacity-75" style="position: sticky; top: 80px;">
+						<i class="fas fa-microscope fa-4x text-muted mb-3 opacity-50"></i>
+						<h5 class="text-navy fw-bold">Kết quả phân tích</h5>
+						<p class="text-muted small mb-0">Vui lòng điền thông tin và nhấn "Phân tích AI" để xem báo cáo chi tiết.</p>
+					</div>
+				}
+			</div>
+		</div>
+	</form>
+</div>
+
+@section Scripts {
+	<!-- Thư viện Validation Client-side -->
+	<partial name="_ValidationScriptsPartial" />
+
+	<script>
+
+		$.validator.methods.number = function (value, element) {
+			return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:[\s\.,]\d{3})+)(?:[\.,]\d+)?$/.test(value);
+		};
+
+		$.validator.methods.range = function (value, element, param) {
+			// Chuyển toàn bộ dấu phẩy thành dấu chấm trước khi so sánh
+			var globalizedValue = parseFloat(value.toString().replace(",", "."));
+			var min = parseFloat(param[0].toString().replace(",", "."));
+			var max = parseFloat(param[1].toString().replace(",", "."));
+			return this.optional(element) || (globalizedValue >= min && globalizedValue <= max);
+		};
+		function fillSampleData(type) {
+			if (type === 'ckd') {
+				// Điền dữ liệu mẫu CKD (Dương tính)
+				document.getElementById('Age').value = 65;
+				document.getElementById('BloodPressure').value = 80;
+				document.getElementById('SpecificGravity').value = 1.010;
+				document.getElementById('Albumin').value = 4;
+				document.getElementById('Sugar').value = 0;
+				document.getElementById('BloodGlucoseRandom').value = 148;
+				document.getElementById('BloodUrea').value = 56;
+				document.getElementById('SerumCreatinine').value = 3.8;
+				document.getElementById('Sodium').value = 137;
+				document.getElementById('Potassium').value = 4.6;
+				document.getElementById('Haemoglobin').value = 11.2;
+				document.getElementById('PackedCellVolume').value = 38;
+				document.getElementById('WhiteBloodCellCount').value = 7800;
+				document.getElementById('RedBloodCellCount').value = 4.5;
+
+				document.getElementById('rbc_abnormal').checked = true;
+				document.getElementById('pc_abnormal').checked = true;
+				document.getElementById('pcc_notpresent').checked = true;
+				document.getElementById('ba_notpresent').checked = true;
+				document.getElementById('htn_yes').checked = true;
+				document.getElementById('dm_yes').checked = true;
+				document.getElementById('cad_no').checked = true;
+				document.getElementById('app_poor').checked = true;
+				document.getElementById('pe_yes').checked = true;
+				document.getElementById('ane_yes').checked = true;
+			} else {
+				// Điền dữ liệu mẫu KHỎE MẠNH (Âm tính)
+				document.getElementById('Age').value = 45;
+				document.getElementById('BloodPressure').value = 120;
+				document.getElementById('SpecificGravity').value = 1.025;
+				document.getElementById('Albumin').value = 0;
+				document.getElementById('Sugar').value = 0;
+				document.getElementById('BloodGlucoseRandom').value = 90;
+				document.getElementById('BloodUrea').value = 12;
+				document.getElementById('SerumCreatinine').value = 0.8;
+				document.getElementById('Sodium').value = 142;
+				document.getElementById('Potassium').value = 3.8;
+				document.getElementById('Haemoglobin').value = 14.5;
+				document.getElementById('PackedCellVolume').value = 44;
+				document.getElementById('WhiteBloodCellCount').value = 6500;
+				document.getElementById('RedBloodCellCount').value = 5.2;
+
+				document.getElementById('rbc_normal').checked = true;
+				document.getElementById('pc_normal').checked = true;
+				document.getElementById('pcc_notpresent').checked = true;
+				document.getElementById('ba_notpresent').checked = true;
+				document.getElementById('htn_no').checked = true;
+				document.getElementById('dm_no').checked = true;
+				document.getElementById('cad_no').checked = true;
+				document.getElementById('app_good').checked = true;
+				document.getElementById('pe_no').checked = true;
+				document.getElementById('ane_no').checked = true;
+			}
+
+			// Gọi hàm validation của jQuery để xóa các thông báo lỗi cũ nếu form đã điền đủ
+			$('#predictForm').validate().form();
+		}
+	</script>
+}
+
+<style>
+	/* VARIABLES */
+	:root {
+		--navy: #0f2744;
+		--teal: #2dd4bf;
+		--teal-hover: #26c6a8;
+	}
+
+	.text-navy {
+		color: var(--navy) !important;
+	}
+
+	.text-teal {
+		color: var(--teal) !important;
+	}
+
+	/* CARDS */
+	.card-custom {
+		background: #fff;
+		border-radius: 16px;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+		border: 1px solid rgba(0,0,0,0.04);
+	}
+
+	/* FORM CONTROLS */
+	.form-control-custom {
+		background-color: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 8px;
+		color: #334155;
+		transition: all 0.3s ease;
+		padding: 10px 14px;
+	}
+
+		.form-control-custom:focus {
+			background-color: #fff;
+			border-color: var(--teal);
+			box-shadow: 0 0 0 0.25rem rgba(45, 212, 191, 0.15);
+		}
+
+	/* RADIO BUTTONS CUSTOM */
+	.form-check-input {
+		cursor: pointer;
+	}
+
+		.form-check-input:checked {
+			background-color: var(--teal);
+			border-color: var(--teal);
+		}
+
+	.form-check-label {
+		cursor: pointer;
+		font-weight: 500;
+		color: #334155;
+	}
+
+	/* BUTTONS */
+	.btn-accent {
+		background: var(--teal);
+		color: white;
+		border-radius: 8px;
+		font-weight: 600;
+		transition: 0.3s;
+		border: none;
+	}
+
+		.btn-accent:hover {
+			background: var(--teal-hover);
+			color: white;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
+		}
+
+	/* RESULT CARD STYLES */
+	.bg-danger-light {
+		background-color: #fef2f2 !important;
+	}
+
+	.bg-success-light {
+		background-color: #f0fdf4 !important;
+	}
+
+	.border-danger {
+		border-color: #fca5a5 !important;
+	}
+
+	.border-success {
+		border-color: #86efac !important;
+	}
+
+	.result-icon-wrapper {
+		animation: scaleIn 0.5s ease-out;
+	}
+
+	@@keyframes scaleIn {
+		0% {
+			transform: scale(0);
+			opacity: 0;
+		}
+
+		70% {
+			transform: scale(1.2);
+			opacity: 1;
+		}
+
+		100% {
+			transform: scale(1);
+		}
+	}
+</style>

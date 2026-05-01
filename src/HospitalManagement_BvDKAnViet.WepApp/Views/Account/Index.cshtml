@@ -3,6 +3,12 @@
 @{
     ViewData["Title"] = "Danh sách tài khoản";
 
+    // Lấy thông tin phân trang từ ViewBag
+    string searchTerm = ViewBag.SearchTerm as string;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int pageSize = ViewBag.PageSize ?? 10;
+    int totalPages = ViewBag.TotalPages ?? 1;
+
     ViewData["Breadcrumb"] = new List<(string, string)>
     {
         ("Tài khoản", "/Account"),
@@ -10,65 +16,95 @@
     };
 }
 
-<div class="page-wrapper">
+<div class="page-wrapper container mt-4 mb-5">
 
     <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-action-bar mb-4 d-flex justify-content-between align-items-center">
         <div>
-            <h2 class="fw-bold text-dark mb-1">@ViewData["Title"]</h2>
+            <h2 class="fw-bold text-navy mb-1" style="font-size: 24px;">@ViewData["Title"]</h2>
             <div class="text-muted small">Quản lý người dùng hệ thống</div>
         </div>
 
-        <a asp-action="Create" class="btn btn-accent">
-            <i class="fas fa-user-plus"></i> Thêm tài khoản
+        <a asp-action="Create" class="btn btn-accent px-4 py-2 shadow-sm">
+            <i class="fas fa-user-plus me-1"></i> Thêm tài khoản
         </a>
+    </div>
+
+    <!-- TOOLBAR (Bộ lọc và Tìm kiếm) -->
+    <div class="card-custom mb-4 px-4 py-3 bg-light border-0">
+        <form asp-action="Index" method="get" class="d-flex justify-content-between align-items-center m-0 flex-wrap gap-3">
+
+            <!-- Chọn số dòng -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.5px;">Hiển thị:</span>
+                <select name="pageSize" class="form-select form-control-custom cursor-pointer" style="width: 80px;" onchange="this.form.submit()">
+                    <option value="5" selected="@(pageSize == 5)">5</option>
+                    <option value="10" selected="@(pageSize == 10)">10</option>
+                    <option value="20" selected="@(pageSize == 20)">20</option>
+                    <option value="50" selected="@(pageSize == 50)">50</option>
+                </select>
+                <span class="text-muted small">dòng / trang</span>
+            </div>
+
+            <!-- Ô tìm kiếm -->
+            <div class="input-group input-group-custom shadow-sm" style="width: 320px;">
+                <input type="text" name="searchTerm" class="form-control form-control-custom border-end-0" placeholder="Tìm kiếm tên tài khoản..." value="@searchTerm">
+
+                @if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    <a asp-action="Index" class="btn btn-light border border-start-0 border-end-0 d-flex align-items-center text-muted" title="Xóa tìm kiếm">
+                        <i class="fas fa-times"></i>
+                    </a>
+                }
+
+                <button class="btn btn-accent px-3" type="submit" style="border-radius: 0 8px 8px 0;">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- ALERT -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success shadow-sm">
-            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+            <i class="fas fa-check-circle me-2 fs-5 align-middle"></i>
+            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <!-- CARD -->
+    <!-- TABLE CARD -->
     <div class="card-custom">
 
         @if (Model.Any())
         {
             <div class="table-responsive">
-                <table class="table table-modern align-middle">
+                <table class="table table-modern align-middle mb-0">
 
                     <thead>
                         <tr>
-                            <th>STT</th>
-                            <th>Username</th>
-                            <th>Vai trò</th>
-                            <th class="text-end">Thao tác</th>
+                            <th class="text-center" width="5%">STT</th>
+                            <th>Tên đăng nhập (Username)</th>
+                            <th>Phân quyền (Vai trò)</th>
+                            <th class="text-end pe-4">Thao tác</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @{
-                            int stt = 1;
+                            // Tính toán lại STT theo trang
+                            int stt = ((currentPage - 1) * pageSize) + 1;
                         }
 
                         @foreach (var u in Model)
                         {
                             <tr>
-                                <td><span class="stt">@stt</span></td>
+                                <td class="text-center"><span class="stt">@stt</span></td>
 
                                 <!-- USER -->
                                 <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="avatar">
-                                            @u.Username.Substring(0, 1)
-                                        </div>
-                                        <div class="fw-semibold">
-                                            @u.Username
-                                        </div>
-                                    </div>
+                                    <div class="fw-bold text-navy" style="font-size: 15px;">@u.Username</div>
                                 </td>
 
                                 <!-- ROLE -->
@@ -76,42 +112,52 @@
                                     @{
                                         var roleClass = u.RoleName switch
                                         {
-                                            "Admin" => "badge bg-danger",
-                                            "Doctor" => "badge bg-primary",
-                                            "Staff" => "badge bg-success",
-                                            _ => "badge bg-secondary"
+                                            "Admin" => "badge-soft red",
+                                            "Doctor" => "badge-soft blue",
+                                            "Staff" => "badge-soft green",
+                                            _ => "badge-soft gray"
+                                        };
+
+                                        var roleIcon = u.RoleName switch
+                                        {
+                                            "Admin" => "fa-user-shield",
+                                            "Doctor" => "fa-user-md",
+                                            "Staff" => "fa-user-tie",
+                                            _ => "fa-user"
                                         };
                                     }
-                                    <span class="@roleClass">@u.RoleName</span>
+                                    <span class="@roleClass shadow-sm"><i class="fas @roleIcon me-1"></i> @u.RoleName</span>
                                 </td>
 
                                 <!-- ACTION -->
-                                <td class="text-end">
+                                <td class="text-end pe-4">
+                                    <div class="action-buttons d-inline-flex gap-2 justify-content-end">
 
-                                    <form asp-action="ResetPassword" method="post" style="display:inline">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@u.UserId" />
+                                        <!-- Reset Password -->
+                                        <form asp-action="ResetPassword" method="post" style="display:inline" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@u.UserId" />
+                                            <button type="submit"
+                                                    class="btn-action btn-reset"
+                                                    onclick="return confirm('Bạn có chắc chắn muốn reset mật khẩu tài khoản này về mặc định (123456)?')"
+                                                    title="Khôi phục mật khẩu">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                        </form>
 
-                                        <button type="submit"
-                                                class="btn-action text-warning"
-                                                onclick="return confirm('Reset mật khẩu về 123456?')"
-                                                title="Reset mật khẩu">
-                                            <i class="fas fa-key"></i>
+                                        <!-- Edit -->
+                                        <a asp-action="Edit" asp-route-id="@u.UserId" class="btn-action btn-edit" title="Chỉnh sửa">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+
+                                        <!-- Delete -->
+                                        <button class="btn-action btn-delete border-0"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal"
+                                                data-id="@u.UserId" title="Xóa tài khoản">
+                                            <i class="fas fa-trash"></i>
                                         </button>
-                                    </form>
-
-                                    <a asp-action="Edit" asp-route-id="@u.UserId"
-                                       class="btn-action text-warning" title="Sửa">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-
-                                    <button class="btn-action text-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteModal"
-                                            data-id="@u.UserId">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-
+                                    </div>
                                 </td>
                             </tr>
                             stt++;
@@ -120,35 +166,76 @@
 
                 </table>
             </div>
+
+            <!-- PAGINATION FOOTER -->
+            <div class="d-flex justify-content-between align-items-center p-4 border-top bg-light" style="border-radius: 0 0 16px 16px;">
+                <div class="small text-muted fw-medium">
+                    Trang <b class="text-navy">@currentPage</b> / <b>@totalPages</b>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 shadow-sm">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link px-3" asp-route-page="@(currentPage - 1)"
+                               asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">
+                                <i class="fas fa-chevron-left me-1"></i> Trước
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link px-3" asp-route-page="@i"
+                                   asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link px-3" asp-route-page="@(currentPage + 1)"
+                               asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">
+                                Sau <i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         }
         else
         {
-            <div class="text-center p-5 text-muted">
-                <i class="fas fa-users fa-2x mb-3"></i>
-                <div>Không có tài khoản</div>
+            <div class="text-center py-5 my-4 text-muted">
+                <i class="fas fa-user-slash fa-4x mb-3 opacity-50"></i>
+                <h5 class="fw-bold text-navy">Không tìm thấy tài khoản</h5>
+                <p class="small mb-4">Hệ thống chưa có dữ liệu hoặc không khớp với từ khóa tìm kiếm của bạn.</p>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới danh sách
+                </a>
             </div>
         }
     </div>
 </div>
 
-<!-- DELETE MODAL (y hệt MedicalRecord) -->
-<div class="modal fade" id="deleteModal">
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modern-modal">
+        <div class="modal-content shadow-lg" style="border-radius: 20px; border: none;">
 
-            <div class="modal-body text-center p-4">
-                <div class="text-danger fs-2 mb-3">
-                    <i class="fas fa-trash"></i>
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="mx-auto bg-danger-light text-danger d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 50%;">
+                        <i class="fas fa-user-minus fs-2"></i>
+                    </div>
                 </div>
 
-                <h5>Xác nhận xóa</h5>
-                <p>Bạn có chắc muốn xóa tài khoản này?</p>
+                <h4 class="fw-bold text-navy mb-2">Xác nhận xóa</h4>
+                <p class="text-muted mb-4">Bạn có chắc chắn muốn xóa tài khoản này không? Hành động này không thể khôi phục.</p>
 
-                <form id="deleteForm" method="post">
+                <form id="deleteForm" method="post" class="d-flex justify-content-center gap-3">
                     @Html.AntiForgeryToken()
-
-                    <button class="btn btn-danger px-4">Xóa</button>
-                    <button type="button" class="btn btn-light ms-2" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-light btn-lg px-4 fw-medium rounded-pill" data-bs-dismiss="modal">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-lg px-4 fw-medium rounded-pill shadow-sm">
+                        Đồng ý xóa
+                    </button>
                 </form>
             </div>
 
@@ -156,98 +243,211 @@
     </div>
 </div>
 
-<script>
-    var modal = document.getElementById('deleteModal');
+@section Scripts {
+    <script>
+        var modal = document.getElementById('deleteModal');
 
-    modal.addEventListener('show.bs.modal', function (e) {
-        var id = e.relatedTarget.getAttribute("data-id");
-        document.getElementById("deleteForm").action = "/Account/Delete/" + id;
-    });
-</script>
+        modal.addEventListener('show.bs.modal', function (e) {
+            var id = e.relatedTarget.getAttribute("data-id");
+            document.getElementById("deleteForm").action = "/Account/Delete/" + id;
+        });
+    </script>
+}
 
 <style>
-    /* LAYOUT */
-    .page-wrapper {
-        padding: 10px;
+    /* VARIABLES */
+    :root {
+        --navy: #0f2744;
+        --teal: #2dd4bf;
     }
+
+    .text-navy {
+        color: var(--navy) !important;
+    }
+
+    .text-teal {
+        color: var(--teal) !important;
+    }
+
+    /* FORM CONTROLS & TOOLBAR */
+    .form-control-custom {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #334155;
+        transition: all 0.3s ease;
+    }
+
+        .form-control-custom:focus {
+            background-color: #fff;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.15);
+        }
+
+    .input-group-custom .btn-light {
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+        .input-group-custom .btn-light:hover {
+            background-color: #f1f5f9;
+            color: #ef4444 !important;
+        }
 
     /* CARD */
     .card-custom {
         background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-        padding: 10px 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.04);
+        padding: 0;
     }
 
     /* TABLE */
-    .table-modern {
-        margin: 0;
+    .table-modern thead th {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 2px solid #f1f5f9;
+        background: #f8fafc;
+        padding: 16px 12px;
     }
 
-        .table-modern thead th {
-            font-size: 12px;
-            color: #64748b;
-            text-transform: uppercase;
-            border-bottom: 1px solid #e2e8f0;
+    .table-modern tbody td {
+        padding: 16px 12px;
+        border-bottom: 1px dashed #f1f5f9;
+        color: #334155;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #fdfdfe;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .stt {
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    /* BADGES */
+    .badge-soft {
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        border: 1px solid transparent;
+    }
+
+        .badge-soft.blue {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
         }
 
-        .table-modern tbody tr:hover {
+        .badge-soft.green {
+            background: #f0fdf4;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .badge-soft.red {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .badge-soft.gray {
             background: #f8fafc;
+            color: #475569;
+            border-color: #e2e8f0;
         }
 
-    /* AVATAR */
-    .avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: #60a5fa;
-        color: white;
+    /* ACTION BUTTONS DỒNG BỘ */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s;
+        border: none;
     }
 
-    /* BUTTON ACTION */
-    .btn-action {
-        margin-left: 6px;
-        font-size: 14px;
-        cursor: pointer;
+    .btn-reset {
+        background: #fefce8;
+        color: #eab308;
     }
 
-    /* BUTTON ACCENT */
+        .btn-reset:hover {
+            background: #eab308;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-edit {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-delete {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+        }
+
     .btn-accent {
-        background: #2dd4bf;
+        background: var(--teal);
         color: white;
         border-radius: 8px;
-        border: none;
-        padding: 8px 14px;
-        font-weight: 500;
-        transition: 0.2s;
+        font-weight: 600;
+        transition: 0.3s;
     }
 
         .btn-accent:hover {
             background: #26c6a8;
             color: white;
+            transform: translateY(-2px);
         }
 
     /* MODAL */
-    .modern-modal {
-        border-radius: 14px;
-        border: none;
+    .bg-danger-light {
+        background-color: #fee2e2;
     }
 
-    /* STT */
-    .stt {
-        font-weight: 600;
-        color: #64748b;
+    /* CUSTOM PAGINATION */
+    .pagination .page-item .page-link {
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        margin: 0 2px;
+        border-radius: 6px;
     }
 
-    .btn-action.text-warning {
-        color: #f59e0b;
+    .pagination .page-item.active .page-link {
+        background-color: var(--teal);
+        border-color: var(--teal);
+        color: white;
     }
-
-        .btn-action.text-warning:hover {
-            color: #d97706;
-        }
 </style>

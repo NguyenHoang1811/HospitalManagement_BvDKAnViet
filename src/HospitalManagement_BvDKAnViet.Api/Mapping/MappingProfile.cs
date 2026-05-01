@@ -1,22 +1,27 @@
 ﻿using AutoMapper;
-using HospitalManagement_BvDKAnViet.Core.DTOs.PatientDTO;
-using HospitalManagement_BvDKAnViet.Core.DTOs.DoctorDTO;
-using HospitalManagement_BvDKAnViet.Core.DTOs.DepartmentDTO;
-using HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO;
-using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
-using HospitalManagement_BvDKAnViet.Core.Entities;
-using HospitalManagement_BvDKAnViet.Core.DTOs.PrescriptionDTO;
-using HospitalManagement_BvDKAnViet.Core.DTOs.MedicineDTO;
 using HospitalManagement_BvDKAnViet.Core.DTOs.AccountDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.AppointmentDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.DepartmentDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.DoctorDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.KidneyPrediction;
+using HospitalManagement_BvDKAnViet.Core.DTOs.MedicalRecordDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.MedicineDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.PatientDTO;
+using HospitalManagement_BvDKAnViet.Core.DTOs.PrescriptionDTO;
+using HospitalManagement_BvDKAnViet.Core.Entities;
+using HospitalManagement_BvDKAnViet.Core.Enums;
 
 public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        // Appointment mapping (string <-> TimeOnly handled explicitly here)
+        // Appointment mapping
+
         CreateMap<Appointment, AppointmentDto>()
             .ForMember(dest => dest.AppointmentTime,
-                opt => opt.MapFrom(src => src.AppointmentTime.ToString("HH:mm")));
+                opt => opt.MapFrom(src => src.AppointmentTime.ToString("HH:mm")))
+            .ForMember(dest => dest.StatusName,
+                opt => opt.MapFrom(src => ((AppointmentStatus)src.Status).ToString()));
 
         CreateMap<CreateAppointmentDto, Appointment>()
             .ForMember(dest => dest.AppointmentTime,
@@ -79,5 +84,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Password, opt => opt.Ignore())
             .ForMember(dest => dest.RefreshToken, opt => opt.Ignore())
             .ForMember(dest => dest.ExpriredTime, opt => opt.Ignore());
+        // KidneyPrediction mappings
+        CreateMap<KidneyPrediction, KidneyPredictionResponseDto>()
+            .ForMember(dest => dest.PatientName,
+                opt => opt.MapFrom(src => src.Patient.Name));
     }
 }

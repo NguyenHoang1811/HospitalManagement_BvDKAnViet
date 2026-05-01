@@ -27,10 +27,18 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             var token = _tokenProvider.GetToken();
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                if (User.IsInRole("Admin") || User.IsInRole("Doctor") || User.IsInRole("Staff"))
+                if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                {
                     return RedirectToAction("Index", "Home");
-
-                return RedirectToAction("Index", "HomePublic");
+                }
+                else if (User.IsInRole("Doctor"))
+                {
+                    return RedirectToAction("Index", "DoctorDashboard");
+                }
+                else
+                {
+                    return RedirectToAction("Index", "HomePublic");
+                }
             }
 
             return View();
@@ -109,13 +117,13 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
                     var role = roleClaim?.Value;
 
-                    if (role == "Admin")
+                    if (role == "Admin"  || role == "Staff")
                     {
                         return RedirectToAction("Index", "Home");
                     }
                     else if (role == "Doctor")
                     {
-                        return RedirectToAction("Index", "Home");
+                        return RedirectToAction("Index", "DoctorDashboard");
                     }
                     else
                     {

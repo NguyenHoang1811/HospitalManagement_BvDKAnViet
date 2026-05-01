@@ -21,7 +21,7 @@ internal class Program
         builder.Services.AddControllers();
 
         // Register AutoMapper (scans assembly for Profile classes)
-        builder.Services.AddAutoMapper(typeof(MappingProfile));
+        builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
         // Register EF Core DbContext (SQL Server)
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,6 +39,15 @@ internal class Program
         builder.Services.AddScoped<IJwtService, JwtService>();
         builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
+        
+        builder.Services.AddScoped<IKidneyPredictionRepository, KidneyPredictionRepository>();
+
+        // HttpClient cho Python API
+        builder.Services.AddHttpClient<ICkdPythonService, CkdPythonService>(client =>
+        {
+            client.BaseAddress = new Uri("http://localhost:8000");
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

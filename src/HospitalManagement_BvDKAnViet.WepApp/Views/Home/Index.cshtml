@@ -1,4 +1,5 @@
-﻿@{
+﻿@model HospitalManagement_BvDKAnViet.WepApp.Models.StatisticsDTO.DashboardDto
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -19,8 +20,502 @@
         </div>
     }
 </div>
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- ── KPI CARDS ── -->
+<div class="kpi-grid mb-4">
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-teal"><i class="fas fa-users"></i></div>
+        <div class="kpi-label">Tổng bệnh nhân</div>
+        <div class="kpi-value">@Model.TotalPatients</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-blue"><i class="fas fa-user-md"></i></div>
+        <div class="kpi-label">Tổng bác sĩ</div>
+        <div class="kpi-value">@Model.TotalDoctors</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-green"><i class="fas fa-calendar-check"></i></div>
+        <div class="kpi-label">Lịch hôm nay</div>
+        <div class="kpi-value">@Model.TodayAppointments</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-warn"><i class="fas fa-clock"></i></div>
+        <div class="kpi-label">Chờ xác nhận</div>
+        <div class="kpi-value">@Model.PendingAppointments</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-teal"><i class="fas fa-calendar-alt"></i></div>
+        <div class="kpi-label">Lịch tháng này</div>
+        <div class="kpi-value">@Model.MonthAppointments</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-warn"><i class="fas fa-times-circle"></i></div>
+        <div class="kpi-label">Tỷ lệ huỷ</div>
+        <div class="kpi-value">@Model.CancellationRate<span style="font-size:16px;">%</span></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-green"><i class="fas fa-redo"></i></div>
+        <div class="kpi-label">BN quay lại</div>
+        <div class="kpi-value">@Model.ReturningPatients</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon-wrap kpi-icon-blue"><i class="fas fa-calendar"></i></div>
+        <div class="kpi-label">Tổng lịch hẹn</div>
+        <div class="kpi-value">@Model.TotalAppointments</div>
+    </div>
 </div>
+
+<div class="row g-4">
+
+    <!-- ── BIỂU ĐỒ LỊCH HẸN THEO THÁNG ── -->
+    <div class="col-lg-8">
+        <div class="hms-card">
+            <div class="hms-card-header">
+                <div>
+                    <div class="panel-title">Lịch hẹn theo tháng</div>
+                    <div class="panel-sub">Thống kê lịch hẹn trong năm</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <select id="apptYear" class="form-select form-select-sm" style="width:100px;">
+                        @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 3; y--)
+                        {
+                            <option value="@y" selected="@(y == DateTime.Today.Year)">@y</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <canvas id="appointmentChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- ── TỶ LỆ HUỶ LỊCH ── -->
+    <div class="col-lg-4">
+        <div class="hms-card">
+            <div class="hms-card-header">
+                <div>
+                    <div class="panel-title">Tỷ lệ huỷ lịch</div>
+                    <div class="panel-sub">Phân loại trạng thái lịch hẹn</div>
+                </div>
+            </div>
+            <canvas id="cancellationChart" height="180"></canvas>
+            <div id="cancellationSummary" class="text-center mt-3 small text-muted"></div>
+        </div>
+    </div>
+
+    <!-- ── TOP BÁC SĨ NHIỀU LỊCH NHẤT ── -->
+    <div class="col-lg-6">
+        <div class="hms-card">
+            <div class="hms-card-header">
+                <div>
+                    <div class="panel-title">Top bác sĩ nhiều lịch nhất</div>
+                    <div class="panel-sub">5 bác sĩ có nhiều lịch hẹn nhất</div>
+                </div>
+            </div>
+            <canvas id="topDoctorChart" height="140"></canvas>
+        </div>
+    </div>
+
+    <!-- ── SỐ BỆNH NHÂN MỖI BÁC SĨ ── -->
+    <div class="col-lg-6">
+        <div class="hms-card">
+            <div class="hms-card-header">
+                <div>
+                    <div class="panel-title">Số bệnh nhân mỗi bác sĩ</div>
+                    <div class="panel-sub">Bệnh nhân duy nhất theo bác sĩ</div>
+                </div>
+            </div>
+            <canvas id="patientDoctorChart" height="140"></canvas>
+        </div>
+    </div>
+
+    <!-- ── BỆNH NHÂN MỚI THEO THÁNG ── -->
+    <div class="col-lg-8">
+        <div class="hms-card">
+            <div class="hms-card-header">
+                <div>
+                    <div class="panel-title">Bệnh nhân mới theo tháng</div>
+                    <div class="panel-sub">Số lượt bệnh nhân lần đầu khám trong năm</div>
+                </div>
+                <select id="newPatientYear" class="form-select form-select-sm" style="width:100px;">
+                    @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 3; y--)
+                    {
+                        <option value="@y" selected="@(y == DateTime.Today.Year)">@y</option>
+                    }
+                </select>
+            </div>
+            <canvas id="newPatientChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- ── BỆNH NHÂN QUAY LẠI ── -->
+    <div class="col-lg-4">
+        <div class="hms-card">
+            <div class="hms-card-header">
+                <div>
+                    <div class="panel-title">Bệnh nhân quay lại</div>
+                    <div class="panel-sub">Tỷ lệ bệnh nhân tái khám</div>
+                </div>
+            </div>
+            <canvas id="returningChart" height="180"></canvas>
+            <div id="returningSummary" class="text-center mt-3 small text-muted"></div>
+        </div>
+    </div>
+
+    <!-- ── TOP BÁC SĨ TABLE ── -->
+    <div class="col-12">
+        <div class="hms-card">
+            <div class="hms-card-header">
+                <div>
+                    <div class="panel-title">Bảng xếp hạng bác sĩ</div>
+                    <div class="panel-sub">Tổng hợp lịch hẹn theo bác sĩ</div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Bác sĩ</th>
+                            <th>Tổng lịch</th>
+                            <th>Hoàn thành</th>
+                            <th>Đã xác nhận</th>
+                            <th>Chờ xác nhận</th>
+                            <th>Đã huỷ</th>
+                            <th>Tỷ lệ hoàn thành</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doctorTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-3">
+                                <div class="spinner-border spinner-border-sm me-2"></div> Đang tải...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // ── MÀU SẮC CHUNG ──
+        const colors = {
+            teal:      '#2dd4bf',
+            navy:      '#0f2744',
+            blue:      '#60a5fa',
+            green:     '#22c55e',
+            orange:    '#f97316',
+            red:       '#ef4444',
+            purple:    '#a78bfa',
+            yellow:    '#fbbf24',
+            tealAlpha: 'rgba(45,212,191,0.15)',
+            blueAlpha: 'rgba(96,165,250,0.15)',
+        };
+
+        Chart.defaults.font.family = "'DM Sans', sans-serif";
+        Chart.defaults.font.size   = 12;
+        Chart.defaults.color       = '#64748b';
+
+        // ────────────────────────────────────────────
+        // 1. Biểu đồ lịch hẹn theo tháng (Line + Bar)
+        // ────────────────────────────────────────────
+        let apptChart;
+
+        async function loadAppointmentChart(year) {
+            const res  = await fetch(`/Home/AppointmentStats?type=month&value=${year}`);
+            const data = await res.json();
+
+            const labels    = data.map(x => x.label);
+            const totals    = data.map(x => x.total);
+            const completed = data.map(x => x.completed);
+            const cancelled = data.map(x => x.cancelled);
+
+            if (apptChart) apptChart.destroy();
+
+            apptChart = new Chart(document.getElementById('appointmentChart'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Tổng lịch',
+                            data: totals,
+                            backgroundColor: 'rgba(45,212,191,0.25)',
+                            borderColor: colors.teal,
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            order: 2
+                        },
+                        {
+                            label: 'Hoàn thành',
+                            data: completed,
+                            type: 'line',
+                            borderColor: colors.green,
+                            backgroundColor: 'rgba(34,197,94,0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            order: 1
+                        },
+                        {
+                            label: 'Đã huỷ',
+                            type: 'line',
+                            data: cancelled,
+                            borderColor: colors.orange,
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            borderDash: [5, 5],
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('apptYear').addEventListener('change', function () {
+            loadAppointmentChart(this.value);
+        });
+
+        // ────────────────────────────────────────────
+        // 2. Biểu đồ tỷ lệ huỷ (Doughnut)
+        // ────────────────────────────────────────────
+        async function loadCancellationChart() {
+            const res  = await fetch('/Home/CancellationRate');
+            const data = await res.json();
+
+            const notCancelled = data.total - data.cancelled;
+
+            new Chart(document.getElementById('cancellationChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Không huỷ', 'Đã huỷ'],
+                    datasets: [{
+                        data: [notCancelled, data.cancelled],
+                        backgroundColor: [colors.teal, colors.orange],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    cutout: '72%',
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            document.getElementById('cancellationSummary').innerHTML =
+                `Tổng: <strong>${data.total}</strong> lịch &nbsp;|&nbsp; Huỷ: <strong>${data.cancelled}</strong> &nbsp;|&nbsp; Tỷ lệ: <strong style="color:${colors.orange}">${data.cancellationRate}%</strong>`;
+        }
+
+        // ────────────────────────────────────────────
+        // 3. Top bác sĩ nhiều lịch nhất (Horizontal Bar)
+        // ────────────────────────────────────────────
+        async function loadTopDoctorChart() {
+            const res  = await fetch('/Home/AppointmentsByDoctor?top=5');
+            const data = await res.json();
+
+            new Chart(document.getElementById('topDoctorChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(x => x.doctorName),
+                    datasets: [{
+                        label: 'Tổng lịch',
+                        data: data.map(x => x.total),
+                        backgroundColor: [
+                            colors.teal, colors.blue, colors.purple,
+                            colors.green, colors.yellow
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ────────────────────────────────────────────
+        // 4. Số bệnh nhân mỗi bác sĩ (Bar)
+        // ────────────────────────────────────────────
+        async function loadPatientDoctorChart() {
+            const res  = await fetch('/Home/PatientsByDoctor');
+            const data = await res.json();
+
+            new Chart(document.getElementById('patientDoctorChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(x => x.doctorName),
+                    datasets: [{
+                        label: 'Số bệnh nhân',
+                        data: data.map(x => x.patientCount),
+                        backgroundColor: 'rgba(96,165,250,0.3)',
+                        borderColor: colors.blue,
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ────────────────────────────────────────────
+        // 5. Bệnh nhân mới theo tháng (Line)
+        // ────────────────────────────────────────────
+        let newPatientChart;
+
+        async function loadNewPatientChart(year) {
+            const res  = await fetch(`/Home/NewPatients?year=${year}`);
+            const data = await res.json();
+
+            // Đảm bảo đủ 12 tháng dù API không trả đủ
+            const monthMap = {};
+            data.forEach(x => monthMap[x.month] = x.newPatients);
+
+            const labels = [];
+            const values = [];
+            for (let m = 1; m <= 12; m++) {
+                labels.push(`T${m}`);
+                values.push(monthMap[m] ?? 0);
+            }
+
+            if (newPatientChart) newPatientChart.destroy();
+
+            newPatientChart = new Chart(document.getElementById('newPatientChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Bệnh nhân mới',
+                        data: values,
+                        borderColor: colors.purple,
+                        backgroundColor: 'rgba(167,139,250,0.12)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('newPatientYear').addEventListener('change', function () {
+            loadNewPatientChart(this.value);
+        });
+
+        // ────────────────────────────────────────────
+        // 6. Bệnh nhân quay lại (Doughnut)
+        // ────────────────────────────────────────────
+        async function loadReturningChart() {
+            const res  = await fetch('/Home/ReturningPatients');
+            const data = await res.json();
+
+            const newOnly = data.totalPatients - data.totalReturning;
+
+            new Chart(document.getElementById('returningChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Lần đầu', 'Quay lại'],
+                    datasets: [{
+                        data: [newOnly, data.totalReturning],
+                        backgroundColor: [colors.blue, colors.green],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    cutout: '72%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            document.getElementById('returningSummary').innerHTML =
+                `Tổng: <strong>${data.totalPatients}</strong> &nbsp;|&nbsp; Quay lại: <strong>${data.totalReturning}</strong> &nbsp;|&nbsp; Tỷ lệ: <strong style="color:${colors.green}">${data.returningRate}%</strong>`;
+        }
+
+        // ────────────────────────────────────────────
+        // 7. Bảng bác sĩ
+        // ────────────────────────────────────────────
+        async function loadDoctorTable() {
+            const res  = await fetch('/Home/AppointmentsByDoctor');
+            const data = await res.json();
+
+            const tbody = document.getElementById('doctorTableBody');
+            tbody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Không có dữ liệu</td></tr>';
+                return;
+            }
+
+            data.forEach((d, i) => {
+                const rate = d.total === 0 ? 0 : Math.round(d.completed / d.total * 100);
+                const barColor = rate >= 70 ? '#22c55e' : rate >= 40 ? '#f97316' : '#ef4444';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="fw-bold text-muted">${i + 1}</span></td>
+                        <td class="fw-semibold">${d.doctorName}</td>
+                        <td><span class="badge bg-light text-dark border">${d.total}</span></td>
+                        <td><span class="badge" style="background:rgba(34,197,94,0.15);color:#15803d;">${d.completed}</span></td>
+                        <td><span class="badge" style="background:rgba(96,165,250,0.15);color:#1d4ed8;">${d.confirmed}</span></td>
+                        <td><span class="badge" style="background:rgba(251,191,36,0.15);color:#92400e;">${d.pending}</span></td>
+                        <td><span class="badge" style="background:rgba(239,68,68,0.15);color:#b91c1c;">${d.cancelled}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;">
+                                    <div style="width:${rate}%;height:100%;background:${barColor};border-radius:3px;transition:width 0.6s;"></div>
+                                </div>
+                                <span style="font-size:12px;font-weight:600;color:${barColor};min-width:36px;">${rate}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        // ── KHỞI CHẠY TẤT CẢ ──
+        const currentYear = new Date().getFullYear();
+
+        loadAppointmentChart(currentYear);
+        loadCancellationChart();
+        loadTopDoctorChart();
+        loadPatientDoctorChart();
+        loadNewPatientChart(currentYear);
+        loadReturningChart();
+        loadDoctorTable();
+    </script>
+}
+
+

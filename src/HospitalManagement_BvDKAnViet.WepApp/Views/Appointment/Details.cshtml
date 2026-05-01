@@ -145,7 +145,38 @@
                     <i class="fas @icon mb-2" style="font-size: 24px;"></i><br />
                     @statusText
                 </div>
+                @if (User.IsInRole("Doctor"))
+                {
+                    <div class="mt-4 d-flex flex-column gap-2">
 
+                        @if ((int)Model.Status == 1) // CONFIRMED
+                        {
+                            <!-- Hoàn thành -->
+                            <form asp-controller="Appointment"
+                                  asp-action="Complete"
+                                  asp-route-id="@Model.AppointmentId"
+                                  method="post">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-check-circle me-1"></i> Hoàn thành
+                                </button>
+                            </form>
+                        }
+
+                        @if ((int)Model.Status != 3 && (int)Model.Status != 2)
+                        {
+                            <!-- Huỷ -->
+                            <form asp-controller="Appointment"
+                                  asp-action="Cancel"
+                                  asp-route-id="@Model.AppointmentId"
+                                  method="post">
+                                <button type="submit" class="btn btn-danger w-100">
+                                    <i class="fas fa-times me-1"></i> Huỷ lịch
+                                </button>
+                            </form>
+                        }
+
+                    </div>
+                }
                 <div class="mt-4 text-center small text-muted">
                     <i class="fas fa-sync-alt me-1"></i> Cập nhật lần cuối:<br />
                     <strong class="text-dark">@DateTime.Now.ToString("dd/MM/yyyy - HH:mm")</strong>

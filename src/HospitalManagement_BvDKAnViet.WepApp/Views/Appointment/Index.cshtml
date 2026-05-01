@@ -1,325 +1,550 @@
 ﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO.AppointmentDto>
 
 @{
-	ViewData["Title"] = "Danh sách lịch hẹn";
+    ViewData["Title"] = "Danh sách lịch hẹn";
 
-	ViewData["Breadcrumb"] = new List<(string, string)>
-	{
-		("Lịch hẹn", "/Appointment"),
-		("Danh sách lịch hẹn", null)
-	};
+    // Lấy thông tin phân trang từ ViewBag
+    string searchTerm = ViewBag.SearchTerm as string;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int pageSize = ViewBag.PageSize ?? 10;
+    int totalPages = ViewBag.TotalPages ?? 1;
 
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Lịch hẹn", "/Appointment"),
+        ("Danh sách lịch hẹn", null)
+    };
 
+    var patientNames = ViewBag.PatientNames as Dictionary<int, string>;
+    var doctorNames = ViewBag.DoctorNames as Dictionary<int, string>;
 
-	var patientNames = ViewBag.PatientNames as Dictionary<int, string>;
-	var doctorNames = ViewBag.DoctorNames as Dictionary<int, string>;
+    // Hàm chuyển đổi trạng thái cục bộ
+    string ModelStatusToText(int status) => status switch
+    {
+        0 => "Chờ xác nhận",
+        1 => "Đã xác nhận",
+        2 => "Hoàn thành",
+        3 => "Đã hủy",
+        _ => "Không xác định"
+    };
+
+    string ModelStatusToCss(int status) => status switch
+    {
+        0 => "yellow",
+        1 => "blue",
+        2 => "green",
+        3 => "red",
+        _ => "gray"
+    };
 }
 
-<div class="page-wrapper">
+<div class="page-wrapper container mt-4 mb-5">
 
-	<!-- HEADER -->
-	<div class="d-flex justify-content-between align-items-center mb-4">
-		<div>
-			<h2 class="fw-bold text-dark mb-1">@ViewData["Title"]</h2>
-			<div class="text-muted small">Quản lý lịch hẹn khám bệnh</div>
-		</div>
+    <!-- HEADER -->
+    <div class="page-action-bar mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold text-navy mb-1" style="font-size: 24px;">@ViewData["Title"]</h2>
+            <div class="text-muted small">Quản lý lịch hẹn khám bệnh</div>
+        </div>
 
-		@if (!User.IsInRole("Doctor"))
-		{
-			<a asp-action="Create" class="btn btn-accent">
-				<i class="fas fa-plus"></i> Đặt lịch
-			</a>
-		}
-	</div>
+        @if (!User.IsInRole("Doctor"))
+        {
+            <a asp-action="Create" class="btn btn-accent px-4 py-2 shadow-sm">
+                <i class="fas fa-plus me-1"></i> Đặt lịch ngay
+            </a>
+        }
+    </div>
 
-	<!-- ALERT -->
-	@if (TempData["SuccessMessage"] != null)
-	{
-		<div class="alert alert-success shadow-sm">
-			<i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
-		</div>
-	}
+    <!-- TOOLBAR (Bộ lọc và Tìm kiếm) -->
+    <div class="card-custom mb-4 px-4 py-3 bg-light border-0">
+        <form asp-action="Index" method="get" class="d-flex justify-content-between align-items-center m-0 flex-wrap gap-3">
 
-	@if (TempData["ErrorMessage"] != null)
-	{
-		<div class="alert alert-danger shadow-sm">
-			<i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
-		</div>
-	}
+            <!-- Chọn số dòng -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.5px;">Hiển thị:</span>
+                <select name="pageSize" class="form-select form-control-custom cursor-pointer" style="width: 80px;" onchange="this.form.submit()">
+                    <option value="5" selected="@(pageSize == 5)">5</option>
+                    <option value="10" selected="@(pageSize == 10)">10</option>
+                    <option value="20" selected="@(pageSize == 20)">20</option>
+                    <option value="50" selected="@(pageSize == 50)">50</option>
+                </select>
+                <span class="text-muted small">dòng / trang</span>
+            </div>
 
-	<!-- TABLE -->
-	<div class="card-custom">
+            <!-- Ô tìm kiếm -->
+            <div class="input-group input-group-custom shadow-sm" style="width: 320px;">
+                <input type="text" name="searchTerm" class="form-control form-control-custom border-end-0" placeholder="Tìm tên bệnh nhân, bác sĩ..." value="@searchTerm">
 
-		@if (Model.Any())
-		{
-			<div class="table-responsive">
-				<table class="table table-modern align-middle">
+                @if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    <a asp-action="Index" class="btn btn-light border border-start-0 border-end-0 d-flex align-items-center text-muted" title="Xóa tìm kiếm">
+                        <i class="fas fa-times"></i>
+                    </a>
+                }
 
-					<thead>
-						<tr>
-							<th>STT</th>
-							<th>Mã lịch</th>
-							<th>Bệnh nhân</th>
-							<th>Bác sĩ</th>
-							<th>Ngày khám</th>
-							<th>Giờ</th>
-							<th>Trạng thái</th>
-							<th class="text-end">Thao tác</th>
-						</tr>
-					</thead>
+                <button class="btn btn-accent px-3" type="submit" style="border-radius: 0 8px 8px 0;">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
 
-					<tbody>
-						@{
-							int stt = 1;
-						}
+    <!-- ALERT -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+            <i class="fas fa-check-circle me-2 fs-5 align-middle"></i>
+            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-						@foreach (var item in Model)
-						{
-							var patientName = (patientNames != null && patientNames.ContainsKey(item.PatientId))
-							? patientNames[item.PatientId]
-							: "—";
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+            <i class="fas fa-exclamation-circle me-2 fs-5 align-middle"></i>
+            <strong>Lỗi!</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-							var doctorName = (doctorNames != null && doctorNames.ContainsKey(item.DoctorId))
-							? doctorNames[item.DoctorId]
-							: "—";
+    <!-- TABLE CARD -->
+    <div class="card-custom">
 
-							<tr>
-								<!-- STT -->
-								<td><span class="stt">@stt</span></td>
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-modern align-middle mb-0">
 
-								<!-- ID -->
-								<td>
-									<span class="id-badge">
-										LH-@item.AppointmentId
-									</span>
-								</td>
+                    <thead>
+                        <tr>
+                            <th class="text-center" width="5%">STT</th>
+                            <th>Mã lịch</th>
+                            <th>Bệnh nhân</th>
+                            <th>Bác sĩ</th>
+                            <th>Ngày khám</th>
+                            <th>Giờ</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
 
-								<!-- PATIENT -->
-								<td>
-									<div class="d-flex align-items-center gap-2">
-										<div class="avatar">
-											@(patientName.Length > 0 ? patientName.Substring(0, 1) : "?")
-										</div>
-										<div>
-											<div class="fw-semibold">@patientName</div>
-											<div class="text-muted small">Patient</div>
-										</div>
-									</div>
-								</td>
+                    <tbody>
+                        @{
+                            // Cập nhật STT theo phân trang
+                            int stt = ((currentPage - 1) * pageSize) + 1;
+                        }
 
-								<!-- DOCTOR -->
-								<td>
-									<div class="fw-semibold text-navy">@doctorName</div>
-								</td>
+                        @foreach (var item in Model)
+                        {
+                            var patientName = (patientNames != null && patientNames.ContainsKey(item.PatientId))
+                            ? patientNames[item.PatientId]
+                            : "—";
 
-								<!-- DATE -->
-								<td>
-									@item.AppointmentDate.ToString("dd/MM/yyyy")
-								</td>
+                            var doctorName = (doctorNames != null && doctorNames.ContainsKey(item.DoctorId))
+                            ? doctorNames[item.DoctorId]
+                            : "—";
 
-								<!-- TIME -->
-								<td>
-									<span class="badge-soft blue">
-										@item.AppointmentTime
-									</span>
-								</td>
+                            <tr>
+                                <!-- STT -->
+                                <td class="text-center"><span class="stt">@stt</span></td>
 
-								<!-- STATUS -->
-								<td>
-									@{
-										string statusText = ModelStatusToText(item.Status);
-										string css = ModelStatusToCss(item.Status);
-									}
-							<span class="badge-soft @css">@statusText</span>
-						</td>
-						@functions {
-							string ModelStatusToText(int status)
-							{
-								return status switch
-								{
-									0 => "Chờ xác nhận",
-									1 => "Đã xác nhận",
-									2 => "Hoàn thành",
-									3 => "Đã hủy",
-									_ => "Không xác định"
-								};
-							}
+                                <!-- ID -->
+                                <td>
+                                    <span class="patient-code shadow-sm">
+                                        LH-@item.AppointmentId
+                                    </span>
+                                </td>
 
-							string ModelStatusToCss(int status)
-							{
-								return status switch
-								{
-									0 => "yellow",
-									1 => "blue",
-									2 => "green",
-									3 => "red",
-									_ => "gray"
-								};
-							}
-						}
+                                <!-- PATIENT -->
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar shadow-sm">
+                                            @(patientName.Length > 0 && patientName != "—" ? patientName.Substring(0, 1).ToUpper() : "?")
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-navy" style="font-size: 15px;">@patientName</div>
+                                            <div class="text-muted small">Patient</div>
+                                        </div>
+                                    </div>
+                                </td>
 
-						<!-- ACTION -->
-						<td class="text-end">
-							<a asp-action="Details" asp-route-id="@item.AppointmentId"
-							   class="btn-action text-info" title="Xem">
-								<i class="fas fa-eye"></i>
-							</a>
+                                <!-- DOCTOR -->
+                                <td>
+                                    <div class="fw-medium text-muted">
+                                        <i class="fas fa-user-md me-1 opacity-75"></i> @doctorName
+                                    </div>
+                                </td>
 
-							@if (!User.IsInRole("Doctor"))
-							{
-								<a asp-action="Edit" asp-route-id="@item.AppointmentId"
-								   class="btn-action text-warning" title="Sửa">
-									<i class="fas fa-edit"></i>
-								</a>
+                                <!-- DATE -->
+                                <td>
+                                    <span class="fw-medium text-navy">@item.AppointmentDate.ToString("dd/MM/yyyy")</span>
+                                </td>
 
-								<button type="button"
-										class="btn-action text-danger"
-										data-bs-toggle="modal"
-										data-bs-target="#deleteModal"
-										data-id="@item.AppointmentId">
-									<i class="fas fa-trash"></i>
-								</button>
-							}
-						</td>
-					</tr>
+                                <!-- TIME -->
+                                <td>
+                                    <span class="badge-soft blue shadow-sm">
+                                        <i class="far fa-clock me-1"></i> @item.AppointmentTime
+                                    </span>
+                                </td>
 
-					stt++;
-										}
-				</tbody>
+                                <!-- STATUS -->
+                                <td>
+                                    @{
+                                        string statusText = ModelStatusToText(item.Status);
+                                        string css = ModelStatusToCss(item.Status);
+                                    }
+                                    <span class="badge-soft @css shadow-sm">@statusText</span>
+                                </td>
 
-			</table>
-		</div>
-				}
-				else
-		{
-			<div class="text-center p-5 text-muted">
-				<i class="fas fa-calendar-times fa-2x mb-3"></i>
-				<div>Không có lịch hẹn nào</div>
-				<a asp-action="Create" class="btn btn-accent mt-3">Đặt lịch ngay</a>
-			</div>
-		}
-	</div>
+                                <!-- ACTION -->
+                                <td class="text-end pe-4">
+                                    <div class="action-buttons d-inline-flex gap-2 justify-content-end">
+                                        <a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn-action btn-view" title="Xem">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        @if (!User.IsInRole("Doctor"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.AppointmentId" class="btn-action btn-edit" title="Sửa">
+                                                <i class="fas fa-pen"></i>
+                                            </a>
+
+                                            <button type="button" class="btn-action btn-delete border-0"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal"
+                                                    data-id="@item.AppointmentId" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- PAGINATION FOOTER -->
+            <div class="d-flex justify-content-between align-items-center p-4 border-top bg-light" style="border-radius: 0 0 16px 16px;">
+                <div class="small text-muted fw-medium">
+                    Trang <b class="text-navy">@currentPage</b> / <b>@totalPages</b>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 shadow-sm">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link px-3" asp-route-page="@(currentPage - 1)"
+                               asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">
+                                <i class="fas fa-chevron-left me-1"></i> Trước
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link px-3" asp-route-page="@i"
+                                   asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link px-3" asp-route-page="@(currentPage + 1)"
+                               asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">
+                                Sau <i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 my-4 text-muted">
+                <i class="fas fa-calendar-times fa-4x mb-3 opacity-50"></i>
+                <h5 class="fw-bold text-navy">Không tìm thấy lịch hẹn</h5>
+                <p class="small mb-4">Hệ thống chưa có dữ liệu hoặc không khớp với từ khóa tìm kiếm của bạn.</p>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới danh sách
+                </a>
+            </div>
+        }
+    </div>
 </div>
 
 <!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content modern-modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg" style="border-radius: 20px; border: none;">
 
-			<div class="modal-body text-center p-4">
-				<div class="mb-3 text-danger fs-2">
-					<i class="fas fa-trash"></i>
-				</div>
-				<h5 class="fw-semibold">Xác nhận xóa</h5>
-				<p class="text-muted">Bạn có chắc muốn xóa lịch hẹn này?</p>
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="mx-auto bg-danger-light text-danger d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 50%;">
+                        <i class="fas fa-trash-alt fs-2"></i>
+                    </div>
+                </div>
 
-				<form id="deleteForm" method="post">
-					@Html.AntiForgeryToken()
+                <h4 class="fw-bold text-navy mb-2">Xác nhận xóa</h4>
+                <p class="text-muted mb-4">Bạn có chắc chắn muốn xóa lịch hẹn này không? Hành động này không thể khôi phục.</p>
 
-					<button type="submit" class="btn btn-danger px-4">Xóa</button>
-					<button type="button" class="btn btn-light px-4 ms-2" data-bs-dismiss="modal">
-						Hủy
-					</button>
-				</form>
-			</div>
+                <form id="deleteForm" method="post" class="d-flex justify-content-center gap-3">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn btn-light btn-lg px-4 fw-medium rounded-pill" data-bs-dismiss="modal">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-lg px-4 fw-medium rounded-pill shadow-sm">
+                        Đồng ý xóa
+                    </button>
+                </form>
+            </div>
 
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
 
-<script>
-	var deleteModal = document.getElementById('deleteModal');
+@section Scripts {
+    <script>
+        var deleteModal = document.getElementById('deleteModal');
 
-	deleteModal.addEventListener('show.bs.modal', function (event) {
-		var button = event.relatedTarget;
-		var id = button.getAttribute('data-id');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
 
-		var form = document.getElementById('deleteForm');
-		form.action = '/Appointment/Delete/' + id;
-	});
-</script>
+            var form = document.getElementById('deleteForm');
+            form.action = '/Appointment/Delete/' + id;
+        });
+    </script>
+}
 
 <style>
-	.page-wrapper {
-		padding: 10px;
-	}
+    /* VARIABLES (Màu Xanh Ngọc --teal: #2dd4bf) */
+    :root {
+        --navy: #0f2744;
+        --teal: #2dd4bf;
+        --teal-hover: #26c6a8;
+    }
 
-	.card-custom {
-		background: #fff;
-		border-radius: 14px;
-		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-		padding: 10px 0;
-	}
+    .text-navy {
+        color: var(--navy) !important;
+    }
 
-	.table-modern thead th {
-		font-size: 12px;
-		color: #64748b;
-		text-transform: uppercase;
-		border-bottom: 1px solid #e2e8f0;
-	}
+    .text-teal {
+        color: var(--teal) !important;
+    }
 
-	.table-modern tbody tr:hover {
-		background: #f8fafc;
-	}
+    /* FORM CONTROLS & TOOLBAR */
+    .form-control-custom {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #334155;
+        transition: all 0.3s ease;
+    }
 
-	.avatar {
-		width: 36px;
-		height: 36px;
-		border-radius: 50%;
-		background: #60a5fa;
-		color: white;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 600;
-	}
+        .form-control-custom:focus {
+            background-color: #fff;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 0.25rem rgba(45, 212, 191, 0.15);
+        }
 
-	.id-badge {
-		background: #f1f5f9;
-		padding: 4px 8px;
-		border-radius: 6px;
-		font-size: 12px;
-	}
+    .input-group-custom .btn-light {
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+    }
 
-	.badge-soft {
-		padding: 5px 10px;
-		border-radius: 20px;
-		font-size: 12px;
-	}
+        .input-group-custom .btn-light:hover {
+            background-color: #f1f5f9;
+            color: #ef4444 !important;
+        }
 
-		.badge-soft.blue {
-			background: #dbeafe;
-			color: #2563eb;
-		}
+    /* CARD */
+    .card-custom {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.04);
+        padding: 0;
+    }
 
-		.badge-soft.green {
-			background: #dcfce7;
-			color: #15803d;
-		}
+    /* TABLE */
+    .table-modern thead th {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 2px solid #f1f5f9;
+        background: #f8fafc;
+        padding: 16px 12px;
+    }
 
-		.badge-soft.yellow {
-			background: #fef9c3;
-			color: #ca8a04;
-		}
+    .table-modern tbody td {
+        padding: 16px 12px;
+        border-bottom: 1px dashed #f1f5f9;
+        color: #334155;
+        transition: background-color 0.2s;
+    }
 
-		.badge-soft.gray {
-			background: #e5e7eb;
-			color: #374151;
-		}
+    .table-modern tbody tr:hover td {
+        background: #fdfdfe;
+    }
 
-	.btn-accent {
-		background: #2dd4bf;
-		color: white;
-		border-radius: 8px;
-	}
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
 
-	.btn-action {
-		margin-left: 6px;
-		font-size: 14px;
-	}
+    .stt {
+        font-weight: 600;
+        color: #94a3b8;
+    }
 
-	.stt {
-		font-weight: 600;
-		color: #64748b;
-	}
+    /* AVATAR */
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #60a5fa;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    /* BADGES */
+    .patient-code {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-soft {
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        border: 1px solid transparent;
+    }
+
+        .badge-soft.blue {
+            background: #dbeafe;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+
+        .badge-soft.green {
+            background: #dcfce7;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .badge-soft.yellow {
+            background: #fef9c3;
+            color: #ca8a04;
+            border-color: #fde047;
+        }
+
+        .badge-soft.red {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .badge-soft.gray {
+            background: #f8fafc;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+
+    /* ACTION BUTTONS */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: 0.2s;
+        border: none;
+        background: transparent;
+    }
+
+    .btn-view {
+        background: #f3e8ff;
+        color: #9333ea;
+    }
+
+        .btn-view:hover {
+            background: #9333ea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-edit {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-delete {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    /* BUTTON ACCENT (#2dd4bf) */
+    .btn-accent {
+        background: var(--teal);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: 0.3s;
+        border: none;
+    }
+
+        .btn-accent:hover {
+            background: var(--teal-hover);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.2);
+        }
+
+    /* MODAL */
+    .bg-danger-light {
+        background-color: #fee2e2;
+    }
+
+    /* CUSTOM PAGINATION */
+    .pagination .page-item .page-link {
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        margin: 0 2px;
+        border-radius: 6px;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--teal);
+        border-color: var(--teal);
+        color: white;
+    }
 </style>

@@ -1,4 +1,6 @@
-﻿using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
+﻿using HospitalManagement_BvDKAnViet.WepApp.Models.KidneyPrediction;
+using HospitalManagement_BvDKAnViet.WepApp.Models.ViewModels;
+using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -84,9 +86,18 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Services
             }
         }
 
+
         /// <summary>
         /// Sets the authorization token for subsequent requests.
         /// </summary>
+        public async Task PatchAsync(string url)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Patch, url);
+            var response = await _http.SendAsync(request); 
+            response.EnsureSuccessStatusCode();
+        }
+
+
         public void AddToken(string token)
         {
             _tokenProvider.SetToken(token);
@@ -99,5 +110,26 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Services
         {
             _tokenProvider.RemoveToken();
         }
+
+
+        public async Task<KidneyPredictionResultViewModel?> PredictKidneyAsync(object requestDto)
+        {
+            var res = await PostAsync<object, ApiResponse<KidneyPredictionResultViewModel>>(
+                "api/kidneyprediction/predict",
+                requestDto
+            );
+
+            return res?.data;
+        }
+
+
+        public async Task<List<KidneyPredictionResultViewModel>?> GetKidneyHistoryAsync(int patientId)
+            => await GetAsync<List<KidneyPredictionResultViewModel>>(
+                $"api/kidneyprediction/patient/{patientId}");
+
+
+        public async Task<List<KidneyPredictionResultViewModel>?> GetMyPredictionsAsync()
+            => await GetAsync<List<KidneyPredictionResultViewModel>>(
+                "api/kidneyprediction/doctor");
     }
 }

@@ -25,12 +25,52 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         }
 
         // ===================== INDEX =====================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int? departmentId, int page = 1, int pageSize = 10)
         {
             try
             {
-                var doctors = await _apiService.GetAsync<IEnumerable<DoctorDto>>("api/Doctor");
-                return View(doctors ?? Enumerable.Empty<DoctorDto>());
+                var allDoctors = await _apiService.GetAsync<IEnumerable<DoctorDto>>("api/Doctor")
+                                 ?? Enumerable.Empty<DoctorDto>();
+
+                // 1. Tìm theo tên
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    allDoctors = allDoctors.Where(d =>
+                        d.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // 2. Lọc theo khoa
+                if (departmentId.HasValue && departmentId.Value > 0)
+                {
+                    allDoctors = allDoctors.Where(d => d.DepartmentId == departmentId);
+                }
+
+                // 3. Phân trang
+                int totalItems = allDoctors.Count();
+
+                var pagedData = allDoctors
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 4. Load danh sách khoa cho dropdown
+                var departments = await _apiService.GetAsync<IEnumerable<DepartmentDto>>("api/Department");
+
+                ViewBag.Departments = new SelectList(
+                    departments ?? Enumerable.Empty<DepartmentDto>(),
+                    "DepartmentId",
+                    "DepartmentName",
+                    departmentId
+                );
+
+                // 5. ViewBag
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.DepartmentId = departmentId;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+                return View(pagedData);
             }
             catch
             {

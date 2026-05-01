@@ -1,4 +1,5 @@
-﻿using HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO;
+﻿using HospitalManagement_BvDKAnViet.WepApp.Models.AccountDTO;
+using HospitalManagement_BvDKAnViet.WepApp.Models.AppointmentDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Models.DepartmentDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Models.DoctorDTO;
 using HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO;
@@ -26,8 +27,15 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 
             if (User.Identity?.IsAuthenticated == true)
             {
-                if (User.IsInRole("Admin") || User.IsInRole("Doctor") || User.IsInRole("Staff"))
+                if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                {
                     return RedirectToAction("Index", "Home");
+                }
+                else if (User.IsInRole("Doctor"))
+                {
+                    return RedirectToAction("Index", "DoctorDashboard");
+                }
+               
             }
             try
             {
@@ -298,6 +306,84 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             {
                 TempData["ErrorMessage"] = "Không thể tải danh sách lịch hẹn.";
                 return View(Enumerable.Empty<AppointmentDto>());
+            }
+        }
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelAppointment(int id)
+        {
+            try
+            {
+                await _apiService.PatchAsync($"api/Appointment/{id}/cancel");
+                TempData["SuccessMessage"] = "Huỷ lịch hẹn thành công!";
+            }
+            catch (HttpRequestException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message.Contains("Forbid")
+                    ? "Bạn không có quyền huỷ lịch này."
+                    : "Không thể huỷ lịch hẹn. Vui lòng thử lại.";
+            }
+
+            return RedirectToAction(nameof(MyAppointments));
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View(new ChangePasswordDto());
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                // 🔥 Lấy UserId từ JWT (chuẩn)
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    ModelState.AddModelError("", "Phiên đăng nhập không hợp lệ");
+                    return View(model);
+                }
+
+                model.UserId = userId;
+
+                await _apiService.PostAsync<ChangePasswordDto, object>(
+                    "api/Account/ChangePassword",
+                    model
+                );
+
+                TempData["SuccessMessage"] = "Đổi mật khẩu thành công";
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (HttpRequestException ex)
+            {
+                string message = "Đã xảy ra lỗi";
+
+                if (ex.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    message = "Mật khẩu hiện tại không đúng";
+                }
+                else if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    message = "Người dùng không tồn tại";
+                }
+                else if (ex.StatusCode == null)
+                {
+                    message = "Không thể kết nối tới server";
+                }
+
+                ModelState.AddModelError("", message);
+                return View(model);
             }
         }
     }

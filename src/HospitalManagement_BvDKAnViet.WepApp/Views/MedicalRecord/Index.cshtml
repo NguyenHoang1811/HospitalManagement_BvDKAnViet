@@ -1,302 +1,522 @@
 ﻿@model IEnumerable<HospitalManagement_BvDKAnViet.WepApp.Models.MedicalRecordDTO.MedicalRecordDto>
 
 @{
-	ViewData["Title"] = "Danh sách hồ sơ y tế";
+    ViewData["Title"] = "Danh sách hồ sơ y tế";
 
-	ViewData["Breadcrumb"] = new List<(string, string)>
-	{
-		("Bệnh án", "/MedicalRecord"),
-		("Danh sách hồ sơ", null)
-	};
+    // Lấy thông tin phân trang từ ViewBag
+    string searchTerm = ViewBag.SearchTerm as string;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int pageSize = ViewBag.PageSize ?? 10;
+    int totalPages = ViewBag.TotalPages ?? 1;
+
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Bệnh án", "/MedicalRecord"),
+        ("Danh sách hồ sơ", null)
+    };
 }
 
-<div class="page-wrapper">
-	@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-	<!-- HEADER -->
-	<div class="d-flex justify-content-between align-items-center mb-4">
-		<div>
-			<h2 class="fw-bold text-dark mb-1">@ViewData["Title"]</h2>
-			<div class="text-muted small">Quản lý thông tin bệnh án trong hệ thống</div>
-		</div>
+<div class="page-wrapper container mt-4 mb-5">
+    @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
-		@if (!User.IsInRole("Doctor"))
-		{
-			<a asp-action="Create" class="btn btn-accent">
-				<i class="fas fa-file-medical"></i> Thêm hồ sơ
-			</a>
-		}
-	</div>
+    <!-- HEADER -->
+    <div class="page-action-bar mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold text-navy mb-1" style="font-size: 24px;">@ViewData["Title"]</h2>
+            <div class="text-muted small">Quản lý thông tin bệnh án trong hệ thống</div>
+        </div>
 
-	<!-- ALERT -->
-	@if (TempData["SuccessMessage"] != null)
-	{
-		<div class="alert alert-success shadow-sm">
-			<i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
-		</div>
-	}
+        @if (!User.IsInRole("Doctor"))
+        {
+            <a asp-action="Create" class="btn btn-accent px-4 py-2 shadow-sm">
+                <i class="fas fa-file-medical me-1"></i> Thêm hồ sơ
+            </a>
+        }
+    </div>
 
-	@if (TempData["ErrorMessage"] != null)
-	{
-		<div class="alert alert-danger shadow-sm">
-			<i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
-		</div>
-	}
+    <!-- TOOLBAR (Bộ lọc và Tìm kiếm) -->
+    <div class="card-custom mb-4 px-4 py-3 bg-light border-0">
+        <form asp-action="Index" method="get" class="d-flex justify-content-between align-items-center m-0 flex-wrap gap-3">
 
-	<!-- CARD -->
-	<div class="card-custom">
+            <!-- Chọn số dòng -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.5px;">Hiển thị:</span>
+                <select name="pageSize" class="form-select form-control-custom cursor-pointer" style="width: 80px;" onchange="this.form.submit()">
+                    <option value="5" selected="@(pageSize == 5)">5</option>
+                    <option value="10" selected="@(pageSize == 10)">10</option>
+                    <option value="20" selected="@(pageSize == 20)">20</option>
+                    <option value="50" selected="@(pageSize == 50)">50</option>
+                </select>
+                <span class="text-muted small">dòng / trang</span>
+            </div>
 
-		@if (Model.Any())
-		{
-			<div class="table-responsive">
-				<table class="table table-modern align-middle">
+            <!-- Ô tìm kiếm -->
+            <div class="input-group input-group-custom shadow-sm" style="width: 340px;">
+                <input type="text" name="searchTerm" class="form-control form-control-custom border-end-0" placeholder="Tìm bệnh nhân, bác sĩ, chẩn đoán..." value="@searchTerm">
 
-					<thead>
-						<tr>
-							<th>STT</th>
-							<th>Mã HS</th>
-							<th>Bệnh nhân</th>
-							<th>Bác sĩ</th>
-							<th>Chẩn đoán</th>
-							<th>Ngày tạo</th>
-							<th>Trạng thái</th>
-							<th class="text-end">Thao tác</th>
-						</tr>
-					</thead>
+                @if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    <a asp-action="Index" class="btn btn-light border border-start-0 border-end-0 d-flex align-items-center text-muted" title="Xóa tìm kiếm">
+                        <i class="fas fa-times"></i>
+                    </a>
+                }
 
-					<tbody>
-						@{
-							int stt = 1;
-						}
-						@foreach (var r in Model)
-						{
-							<tr>
-								<!-- STT -->
-								<td><span class="stt">@stt</span></td>
+                <button class="btn btn-accent px-3" type="submit" style="border-radius: 0 8px 8px 0;">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
 
-								<!-- MÃ HS -->
-								<td>
-									<span class="patient-code">
-										HS-@r.RecordId.ToString("D3")
-									</span>
-								</td>
+    <!-- ALERT -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+            <i class="fas fa-check-circle me-2 fs-5 align-middle"></i>
+            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-								<!-- PATIENT -->
-								<td>
-									<div class="d-flex align-items-center gap-2">
-										<div class="avatar">
-											@(string.IsNullOrEmpty(r.PatientName) ? "BN" : r.PatientName.Substring(0, 1))
-										</div>
-										<div>
-											<div class="fw-semibold">
-												@(string.IsNullOrEmpty(r.PatientName) ? r.PatientId.ToString() : r.PatientName)
-											</div>
-											<div class="text-muted small">Patient</div>
-										</div>
-									</div>
-								</td>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+            <i class="fas fa-exclamation-circle me-2 fs-5 align-middle"></i>
+            <strong>Lỗi!</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-								<!-- DOCTOR -->
-								<td>
-									@(string.IsNullOrEmpty(r.DoctorName) ? r.DoctorId.ToString() : r.DoctorName)
-								</td>
+    <!-- TABLE CARD -->
+    <div class="card-custom">
 
-								<!-- DIAGNOSIS -->
-								<td class="text-muted">
-									@(string.IsNullOrEmpty(r.Diagnosis)
-																? "-"
-																: r.Diagnosis.Length > 50
-																? r.Diagnosis.Substring(0, 50) + "..."
-																: r.Diagnosis)
-						</td>
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-modern align-middle mb-0">
 
-								<!-- DATE -->
-								<td>
-									@r.CreatedDate.ToString("dd/MM/yyyy HH:mm")
-								</td>
+                    <thead>
+                        <tr>
+                            <th class="text-center" width="5%">STT</th>
+                            <th>Mã HS</th>
+                            <th>Bệnh nhân</th>
+                            <th>Bác sĩ</th>
+                            <th>Chẩn đoán</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
 
-								<td>
-									@{
-										var status = r.MedicalRecordStatus ?? "—";
-										var badgeClass = status switch
-										{
-											"NoiTru" => "badge bg-primary",
-											"NgoaiTru" => "badge bg-success",
-											"XuatVien" => "badge bg-secondary",
-											"CapCuu" => "badge bg-danger",
-											_ => "badge bg-light text-dark"
-										};
-									}
-									<span class="@badgeClass">@status</span>
-								</td>
+                    <tbody>
+                        @{
+                            // Tính lại STT chính xác theo trang
+                            int stt = ((currentPage - 1) * pageSize) + 1;
+                        }
+                        @foreach (var r in Model)
+                        {
+                            <tr>
+                                <!-- STT -->
+                                <td class="text-center"><span class="stt">@stt</span></td>
 
-								<!-- ACTION -->
-								<td class="text-end">
-									<a asp-action="Details" asp-route-id="@r.RecordId"
-									   class="btn-action text-info" title="Xem">
-										<i class="fas fa-eye"></i>
-									</a>
+                                <!-- MÃ HS -->
+                                <td>
+                                    <span class="patient-code shadow-sm">
+                                        HS-@r.RecordId.ToString("D3")
+                                    </span>
+                                </td>
 
-									<a asp-action="Edit" asp-route-id="@r.RecordId"
-									   class="btn-action text-warning" title="Sửa">
-										<i class="fas fa-edit"></i>
-									</a>
+                                <!-- PATIENT -->
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar shadow-sm">
+                                            @(string.IsNullOrEmpty(r.PatientName) ? "BN" : r.PatientName.Substring(0, 1).ToUpper())
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-navy">
+                                                @(string.IsNullOrEmpty(r.PatientName) ? r.PatientId.ToString() : r.PatientName)
+                                            </div>
+                                            <div class="text-muted small">Patient</div>
+                                        </div>
+                                    </div>
+                                </td>
 
-									@if (!User.IsInRole("Doctor"))
-									{
+                                <!-- DOCTOR -->
+                                <td class="fw-medium text-muted">
+                                    @(string.IsNullOrEmpty(r.DoctorName) ? r.DoctorId.ToString() : r.DoctorName)
+                                </td>
 
-										<button type="button"
-												class="btn-action text-danger"
-												data-bs-toggle="modal"
-												data-bs-target="#deleteModal"
-												data-id="@r.RecordId">
-											<i class="fas fa-trash"></i>
-										</button>
-									}
-								</td>
-								
-							</tr>
-										stt++;
-						}
-					</tbody>
+                                <!-- DIAGNOSIS -->
+                                <td class="text-muted">
+                                    @(string.IsNullOrEmpty(r.Diagnosis)
+                                                                ? "-"
+                                                                : r.Diagnosis.Length > 30
+                                                                ? r.Diagnosis.Substring(0, 30) + "..."
+                                                                : r.Diagnosis)
+                        </td>
 
-				</table>
-			</div>
-		}
-		else
-		{
-			<div class="text-center p-5 text-muted">
-				<i class="fas fa-file-medical-alt fa-2x mb-3"></i>
-				<div>Không có hồ sơ nào</div>
-				<a asp-action="Create" class="btn btn-accent mt-3">Thêm hồ sơ</a>
-			</div>
-		}
-	</div>
+                                <!-- DATE -->
+                                <td>
+                                    <span class="small text-muted fw-medium">@r.CreatedDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                </td>
+
+                                <!-- STATUS -->
+                                <td>
+                            @{
+                                        var status = r.MedicalRecordStatus ?? "—";
+                                        var badgeClass = status switch
+                                        {
+                                            "NoiTru" => "badge-soft blue",
+                                            "NgoaiTru" => "badge-soft green",
+                                            "XuatVien" => "badge-soft gray",
+                                            "CapCuu" => "badge-soft red",
+                                            _ => "badge-soft gray"
+                                        };
+                                    }
+                                    <span class="@badgeClass shadow-sm">@status</span>
+                                </td>
+
+                                <!-- ACTION -->
+                                <td class="text-end pe-4">
+                                    <div class="action-buttons d-inline-flex gap-2 justify-content-end">
+                                        <a asp-action="Details" asp-route-id="@r.RecordId" class="btn-action btn-view" title="Xem">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        <a asp-action="Edit" asp-route-id="@r.RecordId" class="btn-action btn-edit" title="Sửa">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+
+                                        @if (!User.IsInRole("Doctor"))
+                                        {
+                                            <button type="button" class="btn-action btn-delete border-0"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal"
+                                                    data-id="@r.RecordId" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- PAGINATION FOOTER -->
+            <div class="d-flex justify-content-between align-items-center p-4 border-top bg-light" style="border-radius: 0 0 16px 16px;">
+                <div class="small text-muted fw-medium">
+                    Trang <b class="text-navy">@currentPage</b> / <b>@totalPages</b>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 shadow-sm">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link px-3" asp-route-page="@(currentPage - 1)"
+                               asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">
+                                <i class="fas fa-chevron-left me-1"></i> Trước
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link px-3" asp-route-page="@i"
+                                   asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link px-3" asp-route-page="@(currentPage + 1)"
+                               asp-route-pageSize="@pageSize" asp-route-searchTerm="@searchTerm">
+                                Sau <i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 my-4 text-muted">
+                <i class="fas fa-file-medical-alt fa-4x mb-3 opacity-50"></i>
+                <h5 class="fw-bold text-navy">Không tìm thấy hồ sơ</h5>
+                <p class="small mb-4">Hệ thống chưa có dữ liệu hoặc không khớp với từ khóa tìm kiếm của bạn.</p>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 rounded-pill">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới danh sách
+                </a>
+            </div>
+        }
+    </div>
 </div>
 
 <!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content modern-modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg" style="border-radius: 20px; border: none;">
 
-			<div class="modal-body text-center p-4">
-				<div class="mb-3 text-danger fs-2">
-					<i class="fas fa-trash"></i>
-				</div>
-				<h5 class="fw-semibold">Xác nhận xóa</h5>
-				<p class="text-muted">Bạn có chắc chắn muốn xóa hồ sơ này?</p>
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="mx-auto bg-danger-light text-danger d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 50%;">
+                        <i class="fas fa-trash-alt fs-2"></i>
+                    </div>
+                </div>
 
-				<form id="deleteForm" method="post">
-					@Html.AntiForgeryToken()
+                <h4 class="fw-bold text-navy mb-2">Xác nhận xóa</h4>
+                <p class="text-muted mb-4">Bạn có chắc chắn muốn xóa hồ sơ này không? Hành động này không thể khôi phục.</p>
 
-					<button type="submit" class="btn btn-danger px-4">
-						Xóa
-					</button>
+                <form id="deleteForm" method="post" class="d-flex justify-content-center gap-3">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn btn-light btn-lg px-4 fw-medium rounded-pill" data-bs-dismiss="modal">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" class="btn btn-danger btn-lg px-4 fw-medium rounded-pill shadow-sm">
+                        Đồng ý xóa
+                    </button>
+                </form>
+            </div>
 
-					<button type="button" class="btn btn-light px-4 ms-2" data-bs-dismiss="modal">
-						Hủy
-					</button>
-				</form>
-			</div>
-
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
 
+@section Scripts {
+    <script>
+        var deleteModal = document.getElementById('deleteModal');
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var recordId = button.getAttribute('data-id');
+
+            var form = document.getElementById('deleteForm');
+            form.action = '/MedicalRecord/Delete/' + recordId;
+        });
+    </script>
+}
+
 <style>
-	/* LAYOUT */
-	.page-wrapper {
-		padding: 10px;
-	}
+    /* VARIABLES (Màu Xanh Ngọc bạn yêu cầu được đặt ở biến --teal) */
+    :root {
+        --navy: #0f2744;
+        --teal: #2dd4bf;
+        --teal-hover: #26c6a8;
+    }
 
-	/* CARD */
-	.card-custom {
-		background: #fff;
-		border-radius: 14px;
-		box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-		padding: 10px 0;
-	}
+    .text-navy {
+        color: var(--navy) !important;
+    }
 
-	/* TABLE */
-	.table-modern {
-		margin: 0;
-	}
+    .text-teal {
+        color: var(--teal) !important;
+    }
 
-		.table-modern thead th {
-			font-size: 12px;
-			color: #64748b;
-			text-transform: uppercase;
-			border-bottom: 1px solid #e2e8f0;
-		}
+    /* FORM CONTROLS & TOOLBAR */
+    .form-control-custom {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #334155;
+        transition: all 0.3s ease;
+    }
 
-		.table-modern tbody tr:hover {
-			background: #f8fafc;
-		}
+        .form-control-custom:focus {
+            background-color: #fff;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 0.25rem rgba(45, 212, 191, 0.15); /* Màu bóng mờ đồng bộ xanh ngọc */
+        }
 
-	/* AVATAR */
-	.avatar {
-		width: 36px;
-		height: 36px;
-		border-radius: 50%;
-		background: #60a5fa;
-		color: white;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 600;
-	}
+    .input-group-custom .btn-light {
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+    }
 
-	/* BADGE */
-	.patient-code {
-		background: #e0f2fe;
-		color: #0369a1;
-		padding: 4px 10px;
-		border-radius: 8px;
-		font-size: 12px;
-		font-weight: 600;
-	}
+        .input-group-custom .btn-light:hover {
+            background-color: #f1f5f9;
+            color: #ef4444 !important;
+        }
 
-	/* ACTION */
-	.btn-action {
-		margin-left: 6px;
-		font-size: 14px;
-	}
+    /* CARD */
+    .card-custom {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.04);
+        padding: 0;
+    }
 
-	/* ⭐ QUAN TRỌNG: BUTTON ACCENT */
-	.btn-accent {
-		background: #2dd4bf;
-		color: white;
-		border-radius: 8px;
-		border: none;
-		padding: 8px 14px;
-		font-weight: 500;
-		transition: 0.2s;
-	}
+    /* TABLE */
+    .table-modern thead th {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 2px solid #f1f5f9;
+        background: #f8fafc;
+        padding: 16px 12px;
+    }
 
-		.btn-accent:hover {
-			background: #26c6a8;
-			color: white;
-		}
+    .table-modern tbody td {
+        padding: 16px 12px;
+        border-bottom: 1px dashed #f1f5f9;
+        color: #334155;
+    }
 
-	/* MODAL */
-	.modern-modal {
-		border-radius: 14px;
-		border: none;
-	}
+    .table-modern tbody tr:hover {
+        background: #fdfdfe;
+    }
 
-	.stt {
-		font-weight: 600;
-		color: #64748b;
-	}
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .stt {
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    /* AVATAR */
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #60a5fa;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    /* BADGES */
+    .patient-code {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-soft {
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        border: 1px solid transparent;
+    }
+
+        .badge-soft.blue {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        .badge-soft.green {
+            background: #f0fdf4;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .badge-soft.red {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .badge-soft.gray {
+            background: #f8fafc;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+
+    /* ACTION BUTTONS */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: 0.2s;
+        border: none;
+        background: transparent;
+    }
+
+    .btn-view {
+        background: #f3e8ff;
+        color: #9333ea;
+    }
+
+        .btn-view:hover {
+            background: #9333ea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-edit {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-delete {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    /* ⭐ BUTTON ACCENT YÊU CẦU CỦA BẠN */
+    .btn-accent {
+        background: var(--teal); /* = #2dd4bf */
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: 0.3s;
+        border: none;
+    }
+
+        .btn-accent:hover {
+            background: var(--teal-hover); /* = #26c6a8 */
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.2);
+        }
+
+    /* MODAL */
+    .bg-danger-light {
+        background-color: #fee2e2;
+    }
+
+    /* CUSTOM PAGINATION */
+    .pagination .page-item .page-link {
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        margin: 0 2px;
+        border-radius: 6px;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--teal);
+        border-color: var(--teal);
+        color: white;
+    }
 </style>
-
-<script>
-	var deleteModal = document.getElementById('deleteModal');
-
-	deleteModal.addEventListener('show.bs.modal', function (event) {
-		var button = event.relatedTarget;
-		var recordId = button.getAttribute('data-id');
-
-		var form = document.getElementById('deleteForm');
-		form.action = '/MedicalRecord/Delete/' + recordId;
-	});
-</script>

@@ -656,6 +656,166 @@
 				grid-template-columns: repeat(2,1fr);
 			}
 		}
+
+		/* =========================================
+								   UI THÔNG BÁO (NOTIFICATION DROPDOWN)
+								   ========================================= */
+		.tb-notif {
+			position: relative;
+			cursor: pointer;
+		}
+
+		/* Chấm đỏ có hiệu ứng tỏa sáng (Pulse) */
+		.notif-dot {
+			position: absolute;
+			top: -2px;
+			right: -2px;
+			width: 10px;
+			height: 10px;
+			background: #ef4444;
+			border-radius: 50%;
+			border: 2px solid var(--card);
+			box-shadow: 0 0 0 rgba(239, 68, 68, 0.4);
+			animation: pulse-red 2s infinite;
+		}
+
+		@@keyframes pulse-red {
+			0% {
+				box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+			}
+
+			70% {
+				box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+			}
+
+			100% {
+				box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+			}
+		}
+
+		/* Khung Dropdown thông báo */
+		#notifList.dropdown-menu {
+			width: 340px;
+			max-height: 420px;
+			overflow-y: auto;
+			border-radius: 12px;
+			border: 1px solid var(--border);
+			box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+			padding: 0;
+			transform-origin: top right;
+			animation: dropFade 0.2s ease-out;
+		}
+
+		@@keyframes dropFade {
+			from {
+				opacity: 0;
+				transform: scale(0.95) translateY(-10px);
+			}
+
+			to {
+				opacity: 1;
+				transform: scale(1) translateY(0);
+			}
+		}
+
+		/* Tùy chỉnh thanh cuộn (Scrollbar) cho list thông báo */
+		#notifList::-webkit-scrollbar {
+			width: 5px;
+		}
+
+		#notifList::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		#notifList::-webkit-scrollbar-thumb {
+			background: rgba(0,0,0,0.15);
+			border-radius: 10px;
+		}
+
+			#notifList::-webkit-scrollbar-thumb:hover {
+				background: rgba(0,0,0,0.25);
+			}
+
+		/* Header cố định của thông báo */
+		.notif-header {
+			padding: 12px 16px;
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--text-1);
+			border-bottom: 1px solid var(--border);
+			background: #fafbfc;
+			border-radius: 12px 12px 0 0;
+			position: sticky;
+			top: 0;
+			z-index: 10;
+		}
+
+		/* Từng dòng thông báo */
+		.notif-item {
+			padding: 14px 16px;
+			border-bottom: 1px dashed var(--border);
+			transition: background 0.15s;
+		}
+
+			.notif-item:last-child {
+				border-bottom: none;
+			}
+
+			.notif-item:hover {
+				background: #f8fafc;
+			}
+
+		.notif-title {
+			font-size: 14px;
+			font-weight: 600;
+			color: var(--navy);
+			margin-bottom: 4px;
+		}
+
+		.notif-desc {
+			font-size: 12px;
+			color: var(--text-2);
+			margin-bottom: 4px;
+		}
+
+		/* Các nút bấm (Xác nhận / Hủy) mềm mại hơn */
+		.notif-actions {
+			display: flex;
+			gap: 8px;
+			margin-top: 10px;
+		}
+
+		.notif-btn {
+			padding: 6px 12px;
+			font-size: 11px;
+			font-weight: 600;
+			border-radius: 6px;
+			border: none;
+			transition: all 0.2s;
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
+
+		.notif-btn-confirm {
+			background: rgba(34, 197, 94, 0.12);
+			color: #16a34a;
+		}
+
+			.notif-btn-confirm:hover {
+				background: #16a34a;
+				color: #fff;
+			}
+
+		.notif-btn-cancel {
+			background: rgba(239, 68, 68, 0.12);
+			color: #dc2626;
+		}
+
+			.notif-btn-cancel:hover {
+				background: #dc2626;
+				color: #fff;
+			}
 	</style>
 </head>
 <body>
@@ -684,8 +844,6 @@
 				<a class="nav-link" asp-controller="Doctor" asp-action="Index"><i class="fas fa-user-doctor"></i> Bác Sĩ</a>
 				<a class="nav-link" asp-controller="Account" asp-action="Index"><i class="fas fa-user-gear"></i> Tài Khoản</a>
 
-				<div class="sb-section">Phân Tích</div>
-				<a class="nav-link" asp-controller="Home" asp-action="Privacy"><i class="fas fa-chart-line"></i> Thống Kê</a>
 			</div>
 			<div class="sb-footer">
 				<div class="sb-user">
@@ -721,7 +879,24 @@
 							<li><a class="dropdown-item" asp-controller="Account" asp-action="Index"><i class="fas fa-user-gear me-2 text-muted" style="width:16px;"></i>Quản lý tài khoản</a></li>
 						</ul>
 					</div>
-					<div class="tb-notif"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+					<div class="dropdown">
+						<div class="tb-notif"
+							 data-bs-toggle="dropdown"
+							 data-bs-auto-close="outside">
+							<i class="fas fa-bell"></i>
+							<span class="notif-dot" id="notifDot"></span>
+						</div>
+
+						<div class="dropdown-menu dropdown-menu-end p-2"
+							 style="width:320px; max-height:400px; overflow:auto;"
+							 id="notifList">
+
+							<div class="text-center text-muted small">
+								Đang tải...
+							</div>
+
+						</div>
+					</div>
 					<div class="tb-divider"></div>
 					<div class="tb-datetime">
 						<div class="tb-time" id="tb-clock">@DateTime.Now.ToString("HH:mm")</div>
@@ -764,6 +939,107 @@
 		function updateClock() { var now = new Date(); var h = String(now.getHours()).padStart(2,'0'); var m = String(now.getMinutes()).padStart(2,'0'); var el = document.getElementById('tb-clock'); if (el) el.textContent = h + ':' + m; }
 		setInterval(updateClock, 1000);
 		(function () { var path = window.location.pathname.toLowerCase(); document.querySelectorAll('.sb-nav .nav-link').forEach(function (link) { var href = link.getAttribute('href') || ''; if (href && href !== '/' && path.startsWith(href.toLowerCase())) { link.classList.add('active'); } else if (href === '/' && path === '/') { link.classList.add('active'); } }); })();
+	</script>
+	<script>
+				async function loadNotifications() {
+			try {
+				const res = await fetch('/Appointment/GetPendingAppointments');
+				if (!res.ok) return;
+
+				const data = await res.json();
+				const container = document.getElementById("notifList");
+				const dot = document.getElementById("notifDot");
+
+				container.innerHTML = "";
+
+				if (!data || data.length === 0) {
+					container.innerHTML = `
+						<div class="notif-header">Thông báo lịch hẹn</div>
+						<div class="text-center text-muted small py-4">
+							<i class="fas fa-box-open mb-2 opacity-50" style="font-size: 24px;"></i>
+							<br>Không có lịch chờ xác nhận
+						</div>`;
+					dot.style.display = "none";
+					return;
+				}
+
+				dot.style.display = "inline-block";
+
+				// Thêm phần Header cố định
+				container.innerHTML = `<div class="notif-header">Lịch hẹn chờ duyệt (${data.length})</div>`;
+
+				data.forEach(x => {
+					const item = document.createElement("div");
+					item.className = "notif-item";
+					item.innerHTML = `
+						<div class="notif-title">
+							<i class="fas fa-user-injured text-teal me-1 opacity-75"></i> ${x.patientName}
+						</div>
+						<div class="notif-desc">
+							<i class="fas fa-user-md me-1 opacity-50"></i> Bác sĩ: ${x.doctorName}
+						</div>
+						<div class="notif-desc fw-medium">
+							<i class="far fa-calendar-alt me-1 text-primary opacity-75"></i> ${x.appointmentDate}
+							<span class="mx-1">|</span>
+							<i class="far fa-clock me-1 text-warning opacity-75"></i> ${x.appointmentTime}
+						</div>
+						<div class="notif-actions">
+							<button class="notif-btn notif-btn-confirm" onclick="confirmAppt(${x.appointmentId}, this)">
+								<i class="fas fa-check"></i> Xác nhận
+							</button>
+							<button class="notif-btn notif-btn-cancel" onclick="cancelAppt(${x.appointmentId}, this)">
+								<i class="fas fa-times"></i> Huỷ
+							</button>
+						</div>
+					`;
+					container.appendChild(item);
+				});
+			} catch (err) {
+				console.error("Notif error:", err);
+			}
+		}
+
+		// Gọi qua WebApp controller — có auth cookie
+		async function confirmAppt(id, btn) {
+			btn.disabled = true;
+			btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+			const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+			const res = await fetch(`/Appointment/ConfirmAppointment?id=${id}`, {
+				method: "POST",
+				headers: { 'RequestVerificationToken': token ?? '' }
+			});
+
+			if (res.ok) {
+				loadNotifications();
+			} else {
+				btn.disabled = false;
+				btn.innerHTML = '<i class="fas fa-check me-1"></i>Xác nhận';
+			}
+		}
+
+		async function cancelAppt(id, btn) {
+			btn.disabled = true;
+			btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+			const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+			const res = await fetch(`/Appointment/CancelAppointmentAjax?id=${id}`, {
+				method: "POST",
+				headers: { 'RequestVerificationToken': token ?? '' }
+			});
+
+			if (res.ok) {
+				loadNotifications();
+			} else {
+				btn.disabled = false;
+				btn.innerHTML = '<i class="fas fa-times me-1"></i>Huỷ';
+			}
+		}
+
+		document.addEventListener("DOMContentLoaded", loadNotifications);
+		setInterval(loadNotifications, 10000);
 	</script>
 	@await RenderSectionAsync("Scripts", required: false)
 </body>

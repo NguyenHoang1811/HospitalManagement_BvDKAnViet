@@ -16,12 +16,36 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         }
 
         // GET: /Medicine
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int page = 1, int pageSize = 10)
         {
             try
             {
-                var items = await _apiService.GetAsync<IEnumerable<MedicineDto>>("api/Medicine");
-                return View(items ?? Enumerable.Empty<MedicineDto>());
+                // 1. Lấy toàn bộ danh sách thuốc
+                var allMedicines = await _apiService.GetAsync<IEnumerable<MedicineDto>>("api/Medicine")
+                                   ?? Enumerable.Empty<MedicineDto>();
+
+                // 2. Logic Tìm kiếm (theo Tên thuốc)
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    allMedicines = allMedicines.Where(m =>
+                        !string.IsNullOrEmpty(m.Name) &&
+                        m.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // 3. Logic Phân trang
+                int totalItems = allMedicines.Count();
+                var pagedData = allMedicines
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 4. Truyền dữ liệu trạng thái ra View
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+                return View(pagedData);
             }
             catch (HttpRequestException)
             {

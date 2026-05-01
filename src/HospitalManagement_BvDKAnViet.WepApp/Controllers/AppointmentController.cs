@@ -20,12 +20,11 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         }
 
         // GET: /Appointment
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm, int page = 1, int pageSize = 10)
         {
             try
             {
                 string url;
-
                 if (User.IsInRole("Doctor"))
                 {
                     var doctorId = User.FindFirstValue("DoctorId") ?? "0";
@@ -36,20 +35,45 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
                     url = "api/Appointment";
                 }
 
-                var appointments = await _apiService.GetAsync<IEnumerable<AppointmentDto>>(url);
+                // 1. Lấy danh sách Lịch hẹn, Bệnh nhân, Bác sĩ
+                var appointments = await _apiService.GetAsync<IEnumerable<AppointmentDto>>(url)
+                                   ?? Enumerable.Empty<AppointmentDto>();
 
-                // 🔥 Lấy danh sách bệnh nhân + bác sĩ
-                var patients = await _apiService.GetAsync<IEnumerable<PatientDto>>("api/Patient");
-                var doctors = await _apiService.GetAsync<IEnumerable<DoctorDto>>("api/Doctor");
+                var patients = await _apiService.GetAsync<IEnumerable<PatientDto>>("api/Patient")
+                               ?? Enumerable.Empty<PatientDto>();
 
-                // 🔥 Tạo Dictionary để tra cứu nhanh
-                ViewBag.PatientNames = patients?
-                    .ToDictionary(p => p.PatientId, p => p.Name);
+                var doctors = await _apiService.GetAsync<IEnumerable<DoctorDto>>("api/Doctor")
+                              ?? Enumerable.Empty<DoctorDto>();
 
-                ViewBag.DoctorNames = doctors?
-                    .ToDictionary(d => d.DoctorId, d => d.Name);
+                // Tạo Dictionary để tra cứu nhanh
+                var patientsDict = patients.ToDictionary(p => p.PatientId, p => p.Name ?? "");
+                var doctorsDict = doctors.ToDictionary(d => d.DoctorId, d => d.Name ?? "");
 
-                return View(appointments ?? Enumerable.Empty<AppointmentDto>());
+                // 2. Logic Tìm kiếm (Tìm theo tên Bệnh nhân hoặc tên Bác sĩ)
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    appointments = appointments.Where(a =>
+                        (patientsDict.ContainsKey(a.PatientId) && patientsDict[a.PatientId].Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                        (doctorsDict.ContainsKey(a.DoctorId) && doctorsDict[a.DoctorId].Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    );
+                }
+
+                // 3. Logic Phân trang
+                int totalItems = appointments.Count();
+                var pagedData = appointments
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // 4. Truyền dữ liệu ra View
+                ViewBag.PatientNames = patientsDict;
+                ViewBag.DoctorNames = doctorsDict;
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = totalItems == 0 ? 1 : (int)Math.Ceiling((double)totalItems / pageSize);
+
+                return View(pagedData);
             }
             catch (HttpRequestException)
             {
@@ -298,6 +322,40 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
             {
                 return Json(Enumerable.Empty<string>());
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPendingAppointments()
+        {
+            var data = await _apiService.GetAsync<IEnumerable<object>>("api/Appointment/pending");
+            return Json(data ?? new List<object>());
+        }
+        [HttpPost]
+        public async Task<IActionResult> Complete(int id)
+        {
+            await _apiService.PatchAsync($"api/Appointment/{id}/complete");
+            return RedirectToAction("Details", new { id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            await _apiService.PatchAsync($"api/Appointment/{id}/cancel");
+            return RedirectToAction("Details", new { id });
+        }
+        [HttpPost]
+        public async Task<IActionResult> ConfirmAppointment(int id)
+        {
+            await _apiService.PatchAsync($"api/Appointment/{id}/confirm");
+            return Ok();
+        }
+
+        // Cancel đã có nhưng cần đổi tên để tránh nhầm
+        [HttpPost]
+        public async Task<IActionResult> CancelAppointmentAjax(int id)
+        {
+            await _apiService.PatchAsync($"api/Appointment/{id}/cancel");
+            return Ok();
         }
     }
 }

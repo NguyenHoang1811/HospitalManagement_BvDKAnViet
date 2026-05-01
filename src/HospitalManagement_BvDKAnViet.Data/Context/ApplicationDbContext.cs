@@ -43,9 +43,14 @@ namespace HospitalManagement_BvDKAnViet.Data.Context
 
             modelBuilder.Entity<KidneyPrediction>()
                 .HasOne(k => k.Patient)
-                .WithMany()
+                .WithMany(p => p.KidneyPredictions)
                 .HasForeignKey(k => k.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<KidneyPrediction>()
+                .HasOne(k => k.Doctor)
+                .WithMany(d => d.KidneyPredictions)
+                .HasForeignKey(k => k.DoctorId)
+                .OnDelete(DeleteBehavior.SetNull);
 
 
             modelBuilder.Entity<Prescription>()
@@ -90,12 +95,6 @@ namespace HospitalManagement_BvDKAnViet.Data.Context
             modelBuilder.Entity<Invoice>()
                 .Property(i => i.CreatedDate)
                 .HasDefaultValueSql("GETDATE()");
-
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Patient)
-                .WithOne(p => p.User)
-                .HasForeignKey<User>(u => u.PatientId)
-                .OnDelete(DeleteBehavior.SetNull);
             // Patient - User (1-1)
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Patient)
