@@ -87,7 +87,6 @@
                             <th>Bệnh nhân</th>
                             <th>Kết luận</th>
                             <th>Xác suất</th>
-                            <th>Mức độ rủi ro</th>
                             <th class="text-end pe-4">Thời gian</th>
                         </tr>
                     </thead>
@@ -104,13 +103,7 @@
                             var badgeClass = isCkd ? "badge-soft red" : "badge-soft green";
                             var textClass = isCkd ? "text-danger" : "text-success";
 
-                            var riskClass = item.RiskLevel switch
-                            {
-                                "HIGH" => "badge-soft red",
-                                "MEDIUM" => "badge-soft yellow",
-                                "LOW" => "badge-soft green",
-                                _ => "badge-soft gray"
-                            };
+                            
 
                             <tr>
                                 <td class="text-center"><span class="stt">@stt</span></td>
@@ -143,11 +136,6 @@
                                     </span>
                                 </td>
 
-                                <td>
-                                    <span class="@riskClass shadow-sm px-3">
-                                        @item.RiskLevel
-                                    </span>
-                                </td>
 
                                 <td class="text-end pe-4">
                                     <span class="small text-muted fw-medium">

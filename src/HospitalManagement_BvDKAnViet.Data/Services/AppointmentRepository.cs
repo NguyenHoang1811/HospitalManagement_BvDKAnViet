@@ -97,12 +97,21 @@ namespace HospitalManagement_BvDKAnViet.Data.Repositories
             return !conflictExists;
         }
 
+       
         public async Task<IEnumerable<Appointment>> GetPendingExpiredAsync(DateTime beforeTime)
         {
-            return await _db.Appointments
-                .Where(a => a.Status == (int)AppointmentStatus.PENDING
-                         && a.AppointmentDate.ToDateTime(a.AppointmentTime) < beforeTime)
+            var dateOnly = DateOnly.FromDateTime(beforeTime);
+
+            var candidates = await _db.Appointments
+                .Where(a => 
+                    (a.Status == (int)AppointmentStatus.PENDING || 
+                    a.Status == (int)AppointmentStatus.CONFIRMED)  
+                    && a.AppointmentDate <= dateOnly)
                 .ToListAsync();
+
+            return candidates
+                .Where(a => a.AppointmentDate.ToDateTime(a.AppointmentTime) < beforeTime)
+                .ToList();
         }
 
         public async Task<bool> BulkUpdateStatusAsync(IEnumerable<int> ids, int status, string statusName)

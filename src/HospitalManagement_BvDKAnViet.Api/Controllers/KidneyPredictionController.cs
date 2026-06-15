@@ -104,7 +104,10 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
                 Appetite = dto.Appetite,
                 PedalEdema = dto.PedalEdema,
                 Anemia = dto.Anemia,
-                PredictionResult = pythonResult.label,
+                PredictionResult = pythonResult.Label,
+                ProbabilityCkd = pythonResult.ProbabilityCkd,
+                ProbabilityNotCkd = pythonResult.ProbabilityNotCkd,
+                RiskLevel = pythonResult.RiskLevel,
             };
 
             var saved = await _repo.AddAsync(entity);
@@ -113,16 +116,17 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
             {
                 responseCode = 200,
                 responseMessage = "Dự đoán thành công",
+                
                 data = new KidneyPredictionResponseDto
                 {
-                    PredictionId = saved.PredictionId,
-                    PatientId = saved.PatientId,
-                    PatientName = patient.Name,
-                    PredictionResult = pythonResult.label,
-                    ProbabilityCkd = pythonResult.probability_ckd,
-                    ProbabilityNotCkd = pythonResult.probability_not_ckd,
-                    RiskLevel = pythonResult.risk_level,
-                    CreatedAt = saved.CreatedAt
+                    PredictionId      = saved.PredictionId,
+                    PatientId         = saved.PatientId,
+                    PatientName       = patient.Name,
+                    PredictionResult  = pythonResult.Label,
+                    ProbabilityCkd    = pythonResult.ProbabilityCkd,
+                    ProbabilityNotCkd = pythonResult.ProbabilityNotCkd,
+                    RiskLevel         = pythonResult.RiskLevel,
+                    CreatedAt         = saved.CreatedAt
                 }
             });
         }

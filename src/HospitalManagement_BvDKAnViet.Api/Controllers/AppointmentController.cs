@@ -279,7 +279,6 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
         [HttpGet("doctor/{doctorId:int}/available-slots")]
         public async Task<IActionResult> GetAvailableSlots(int doctorId, [FromQuery] DateOnly date)
         {
-            // 🔒 bảo mật nếu là Doctor
             if (User.IsInRole("Doctor"))
             {
                 var claim = User.FindFirst("DoctorId")?.Value;
@@ -287,27 +286,38 @@ namespace HospitalManagement_BvDKAnViet.Api.Controllers
                     return Forbid();
             }
 
-            // rule hệ thống
-            var start = new TimeOnly(8, 0);
-            var end = new TimeOnly(17, 0);
+            // Không cho đặt ngày trong quá khứ
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            if (date < today)
+                return Ok(Enumerable.Empty<string>());
+
+            // Không cuối tuần
+            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                return Ok(Enumerable.Empty<string>());
+
+            var start      = new TimeOnly(8, 0);
+            var end        = new TimeOnly(17, 0);
             var lunchStart = new TimeOnly(12, 0);
-            var lunchEnd = new TimeOnly(13, 0);
+            var lunchEnd   = new TimeOnly(13, 0);
+
+            // ✅ Nếu là hôm nay → lấy giờ hiện tại để lọc
+            var now = DateTime.Now;
+            var currentTime = date == today ? TimeOnly.FromDateTime(now) : TimeOnly.MinValue;
 
             var allSlots = new List<TimeOnly>();
-
             for (var t = start; t <= end; t = t.AddMinutes(15))
             {
                 if (t >= lunchStart && t < lunchEnd) continue;
+
+                // ✅ Bỏ qua slot đã qua hoặc quá gần (thêm 15 phút buffer)
+                if (t <= currentTime.AddMinutes(15)) continue;
+
                 allSlots.Add(t);
             }
 
-            // lấy lịch đã đặt
-            var booked = await _appointmentRepository
-                .GetByDoctorIdAndDateAsync(doctorId, date);
-
+            var booked = await _appointmentRepository.GetByDoctorIdAndDateAsync(doctorId, date);
             var bookedTimes = booked.Select(a => a.AppointmentTime).ToHashSet();
 
-            // slot trống
             var available = allSlots
                 .Where(t => !bookedTimes.Contains(t))
                 .Select(t => t.ToString("HH:mm"));

@@ -1,4 +1,6 @@
-﻿namespace HospitalManagement_BvDKAnViet.Core.IServices
+﻿using System.Text.Json.Serialization;
+
+namespace HospitalManagement_BvDKAnViet.Core.IServices
 {
     public class CkdPythonRequest
     {
@@ -30,11 +32,23 @@
 
     public class CkdPythonResponse
     {
-        public int prediction { get; set; }
-        public string? label { get; set; }
-        public double probability_ckd { get; set; }
-        public double probability_not_ckd { get; set; }
-        public string? risk_level { get; set; }
+        [JsonPropertyName("prediction")]
+        public int Prediction { get; set; }
+
+        [JsonPropertyName("label")]
+        public string? Label { get; set; }
+
+        [JsonPropertyName("probability_ckd")]
+        public double ProbabilityCkd { get; set; }
+
+        [JsonPropertyName("probability_not_ckd")]
+        public double ProbabilityNotCkd { get; set; }
+
+        [JsonPropertyName("risk_level")]       
+        public string? RiskLevel { get; set; }
+
+        [JsonPropertyName("timestamp")]
+        public string? Timestamp { get; set; }
     }
 
     public interface ICkdPythonService

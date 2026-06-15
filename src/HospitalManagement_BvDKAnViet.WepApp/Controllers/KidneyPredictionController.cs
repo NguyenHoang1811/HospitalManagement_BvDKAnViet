@@ -3,6 +3,7 @@ using HospitalManagement_BvDKAnViet.WepApp.Models.ViewModels;
 using HospitalManagement_BvDKAnViet.WepApp.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
 {
@@ -151,7 +152,15 @@ namespace HospitalManagement_BvDKAnViet.WepApp.Controllers
         // ================= PRIVATE =================
         private async Task LoadPatientsAsync()
         {
-            ViewBag.Patients = await _apiService.GetAsync<List<PatientDto>>("api/patient");
+            if (User.IsInRole("Doctor"))
+            {
+                var doctorId = User.FindFirstValue("DoctorId") ?? "0";
+                ViewBag.Patients = await _apiService.GetAsync<List<PatientDto>>($"api/patient/doctor/{doctorId}");
+            }
+            else
+            {
+                ViewBag.Patients = await _apiService.GetAsync<List<PatientDto>>("api/patient");
+            }
         }
     }
 }

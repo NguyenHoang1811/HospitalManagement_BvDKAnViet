@@ -40,6 +40,10 @@ namespace HospitalManagement_BvDKAnViet.Core.Entities
         public string? PedalEdema { get; set; }
         public string? Anemia { get; set; }
 
+        public double? ProbabilityCkd { get; set; }
+        public double? ProbabilityNotCkd { get; set; }
+        public string? RiskLevel { get; set; }
+
         public string? PredictionResult { get; set; }
         public DateTime CreatedAt { get; set; }
 
